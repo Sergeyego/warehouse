@@ -20,6 +20,12 @@ struct base1CSettigs
     QString password;
 };
 
+struct packVal
+{
+    QString id;
+    QString nam;
+};
+
 class Sync1C: public QObject
 {
     Q_OBJECT
@@ -34,19 +40,23 @@ private:
     QString elParentKey;
     QString wireParentKey;
     QHash <QString, QString> catalogKeys;
-    QMultiHash <QString, QString> catalogPacks;
+    QMultiHash <QString, packVal> catalogPacks;
+    QMultiHash <QString, QString> catalogEans;
     QNetworkRequest getRequest(QString obj);
     QNetworkRequest postRequest(QString obj, QByteArray contentLen);
     bool postSync(QString obj, QJsonObject &data);
     QJsonObject getSync(QString obj);
     QJsonObject tmpCatalog(QString name);
+    bool containsPack(QString ownerKey, QString nam);
 
 private slots:
     void updateCatologKeys();
     void updateCatalogPacks();
+    void updateCatalogEans();
     void showErrMes(QString err);
     void elCatalogSync();
     void elPackSync();
+    void elEanSync();
 
 };
 

@@ -13,6 +13,9 @@ void Sync1C::syncCatalogEl()
     updateCatologKeys();
     updateCatalogPacks();
     elPackSync();
+    updateCatalogPacks();
+    updateCatalogEans();
+    elEanSync();
 }
 
 QNetworkRequest Sync1C::getRequest(QString obj)
@@ -94,6 +97,19 @@ QJsonObject Sync1C::tmpCatalog(QString name)
     return obj;
 }
 
+bool Sync1C::containsPack(QString ownerKey, QString nam)
+{
+    bool c=false;
+    QList <packVal> list=catalogPacks.values(ownerKey);
+    for(packVal n : list){
+        if (n.nam==nam){
+            c=true;
+            break;
+        }
+    }
+    return c;
+}
+
 void Sync1C::updateCatologKeys()
 {
     QJsonObject obj=getSync("Catalog_усНоменклатура");
@@ -112,7 +128,7 @@ void Sync1C::updateCatologKeys()
             catalogKeys.insert(key,value);
         }
     }
-    qDebug()<<json.size()<<" "<<elParentKey<<" "<<wireParentKey/*<<catalogKeys*/;
+    qDebug()<<"kvo noms: "<<json.size();
 }
 
 void Sync1C::updateCatalogPacks()
@@ -122,12 +138,29 @@ void Sync1C::updateCatalogPacks()
     catalogPacks.clear();
     for (QJsonValue val : json){
         QString key=val.toObject().value("Owner_Key").toString();
-        QString nam=val.toObject().value("Description").toString();
+        packVal p;
+        p.nam=val.toObject().value("Description").toString();
+        p.id=val.toObject().value("Ref_Key").toString();
         if (!key.isEmpty()){
-            catalogPacks.insert(key,nam);
+            catalogPacks.insert(key,p);
         }
     }
-    qDebug()<<json.size()/*<<" "<<catalogPacks*/;
+    qDebug()<<"kvo packs: "<<json.size();
+}
+
+void Sync1C::updateCatalogEans()
+{
+    QJsonObject obj=getSync("InformationRegister_усШтрихкоды");
+    QJsonArray json=obj.value("value").toArray();
+    catalogEans.clear();
+    for (QJsonValue val : json){
+        QString key=val.toObject().value("Номенклатура_Key").toString();
+        QString ean=val.toObject().value("Штрихкод").toString();
+        if (!key.isEmpty()){
+            catalogEans.insert(key,ean);
+        }
+    }
+    qDebug()<<"kvo eans: "<<json.size();
 }
 
 
@@ -173,11 +206,50 @@ void Sync1C::elPackSync()
         if (query.exec()){
             while (query.next()){
                 QString pack=query.value(1).toString();
-                if (!catalogPacks.values(i.value()).contains(pack)){
+                if (!containsPack(i.value(),pack)){
                     obj.insert("Description",pack);
                     obj.insert("Owner_Key",i.value());
                     postSync("Catalog_усУпаковкиНоменклатуры",obj);
                 }
+            }
+        }
+        ++i;
+    }
+}
+
+void Sync1C::elEanSync()
+{
+    QJsonObject obj=tmpCatalog("tmpean.json");
+    QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
+    while (i != catalogKeys.constEnd()) {
+        QSqlQuery query;
+        query.prepare("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, "
+                      "ee.ean_ed, ee.ean_group, ep.mass_ed, ep.mass_group from ean_el ee "
+                      "inner join el_pack ep on ep.id = ee.id_pack "
+                      "where ee.id_el||':'||ee.id_diam = :kis "
+                      "order by npack");
+        query.bindValue(":kis",i.key());
+        if (query.exec()){
+            while (query.next()){
+                QString ean_ed=query.value(2).toString();
+                QString ean_group=query.value(3).toString();
+                QString mas_ed=query.value(4).toString();
+                QString mas_group=query.value(5).toString();
+                QList<packVal> packs=catalogPacks.values(i.value());
+                for (packVal p: packs){
+                    QString packKey=p.id;
+                    QString nomKey=i.value();
+                    obj.insert("Номенклатура_Key",nomKey);
+                    obj.insert("УпаковкаНоменклатуры_Key",packKey);
+                    obj.insert("Количество",mas_ed);
+                    obj.insert("Штрихкод",ean_ed);
+                    postSync("InformationRegister_усШтрихкоды",obj);
+
+                    obj.insert("Количество",mas_group);
+                    obj.insert("Штрихкод",ean_group);
+                    postSync("InformationRegister_усШтрихкоды",obj);
+                }
+                //qDebug()<<i.value()<<" "<<packs.size();
             }
         }
         ++i;
