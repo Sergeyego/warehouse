@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,7 +30,9 @@ SOURCES += \
     db/dblogin.cpp \
     db/dbmapper.cpp \
     db/dbtablemodel.cpp \
-    db/dbviewer.cpp
+    db/dbviewer.cpp \
+    formacceptance.cpp \
+    sync1c.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,11 +40,14 @@ HEADERS += \
     db/dblogin.h \
     db/dbmapper.h \
     db/dbtablemodel.h \
-    db/dbviewer.h
+    db/dbviewer.h \
+    formacceptance.h \
+    sync1c.h
 
 FORMS += \
         mainwindow.ui \
-    db/dblogin.ui
+    db/dblogin.ui \
+    formacceptance.ui
 
 RC_FILE = ico.rc
 

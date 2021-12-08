@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QSettings>
+#include "formacceptance.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +25,7 @@ public:
 
 private slots:
     void closeTab(int index);
+    void newFormAcceptance();
 
 private:
     Ui::MainWindow *ui;

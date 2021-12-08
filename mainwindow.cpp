@@ -7,6 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    actAction(ui->actionAcceptance,&MainWindow::newFormAcceptance);
+
     loadSettings();
     connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
 }
@@ -60,6 +62,13 @@ bool MainWindow::setActiveSubWindow(QString t)
 void MainWindow::closeTab(int index)
 {
     ui->tabWidget->widget(index)->close();
+}
+
+void MainWindow::newFormAcceptance()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormAcceptance(),sender());
+    }
 }
 
 void MainWindow::loadSettings()
