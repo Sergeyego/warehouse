@@ -42,8 +42,7 @@ private:
     QHash <QString, QString> catalogKeys;
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
-    QNetworkRequest getRequest(QString obj);
-    QNetworkRequest postRequest(QString obj, QByteArray contentLen);
+    QNetworkRequest baseRequest(QString obj);
     bool postSync(QString obj, QJsonObject &data);
     QJsonObject getSync(QString obj);
     QJsonObject tmpCatalog(QString name);
@@ -54,9 +53,10 @@ private slots:
     void updateCatalogPacks();
     void updateCatalogEans();
     void showErrMes(QString err);
-    void elCatalogSync();
-    void elPackSync();
-    void elEanSync();
+    int elCatalogSync();
+    int elPackSync();
+    int elEanSync();
+    int wireCatalogSync();
 
 };
 

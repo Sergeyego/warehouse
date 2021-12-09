@@ -9,45 +9,41 @@ Sync1C::Sync1C(QObject *parent): QObject(parent)
 void Sync1C::syncCatalogEl()
 {
     updateCatologKeys();
-    elCatalogSync();
-    updateCatologKeys();
+    int nc=elCatalogSync();
+    nc+=wireCatalogSync();
+    if (nc>0){
+        updateCatologKeys();
+    }
     updateCatalogPacks();
-    elPackSync();
-    updateCatalogPacks();
+    int np=elPackSync();
+    if (np>0){
+        updateCatalogPacks();
+    }
     updateCatalogEans();
-    elEanSync();
+    int ne=elEanSync();
+    QMessageBox::information(nullptr,tr("Информация"),QString("Загружено: \nновых наименований номенклатуры: %1 \nновых типов упкковки: %2 \nновых штрихкодов: %3").arg(nc).arg(np).arg(ne),QMessageBox::Ok);
 }
 
-QNetworkRequest Sync1C::getRequest(QString obj)
+QNetworkRequest Sync1C::baseRequest(QString obj)
 {
     QNetworkRequest request(QUrl(base1C.url+obj));
     request.setRawHeader("Accept","application/json");
-    request.setRawHeader("Accept-Charset", "UTF-8");
-    request.setRawHeader("Authorization", "Basic "+base1C.user.toLocal8Bit().toBase64());
-    return request;
-}
-
-QNetworkRequest Sync1C::postRequest(QString obj, QByteArray contentLen)
-{
-    QNetworkRequest request(QUrl(base1C.url+obj));
-    request.setRawHeader("Accept","application/json");
-    request.setRawHeader("User-Agent", "Appszsm");
     request.setRawHeader("Accept-Charset", "UTF-8");
     request.setRawHeader("Content-Type", "application/json");
-    request.setRawHeader("Content-Length", contentLen);
+    request.setRawHeader("User-Agent", "Appszsm");
     request.setRawHeader("Authorization", "Basic "+base1C.user.toLocal8Bit().toBase64());
     return request;
 }
 
 bool Sync1C::postSync(QString obj, QJsonObject &data)
 {
-    bool ok=false;
     QJsonDocument doc;
     doc.setObject(data);
     QByteArray d= doc.toJson();
     QByteArray len;
     len.append(QString::number(d.length()));
-    QNetworkRequest request(postRequest(obj,len));
+    QNetworkRequest request(baseRequest(obj));
+    request.setRawHeader("Content-Length", len);
 
     QEventLoop loop;
     QNetworkAccessManager man;
@@ -56,8 +52,11 @@ bool Sync1C::postSync(QString obj, QJsonObject &data)
     if (!reply->isFinished()){
         loop.exec();
     }
-
-    ok=(reply->error()==QNetworkReply::NoError);
+    bool ok=(reply->error()==QNetworkReply::NoError);
+    if (!ok){
+        qDebug()<<QString::fromUtf8(reply->readAll());
+        showErrMes(reply->errorString());
+    }
     reply->deleteLater();
     return ok;
 }
@@ -65,7 +64,7 @@ bool Sync1C::postSync(QString obj, QJsonObject &data)
 QJsonObject Sync1C::getSync(QString obj)
 {
     QJsonDocument doc;
-    QNetworkRequest request(getRequest(obj));
+    QNetworkRequest request(baseRequest(obj));
 
     QEventLoop loop;
     QNetworkAccessManager man;
@@ -169,8 +168,10 @@ void Sync1C::showErrMes(QString err)
     QMessageBox::critical(nullptr,tr("Ошибка"),err,QMessageBox::Cancel);
 }
 
-void Sync1C::elCatalogSync()
+int Sync1C::elCatalogSync()
 {
+    int n=0;
+    bool ok=true;
     QJsonObject obj=tmpCatalog("tmp.json");
     QSqlQuery query;
     query.prepare("select distinct ee.id_el||':'||ee.id_diam, e.marka ||' ф '|| d.sdim from ean_el ee "
@@ -184,44 +185,61 @@ void Sync1C::elCatalogSync()
                 obj.insert("Description",query.value(1).toString());
                 obj.insert("КодКИС",key);
                 obj.insert("Parent_Key",elParentKey);
-                postSync("Catalog_усНоменклатура",obj);
+                ok=postSync("Catalog_усНоменклатура",obj);
+                if (ok){
+                    n++;
+                } else {
+                    break;
+                }
             }
         }
     } else {
         showErrMes(query.lastError().text());
     }
+    return n;
 }
 
-void Sync1C::elPackSync()
+int Sync1C::elPackSync()
 {
+    int n=0;
+    bool ok=true;
     QJsonObject obj=tmpCatalog("tmppack.json");
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
-    while (i != catalogKeys.constEnd()) {
+    while (i != catalogKeys.constEnd() && ok) {
         QSqlQuery query;
-        query.prepare("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack from ean_el ee "
+        query.prepare("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed from ean_el ee "
                       "inner join el_pack ep on ep.id = ee.id_pack "
                       "where ee.id_el||':'||ee.id_diam = :kis "
                       "order by npack");
         query.bindValue(":kis",i.key());
         if (query.exec()){
-            while (query.next()){
+            while (query.next() && ok){
                 QString pack=query.value(1).toString();
                 if (!containsPack(i.value(),pack)){
                     obj.insert("Description",pack);
                     obj.insert("Owner_Key",i.value());
-                    postSync("Catalog_усУпаковкиНоменклатуры",obj);
+                    obj.insert("Коэффициент",query.value(2).toDouble());
+                    ok=postSync("Catalog_усУпаковкиНоменклатуры",obj);
+                    if (ok){
+                        n++;
+                    } else {
+                        break;
+                    }
                 }
             }
         }
         ++i;
     }
+    return n;
 }
 
-void Sync1C::elEanSync()
+int Sync1C::elEanSync()
 {
+    int n=0;
+    bool ok=true;
     QJsonObject obj=tmpCatalog("tmpean.json");
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
-    while (i != catalogKeys.constEnd()) {
+    while (i != catalogKeys.constEnd() && ok) {
         QSqlQuery query;
         query.prepare("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, "
                       "ee.ean_ed, ee.ean_group, ep.mass_ed, ep.mass_group from ean_el ee "
@@ -230,7 +248,7 @@ void Sync1C::elEanSync()
                       "order by npack");
         query.bindValue(":kis",i.key());
         if (query.exec()){
-            while (query.next()){
+            while (query.next() && ok){
                 QString ean_ed=query.value(2).toString();
                 QString ean_group=query.value(3).toString();
                 QString mas_ed=query.value(4).toString();
@@ -241,17 +259,62 @@ void Sync1C::elEanSync()
                     QString nomKey=i.value();
                     obj.insert("Номенклатура_Key",nomKey);
                     obj.insert("УпаковкаНоменклатуры_Key",packKey);
-                    obj.insert("Количество",mas_ed);
-                    obj.insert("Штрихкод",ean_ed);
-                    postSync("InformationRegister_усШтрихкоды",obj);
-
-                    obj.insert("Количество",mas_group);
-                    obj.insert("Штрихкод",ean_group);
-                    postSync("InformationRegister_усШтрихкоды",obj);
+                    if (!ean_ed.isEmpty() && !catalogEans.values(nomKey).contains(ean_ed)){
+                        obj.insert("Количество",mas_ed);
+                        obj.insert("Штрихкод",ean_ed);
+                        ok=postSync("InformationRegister_усШтрихкоды",obj);
+                        if (ok){
+                            n++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (!ean_group.isEmpty()&& !catalogEans.values(nomKey).contains(ean_group)){
+                        obj.insert("Количество",mas_group);
+                        obj.insert("Штрихкод",ean_group);
+                        ok=postSync("InformationRegister_усШтрихкоды",obj);
+                        if (ok){
+                            n++;
+                        } else {
+                            break;
+                        }
+                    }
                 }
-                //qDebug()<<i.value()<<" "<<packs.size();
             }
         }
         ++i;
     }
+    return n;
+}
+
+int Sync1C::wireCatalogSync()
+{
+    int n=0;
+    bool ok=true;
+    QJsonObject obj=tmpCatalog("tmp.json");
+    QSqlQuery query;
+    query.prepare("select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short as nam from wire_ean we "
+                  "inner join provol p on p.id=we.id_prov "
+                  "inner  join diam d on d.id = we.id_diam "
+                  "inner join wire_pack_kind wpk on wpk.id = we.id_spool "
+                  "order by nam");
+    if (query.exec()){
+        while (query.next()){
+            QString key=query.value(0).toString();
+            if (!catalogKeys.contains(key)){
+                obj.insert("Description",query.value(1).toString());
+                obj.insert("КодКИС",key);
+                obj.insert("Parent_Key",wireParentKey);
+                ok=postSync("Catalog_усНоменклатура",obj);
+                if (ok){
+                    n++;
+                } else {
+                    break;
+                }
+            }
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
+    return n;
 }
