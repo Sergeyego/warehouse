@@ -47,16 +47,21 @@ private:
     QJsonObject getSync(QString obj);
     QJsonObject tmpCatalog(QString name);
     bool containsPack(QString ownerKey, QString nam);
-
-private slots:
-    void updateCatologKeys();
-    void updateCatalogPacks();
-    void updateCatalogEans();
-    void showErrMes(QString err);
+    int updateCatologKeys();
+    int updateCatalogPacks();
+    int updateCatalogEans();
+    int catalogSync(QString queryStr, QString parentKey);
+    int packSync(QString queryStr);
+    int eanSync(QString queryStr);
     int elCatalogSync();
     int elPackSync();
     int elEanSync();
     int wireCatalogSync();
+    int wirePackSync();
+    int wireEanSync();
+
+private slots:
+    void showErrMes(QString err);
 
 };
 

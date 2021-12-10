@@ -16,12 +16,14 @@ void Sync1C::syncCatalogEl()
     }
     updateCatalogPacks();
     int np=elPackSync();
+    np+=wirePackSync();
     if (np>0){
         updateCatalogPacks();
     }
     updateCatalogEans();
     int ne=elEanSync();
-    QMessageBox::information(nullptr,tr("Информация"),QString("Загружено: \nновых наименований номенклатуры: %1 \nновых типов упкковки: %2 \nновых штрихкодов: %3").arg(nc).arg(np).arg(ne),QMessageBox::Ok);
+    ne+=wireEanSync();
+    QMessageBox::information(nullptr,tr("Информация"),QString("Загружено: \nновых наименований номенклатуры: %1 \nновых типов упаковки: %2 \nновых штрихкодов: %3").arg(nc).arg(np).arg(ne),QMessageBox::Ok);
 }
 
 QNetworkRequest Sync1C::baseRequest(QString obj)
@@ -40,10 +42,7 @@ bool Sync1C::postSync(QString obj, QJsonObject &data)
     QJsonDocument doc;
     doc.setObject(data);
     QByteArray d= doc.toJson();
-    QByteArray len;
-    len.append(QString::number(d.length()));
     QNetworkRequest request(baseRequest(obj));
-    request.setRawHeader("Content-Length", len);
 
     QEventLoop loop;
     QNetworkAccessManager man;
@@ -109,7 +108,7 @@ bool Sync1C::containsPack(QString ownerKey, QString nam)
     return c;
 }
 
-void Sync1C::updateCatologKeys()
+int Sync1C::updateCatologKeys()
 {
     QJsonObject obj=getSync("Catalog_усНоменклатура");
     QJsonArray json=obj.value("value").toArray();
@@ -128,9 +127,10 @@ void Sync1C::updateCatologKeys()
         }
     }
     qDebug()<<"kvo noms: "<<json.size();
+    return json.size();
 }
 
-void Sync1C::updateCatalogPacks()
+int Sync1C::updateCatalogPacks()
 {
     QJsonObject obj=getSync("Catalog_усУпаковкиНоменклатуры");
     QJsonArray json=obj.value("value").toArray();
@@ -145,11 +145,12 @@ void Sync1C::updateCatalogPacks()
         }
     }
     qDebug()<<"kvo packs: "<<json.size();
+    return json.size();
 }
 
-void Sync1C::updateCatalogEans()
+int Sync1C::updateCatalogEans()
 {
-    QJsonObject obj=getSync("InformationRegister_усШтрихкоды");
+    QJsonObject obj=getSync("InformationRegister_усШтрихкоды?$filter=like(Штрихкод,'4627120______')");
     QJsonArray json=obj.value("value").toArray();
     catalogEans.clear();
     for (QJsonValue val : json){
@@ -160,6 +161,7 @@ void Sync1C::updateCatalogEans()
         }
     }
     qDebug()<<"kvo eans: "<<json.size();
+    return json.size();
 }
 
 
@@ -168,23 +170,20 @@ void Sync1C::showErrMes(QString err)
     QMessageBox::critical(nullptr,tr("Ошибка"),err,QMessageBox::Cancel);
 }
 
-int Sync1C::elCatalogSync()
+int Sync1C::catalogSync(QString queryStr, QString parentKey)
 {
     int n=0;
     bool ok=true;
     QJsonObject obj=tmpCatalog("tmp.json");
     QSqlQuery query;
-    query.prepare("select distinct ee.id_el||':'||ee.id_diam, e.marka ||' ф '|| d.sdim from ean_el ee "
-                  "inner join elrtr e on e.id = ee.id_el "
-                  "inner  join diam d on d.id = ee.id_diam "
-                  "order by e.marka ||' ф '|| d.sdim");
+    query.prepare(queryStr);
     if (query.exec()){
         while (query.next()){
             QString key=query.value(0).toString();
             if (!catalogKeys.contains(key)){
                 obj.insert("Description",query.value(1).toString());
                 obj.insert("КодКИС",key);
-                obj.insert("Parent_Key",elParentKey);
+                obj.insert("Parent_Key",parentKey);
                 ok=postSync("Catalog_усНоменклатура",obj);
                 if (ok){
                     n++;
@@ -199,7 +198,7 @@ int Sync1C::elCatalogSync()
     return n;
 }
 
-int Sync1C::elPackSync()
+int Sync1C::packSync(QString queryStr)
 {
     int n=0;
     bool ok=true;
@@ -207,10 +206,7 @@ int Sync1C::elPackSync()
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
     while (i != catalogKeys.constEnd() && ok) {
         QSqlQuery query;
-        query.prepare("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed from ean_el ee "
-                      "inner join el_pack ep on ep.id = ee.id_pack "
-                      "where ee.id_el||':'||ee.id_diam = :kis "
-                      "order by npack");
+        query.prepare(queryStr);
         query.bindValue(":kis",i.key());
         if (query.exec()){
             while (query.next() && ok){
@@ -219,6 +215,7 @@ int Sync1C::elPackSync()
                     obj.insert("Description",pack);
                     obj.insert("Owner_Key",i.value());
                     obj.insert("Коэффициент",query.value(2).toDouble());
+                    obj.insert("Масса",query.value(2).toDouble());
                     ok=postSync("Catalog_усУпаковкиНоменклатуры",obj);
                     if (ok){
                         n++;
@@ -233,7 +230,7 @@ int Sync1C::elPackSync()
     return n;
 }
 
-int Sync1C::elEanSync()
+int Sync1C::eanSync(QString queryStr)
 {
     int n=0;
     bool ok=true;
@@ -241,11 +238,7 @@ int Sync1C::elEanSync()
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
     while (i != catalogKeys.constEnd() && ok) {
         QSqlQuery query;
-        query.prepare("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, "
-                      "ee.ean_ed, ee.ean_group, ep.mass_ed, ep.mass_group from ean_el ee "
-                      "inner join el_pack ep on ep.id = ee.id_pack "
-                      "where ee.id_el||':'||ee.id_diam = :kis "
-                      "order by npack");
+        query.prepare(queryStr);
         query.bindValue(":kis",i.key());
         if (query.exec()){
             while (query.next() && ok){
@@ -287,34 +280,64 @@ int Sync1C::elEanSync()
     return n;
 }
 
+int Sync1C::elCatalogSync()
+{
+    QString query("select distinct ee.id_el||':'||ee.id_diam, e.marka ||' ф '|| d.sdim from ean_el ee "
+                  "inner join elrtr e on e.id = ee.id_el "
+                  "inner  join diam d on d.id = ee.id_diam "
+                  "order by e.marka ||' ф '|| d.sdim");
+    return catalogSync(query,elParentKey);
+}
+
+int Sync1C::elPackSync()
+{
+    QString query("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed from ean_el ee "
+                  "inner join el_pack ep on ep.id = ee.id_pack "
+                  "where ee.id_el||':'||ee.id_diam = :kis "
+                  "order by npack");
+    return packSync(query);
+}
+
+int Sync1C::elEanSync()
+{
+    QString query("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, "
+                  "ee.ean_ed, ee.ean_group, ep.mass_ed, ep.mass_group from ean_el ee "
+                  "inner join el_pack ep on ep.id = ee.id_pack "
+                  "where ee.id_el||':'||ee.id_diam = :kis "
+                  "order by npack");
+    return eanSync(query);
+}
+
 int Sync1C::wireCatalogSync()
 {
-    int n=0;
-    bool ok=true;
-    QJsonObject obj=tmpCatalog("tmp.json");
-    QSqlQuery query;
-    query.prepare("select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short as nam from wire_ean we "
+    QString query("select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short as nam from wire_ean we "
                   "inner join provol p on p.id=we.id_prov "
                   "inner  join diam d on d.id = we.id_diam "
                   "inner join wire_pack_kind wpk on wpk.id = we.id_spool "
                   "order by nam");
-    if (query.exec()){
-        while (query.next()){
-            QString key=query.value(0).toString();
-            if (!catalogKeys.contains(key)){
-                obj.insert("Description",query.value(1).toString());
-                obj.insert("КодКИС",key);
-                obj.insert("Parent_Key",wireParentKey);
-                ok=postSync("Catalog_усНоменклатура",obj);
-                if (ok){
-                    n++;
-                } else {
-                    break;
-                }
-            }
-        }
-    } else {
-        showErrMes(query.lastError().text());
-    }
-    return n;
+    return catalogSync(query,wireParentKey);
+}
+
+int Sync1C::wirePackSync()
+{
+    QString query("select distinct we.id_prov ||':'||we.id_diam||':'||we.id_spool as kis, "
+                  "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
+                  "wp.mas_ed "
+                  "from wire_ean we "
+                  "inner join wire_pack wp on wp.id = we.id_pack "
+                  "where we.id_prov ||':'||we.id_diam||':'||we.id_spool = :kis "
+                  "order by npack");
+    return packSync(query);
+}
+
+int Sync1C::wireEanSync()
+{
+    QString query("select distinct we.id_prov ||':'||we.id_diam||':'||we.id_spool as kis, "
+                  "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
+                  "we.ean_ed, we.ean_group, wp.mas_ed, wp.mas_group "
+                  "from wire_ean we "
+                  "inner join wire_pack wp on wp.id = we.id_pack "
+                  "where we.id_prov ||':'||we.id_diam||':'||we.id_spool = :kis "
+                  "order by npack");
+    return eanSync(query);
 }
