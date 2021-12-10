@@ -32,7 +32,8 @@ SOURCES += \
     db/dbtablemodel.cpp \
     db/dbviewer.cpp \
     formacceptance.cpp \
-    sync1c.cpp
+    sync1c.cpp \
+    models.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -42,7 +43,8 @@ HEADERS += \
     db/dbtablemodel.h \
     db/dbviewer.h \
     formacceptance.h \
-    sync1c.h
+    sync1c.h \
+    models.h
 
 FORMS += \
         mainwindow.ui \

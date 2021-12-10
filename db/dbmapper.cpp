@@ -10,11 +10,11 @@ DbMapper::DbMapper(QAbstractItemView *v, QWidget *parent) :
     cmdDel = new QPushButton(QString::fromUtf8("Удал."),this);
     cmdWrite->setEnabled(false);
     cmdEsc->setEnabled(false);
-    cmdNew->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
-    cmdEdt->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_FileDialogListView)));
-    cmdWrite->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
-    cmdDel->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogCancelButton)));
-    cmdEsc->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogResetButton)));
+    cmdNew->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
+    cmdEdt->setIcon(style()->standardIcon(QStyle::SP_FileDialogListView));
+    cmdWrite->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+    cmdDel->setIcon(style()->standardIcon(QStyle::SP_DialogCancelButton));
+    cmdEsc->setIcon(style()->standardIcon(QStyle::SP_DialogResetButton));
     mainLayout = new QHBoxLayout(this);
     setLayout(mainLayout);
     mainLayout->addWidget(cmdEdt);
@@ -83,6 +83,7 @@ void DbMapper::lock(bool val)
     for (int i=0; i<lock1.size(); i++) lock1[i]->setEnabled(!val);
     for (int i=0; i<lock2.size(); i++) lock2[i]->setEnabled(val);
     for (int i=0; i<lockEmpty.size(); i++) lockEmpty[i]->setEnabled(!val);
+    emit lockChanged(val);
 }
 
 void DbMapper::checkEmpty()
@@ -93,6 +94,7 @@ void DbMapper::checkEmpty()
         for (int i=0; i<lockEmpty.size(); i++) lockEmpty[i]->setEnabled(!val);
         cmdEdt->setEnabled(!val);
         cmdDel->setEnabled(!val);
+        emit lockChanged(val);
     }
 }
 
@@ -126,6 +128,12 @@ void DbMapper::setDefaultFocus(int n)
 void DbMapper::setItemDelegate(QAbstractItemDelegate *delegate)
 {
     mapper->setItemDelegate(delegate);
+}
+
+QVariant DbMapper::modelData(int row, int column)
+{
+    QAbstractItemModel *model = mapper->model();
+    return model? model->data(mapper->model()->index(row,column),Qt::EditRole) : QVariant();
 }
 
 void DbMapper::refresh()

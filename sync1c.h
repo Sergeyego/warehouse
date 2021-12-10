@@ -12,6 +12,8 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QEventLoop>
+#include <QProgressDialog>
+#include <QApplication>
 
 struct base1CSettigs
 {
@@ -34,6 +36,7 @@ public:
 
 public slots:
     void syncCatalogEl();
+    void syncCatalogWire();
 
 private:
     base1CSettigs base1C;
@@ -42,6 +45,7 @@ private:
     QHash <QString, QString> catalogKeys;
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
+    QString syncCatalog(bool syncEl=true, bool syncWire=true);
     QNetworkRequest baseRequest(QString obj);
     bool postSync(QString obj, QJsonObject &data);
     QJsonObject getSync(QString obj);

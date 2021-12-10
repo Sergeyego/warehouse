@@ -8,22 +8,72 @@ Sync1C::Sync1C(QObject *parent): QObject(parent)
 
 void Sync1C::syncCatalogEl()
 {
-    updateCatologKeys();
-    int nc=elCatalogSync();
-    nc+=wireCatalogSync();
+    QString info=syncCatalog(true,false);
+    QMessageBox::information(nullptr,tr("Информация"),info,QMessageBox::Ok);
+}
+
+void Sync1C::syncCatalogWire()
+{
+    QString info=syncCatalog(false,true);
+    QMessageBox::information(nullptr,tr("Информация"),info,QMessageBox::Ok);
+}
+
+QString Sync1C::syncCatalog(bool syncEl, bool syncWire)
+{
+    QProgressDialog d;
+    d.setWindowTitle(tr("Синхронизация данных"));
+    d.setLabelText(tr("Обновление номенклатуры"));
+    d.setCancelButton(nullptr);
+    d.setMinimum(0);
+    d.setMaximum(3);
+    d.show();
+
+    int in=updateCatologKeys();
+    int nc=0;
+    if (syncEl){
+        nc+=elCatalogSync();
+    }
+    if (syncWire){
+        nc+=wireCatalogSync();
+    }
     if (nc>0){
         updateCatologKeys();
     }
-    updateCatalogPacks();
-    int np=elPackSync();
-    np+=wirePackSync();
+    QApplication::processEvents();
+    d.setLabelText("Обновление типов упаковки");
+    d.setValue(1);
+
+    int ip=updateCatalogPacks();
+    int np=0;
+    if (syncEl){
+        np+=elPackSync();
+    }
+    if (syncWire){
+        np+=wirePackSync();
+    }
     if (np>0){
         updateCatalogPacks();
     }
-    updateCatalogEans();
-    int ne=elEanSync();
-    ne+=wireEanSync();
-    QMessageBox::information(nullptr,tr("Информация"),QString("Загружено: \nновых наименований номенклатуры: %1 \nновых типов упаковки: %2 \nновых штрихкодов: %3").arg(nc).arg(np).arg(ne),QMessageBox::Ok);
+
+    QApplication::processEvents();
+    d.setLabelText("Обновление штрихкодов");
+    d.setValue(2);
+
+    int ie=updateCatalogEans();
+    int ne=0;
+    if (syncEl){
+        ne+=elEanSync();
+    }
+    if (syncWire){
+        ne+=wireEanSync();
+    }
+
+    d.hide();
+    QString info;
+    info=QString("Всего наименований номенклатуры: %1; Загружено новых: %2; \n"
+                 "Всего типов упаковки: %3; Загружено новых %4; \n"
+                 "Всего штрихкодов: %5; Загружено новых: %6;").arg(in).arg(nc).arg(ip).arg(np).arg(ie).arg(ne);
+    return info;
 }
 
 QNetworkRequest Sync1C::baseRequest(QString obj)
@@ -126,7 +176,7 @@ int Sync1C::updateCatologKeys()
             catalogKeys.insert(key,value);
         }
     }
-    qDebug()<<"kvo noms: "<<json.size();
+    //qDebug()<<"kvo noms: "<<json.size();
     return json.size();
 }
 
@@ -144,7 +194,7 @@ int Sync1C::updateCatalogPacks()
             catalogPacks.insert(key,p);
         }
     }
-    qDebug()<<"kvo packs: "<<json.size();
+    //qDebug()<<"kvo packs: "<<json.size();
     return json.size();
 }
 
@@ -160,7 +210,7 @@ int Sync1C::updateCatalogEans()
             catalogEans.insert(key,ean);
         }
     }
-    qDebug()<<"kvo eans: "<<json.size();
+    //qDebug()<<"kvo eans: "<<json.size();
     return json.size();
 }
 
@@ -282,7 +332,8 @@ int Sync1C::eanSync(QString queryStr)
 
 int Sync1C::elCatalogSync()
 {
-    QString query("select distinct ee.id_el||':'||ee.id_diam, e.marka ||' ф '|| d.sdim from ean_el ee "
+    QString query("select distinct ee.id_el||':'||ee.id_diam, e.marka ||' ф '|| d.sdim "
+                  "from ean_el ee "
                   "inner join elrtr e on e.id = ee.id_el "
                   "inner  join diam d on d.id = ee.id_diam "
                   "order by e.marka ||' ф '|| d.sdim");
@@ -291,7 +342,8 @@ int Sync1C::elCatalogSync()
 
 int Sync1C::elPackSync()
 {
-    QString query("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed from ean_el ee "
+    QString query("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed "
+                  "from ean_el ee "
                   "inner join el_pack ep on ep.id = ee.id_pack "
                   "where ee.id_el||':'||ee.id_diam = :kis "
                   "order by npack");
@@ -301,7 +353,8 @@ int Sync1C::elPackSync()
 int Sync1C::elEanSync()
 {
     QString query("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, "
-                  "ee.ean_ed, ee.ean_group, ep.mass_ed, ep.mass_group from ean_el ee "
+                  "ee.ean_ed, ee.ean_group, ep.mass_ed, ep.mass_group "
+                  "from ean_el ee "
                   "inner join el_pack ep on ep.id = ee.id_pack "
                   "where ee.id_el||':'||ee.id_diam = :kis "
                   "order by npack");
@@ -310,7 +363,8 @@ int Sync1C::elEanSync()
 
 int Sync1C::wireCatalogSync()
 {
-    QString query("select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short as nam from wire_ean we "
+    QString query("select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short as nam "
+                  "from wire_ean we "
                   "inner join provol p on p.id=we.id_prov "
                   "inner  join diam d on d.id = we.id_diam "
                   "inner join wire_pack_kind wpk on wpk.id = we.id_spool "

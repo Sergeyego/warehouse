@@ -113,10 +113,10 @@ void DbDelegate::setEditorData ( QWidget * editor, const QModelIndex & index ) c
                 }
             }
         }
+        QVariant dat=sqlModel->data(index,Qt::EditRole);
         if (sqlModel->columnType(index.column()==QMetaType::QDate)){
             CustomDateEdit *dateEdit = qobject_cast<CustomDateEdit *>(editor);
             if (dateEdit){
-                QVariant dat=sqlModel->data(index,Qt::EditRole);
                 if (dat.isNull()){
                     dateEdit->setDate(dateEdit->minimumDate());
                 } else {
@@ -125,9 +125,27 @@ void DbDelegate::setEditorData ( QWidget * editor, const QModelIndex & index ) c
                 return;
             }
         }
-        if (sqlModel->validator(index.column())){
-            QLineEdit *line = qobject_cast<QLineEdit *>(editor);
-            if (line) line->setValidator(sqlModel->validator(index.column()));
+        QLineEdit *line = qobject_cast<QLineEdit *>(editor);
+        if (line) {
+            if (sqlModel->validator(index.column())){
+                line->setValidator(sqlModel->validator(index.column()));
+                QDoubleValidator *dval = qobject_cast<QDoubleValidator *>(sqlModel->validator(index.column()));
+                if (dval){
+                    if (dat.isNull()){
+                        line->clear();
+                    } else {
+                        line->setText(QString::number(dat.toDouble(),'f',dval->decimals()));
+                    }
+                    return;
+                }
+            }
+
+            if (dat.isNull()){
+                line->clear();
+            } else {
+                line->setText(dat.toString());
+            }
+            return;
         }
     }
     return QItemDelegate::setEditorData(editor, index);
@@ -143,12 +161,11 @@ void DbDelegate::setModelData ( QWidget * editor, QAbstractItemModel * model, co
             QComboBox *combo = qobject_cast<QComboBox *>(editor);
             if (combo) {
                 QString text=combo->currentText();
-                QVariant v;
-                int pos=combo->findText(text);
-                if (pos>=0){
-                    combo->setCurrentIndex(pos);
-                    v=combo->model()->data(combo->model()->index(combo->currentIndex(),sqlModel->relation(index.column())->columnKey()),Qt::EditRole);
-                } else if (!text.isEmpty()) {
+                if (text==model->data(index,Qt::DisplayRole).toString()){
+                    return;
+                }
+                QVariant v=sqlModel->relation(index.column())->key(combo->currentText());
+                if (v.isNull() && !text.isEmpty()){
                     QSortFilterProxyModel *fmodel = qobject_cast<QSortFilterProxyModel *>(combo->model());
                     if (fmodel){
                         DbTableModel *m = qobject_cast<DbTableModel *>(fmodel->sourceModel());
@@ -189,6 +206,11 @@ void DbDelegate::setModelData ( QWidget * editor, QAbstractItemModel * model, co
                     }
                     return;
                 }
+            }
+            QCheckBox *cb=qobject_cast<QCheckBox *>(editor);
+            if (cb && sqlModel->columnType(index.column())==QMetaType::Int){
+                sqlModel->setData(index,cb->isChecked() ? 1 : 0,Qt::EditRole);
+                return;
             }
             return QItemDelegate::setModelData(editor, model, index);
         }

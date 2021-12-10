@@ -10,6 +10,8 @@ DbTableModel::DbTableModel(QString table, QObject *parent) :
     block=false;
     pkList=QSqlDatabase::database().driver()->primaryIndex(tableName);
     defaultRecord=QSqlDatabase::database().driver()->record(tableName);
+    //qDebug()<<pkList;
+    //qDebug()<<defaultRecord;
 }
 
 Qt::ItemFlags DbTableModel::flags(const QModelIndex &index) const
@@ -113,17 +115,16 @@ QVariant DbTableModel::headerData(int section, Qt::Orientation orientation, int 
     return QAbstractTableModel::headerData(section, orientation, role);
 }
 
-bool DbTableModel::addColumn(QString name, QString display, QValidator *validator, DbRelation *relation)
+bool DbTableModel::addColumn(QString name, QString display, DbRelation *relation)
 {
     QVariant emptyval=defaultRecord.value(name);
-    if (!validator){
-        if (emptyval.type()==QMetaType::Int || emptyval.type()==QMetaType::LongLong){
-            validator = new QIntValidator(this);
-        } else if (emptyval.type()==QMetaType::Double){
-            QDoubleValidator *v = new QDoubleValidator(this);
-            v->setDecimals(1);
-            validator = v;
-        }
+    QValidator *validator(NULL);
+    if (emptyval.type()==QMetaType::Int || emptyval.type()==QMetaType::LongLong){
+        validator = new QIntValidator(this);
+    } else if (emptyval.type()==QMetaType::Double){
+        QDoubleValidator *v = new QDoubleValidator(this);
+        v->setDecimals(1);
+        validator = v;
     }
     col tmpColumn;
     tmpColumn.name=name;
@@ -164,11 +165,13 @@ bool DbTableModel::removeRow(int row, const QModelIndex& parent)
             modelData->delRow(row);
             endRemoveRows();
             ok=true;
-            emit sigUpd();
         }
     }
-    if (ok && modelData->rowCount()<1) {
-        this->insertRow(0);
+    if (ok){
+        if (modelData->rowCount()<1) {
+            this->insertRow(0);
+        }
+        emit sigUpd();
     }
     return ok;
 }
@@ -196,6 +199,11 @@ bool DbTableModel::isAdd()
 bool DbTableModel::isEdt()
 {
     return (editor->isEdt());
+}
+
+bool DbTableModel::isEmpty()
+{
+    return (rowCount()==1 && isAdd()) || (rowCount()<1);
 }
 
 bool DbTableModel::insertRow(int /*row*/, const QModelIndex& /*parent*/)
@@ -235,6 +243,14 @@ QValidator *DbTableModel::validator(int column) const
     return modelData->column(column)->validator;
 }
 
+void DbTableModel::setValidator(int column, QValidator *validator)
+{
+    if (validator){
+        validator->setLocale(QLocale::English);
+    }
+    modelData->column(column)->validator=validator;
+}
+
 void DbTableModel::setDefaultValue(int column, QVariant value)
 {
     defaultTmpRow[column]=value;
@@ -243,6 +259,25 @@ void DbTableModel::setDefaultValue(int column, QVariant value)
 void DbTableModel::setColumnFlags(int column, Qt::ItemFlags flags)
 {
     modelData->column(column)->flags=flags;
+}
+
+QVariant DbTableModel::defaultValue(int column)
+{
+    return defaultTmpRow[column];
+}
+
+bool DbTableModel::setDecimals(int column, int dec)
+{
+    bool ok=false;
+    QValidator *validator=modelData->column(column)->validator;
+    if (validator){
+        QDoubleValidator *doublevalidator = qobject_cast<QDoubleValidator*>(validator);
+        if (doublevalidator) {
+            ok=true;
+            doublevalidator->setDecimals(dec);
+        }
+    }
+    return ok;
 }
 
 bool DbTableModel::insertDb()
@@ -290,7 +325,6 @@ bool DbTableModel::insertDb()
         int r = rowCount()-1;
         emit dataChanged(this->index(r,0),this->index(r,editor->currentPos()));
         emit headerDataChanged(Qt::Vertical,r,r);
-        emit sigUpd();
     }
     return ok;
 }
@@ -342,7 +376,6 @@ bool DbTableModel::updateDb()
     } else {
         emit dataChanged(this->index(r,0),this->index(r,editor->currentPos()));
         emit headerDataChanged(Qt::Vertical,r,r);
-        emit sigUpd();
     }
     return ok;
 }
@@ -441,11 +474,13 @@ bool DbTableModel::submit()
         if (editor->isAdd()){
             if (insertDb()) {
                 editor->submit();
+                emit sigUpd();
                 //qDebug()<<"SUBMIT_ADD";
             }
         } else if (!editor->isAdd()){
             if (updateDb()){
                 editor->submit();
+                emit sigUpd();
                 //qDebug()<<"SUBMIT_EDT";
             }
         }
@@ -668,6 +703,18 @@ int DbRelation::columnKey()
 int DbRelation::columnDisplay()
 {
     return dispCol;
+}
+
+QVariant DbRelation::key(QString data)
+{
+    QVariant key;
+    for (int i=0; i<relQueryModel->rowCount(); i++){
+        if (relQueryModel->data(relQueryModel->index(i,dispCol),Qt::EditRole).toString()==data){
+            key=relQueryModel->data(relQueryModel->index(i,keyCol),Qt::EditRole);
+            break;
+        }
+    }
+    return key;
 }
 
 void DbRelation::reHash()

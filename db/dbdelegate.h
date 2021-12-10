@@ -7,6 +7,7 @@
 #include <QCompleter>
 #include <QCalendarWidget>
 #include <QLineEdit>
+#include <QCheckBox>
 
 class DbDelegate : public QItemDelegate
 {

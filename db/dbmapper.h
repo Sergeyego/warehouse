@@ -25,6 +25,7 @@ public:
     int currentIndex();
     void setDefaultFocus(int n);
     void setItemDelegate(QAbstractItemDelegate *delegate);
+    QVariant modelData(int row, int column);
     
 private:
     QVector <QWidget*> lock1;
@@ -58,6 +59,7 @@ private slots:
 
 signals:
     void currentIndexChanged(int index);
+    void lockChanged(bool l);
 };
 
 #endif // DBMAPPER_H

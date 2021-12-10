@@ -43,6 +43,7 @@ public:
     QSortFilterProxyModel *proxyModel() const;
     int columnKey();
     int columnDisplay();
+    QVariant key(QString data);
 private:
     QAbstractItemModel *relQueryModel;
     QSortFilterProxyModel *filterModel;
@@ -121,21 +122,25 @@ public:
     int columnCount(const QModelIndex &parent=QModelIndex()) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    bool addColumn(QString name, QString display, QValidator *validator=NULL, DbRelation *relation=NULL);
+    bool addColumn(QString name, QString display, DbRelation *relation=NULL);
     virtual bool removeRow(int row, const QModelIndex &parent = QModelIndex());
     void setFilter(QString s);
     void setSort(QString s);
     void setSuffix(QString s);
     bool isAdd();
     bool isEdt();
+    bool isEmpty();
     virtual bool insertRow(int row, const QModelIndex &parent=QModelIndex());
     DbRelation *relation(int column) const;
     QVariant::Type columnType(int column) const;
     QVariant nullVal(int column) const;
     int currentEdtRow();
     QValidator* validator(int column) const;
+    void setValidator(int column, QValidator *validator);
     void setDefaultValue(int column, QVariant value);
     void setColumnFlags(int column, Qt::ItemFlags flags);
+    QVariant defaultValue(int column);
+    bool setDecimals(int column, int dec);
 
 protected:
     QString tableName;
