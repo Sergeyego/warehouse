@@ -29,6 +29,7 @@ private:
 private slots:
     void updAcc();
     void updAccData(int index);
+    void sync();
 };
 
 #endif // FORMACCEPTANCE_H

@@ -3,7 +3,10 @@
 Sync1C::Sync1C(QObject *parent): QObject(parent)
 {
     base1C.url=QString("http://192.168.1.9/wms/odata/standard.odata/");
-    base1C.user=QString("Администратор");
+    base1C.user=QString("Администратор");   
+
+    updateCatologTypeKeys();
+    updatePartIstKeys();
 }
 
 void Sync1C::syncCatalogEl()
@@ -16,6 +19,13 @@ void Sync1C::syncCatalogWire()
 {
     QString info=syncCatalog(false,true);
     QMessageBox::information(nullptr,tr("Информация"),info,QMessageBox::Ok);
+}
+
+void Sync1C::syncPriemEl(int id_doc)
+{
+    syncPartEl(id_doc);
+    //QSqlQuery query;
+    //query.prepare("");
 }
 
 QString Sync1C::syncCatalog(bool syncEl, bool syncWire)
@@ -158,6 +168,34 @@ bool Sync1C::containsPack(QString ownerKey, QString nam)
     return c;
 }
 
+QHash<QString, QString> Sync1C::updateKeys(QString obj, QString key, QString val)
+{
+    QJsonObject o=getSync(obj);
+    QJsonArray json=o.value("value").toArray();
+    QHash<QString, QString> hash;
+    for (QJsonValue v : json){
+        QString hkey=v.toObject().value(key).toString();
+        QString hvalue=v.toObject().value(val).toString();
+        if (!key.isEmpty()){
+            hash.insert(hkey,hvalue);
+        }
+    }
+    //qDebug()<<obj<<" keys: "<<hash.size();
+    return hash;
+}
+
+int Sync1C::updatePartIstKeys()
+{
+    partIstKeys = updateKeys("Catalog_усИсточникиПартий","Code","Ref_Key");
+    return partIstKeys.size();
+}
+
+int Sync1C::updateCatologTypeKeys()
+{
+    catalogTypeKeys = updateKeys("Catalog_усВидыНоменклатуры","Description","Ref_Key");
+    return catalogTypeKeys.size();
+}
+
 int Sync1C::updateCatologKeys()
 {
     QJsonObject obj=getSync("Catalog_усНоменклатура");
@@ -220,7 +258,7 @@ void Sync1C::showErrMes(QString err)
     QMessageBox::critical(nullptr,tr("Ошибка"),err,QMessageBox::Cancel);
 }
 
-int Sync1C::catalogSync(QString queryStr, QString parentKey)
+int Sync1C::catalogSync(QString queryStr, QString parentKey, QString typeKey)
 {
     int n=0;
     bool ok=true;
@@ -234,6 +272,7 @@ int Sync1C::catalogSync(QString queryStr, QString parentKey)
                 obj.insert("Description",query.value(1).toString());
                 obj.insert("КодКИС",key);
                 obj.insert("Parent_Key",parentKey);
+                obj.insert("ВидНоменклатуры_Key",typeKey);
                 ok=postSync("Catalog_усНоменклатура",obj);
                 if (ok){
                     n++;
@@ -337,7 +376,7 @@ int Sync1C::elCatalogSync()
                   "inner join elrtr e on e.id = ee.id_el "
                   "inner  join diam d on d.id = ee.id_diam "
                   "order by e.marka ||' ф '|| d.sdim");
-    return catalogSync(query,elParentKey);
+    return catalogSync(query,elParentKey,catalogTypeKeys.value("Сварочные электроды"));
 }
 
 int Sync1C::elPackSync()
@@ -369,7 +408,7 @@ int Sync1C::wireCatalogSync()
                   "inner  join diam d on d.id = we.id_diam "
                   "inner join wire_pack_kind wpk on wpk.id = we.id_spool "
                   "order by nam");
-    return catalogSync(query,wireParentKey);
+    return catalogSync(query,wireParentKey,catalogTypeKeys.value("Сварочная проволока"));
 }
 
 int Sync1C::wirePackSync()
@@ -394,4 +433,44 @@ int Sync1C::wireEanSync()
                   "where we.id_prov ||':'||we.id_diam||':'||we.id_spool = :kis "
                   "order by npack");
     return eanSync(query);
+}
+
+int Sync1C::syncPartEl(int id_doc)
+{
+    int n=0;
+    bool ok=true;
+    QJsonObject obj=tmpCatalog("tmppart.json");
+    QSqlQuery query;
+    query.prepare("select ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
+                  "p.n_s, p.dat_part, i.key1c, p.prim_prod, rn.nam "
+                  "from acceptance_data ad "
+                  "inner join parti p on p.id = ad.id_part "
+                  "inner join istoch i on i.id = p.id_ist "
+                  "left join rcp_nam rn on rn.id = p.id_rcp "
+                  "where ad.id_acceptance = :id_doc "
+                  "order by p.n_s, p.dat_part");
+    query.bindValue(":id_doc",id_doc);
+    if (query.exec() && ok){
+        while (query.next()){
+            //qDebug()<<query.value(0).toString();
+
+            obj.insert("Description",query.value(2).toString());
+            obj.insert("Code",query.value(2).toString());
+            obj.insert("Owner_Key",catalogKeys.value(query.value(1).toString()));
+            //obj.insert("ДатаПартии",query.value(3).toDate());
+            //obj.insert("ДатаПроизводства",query.value(3).toDate());
+            obj.insert("Источник_Key",partIstKeys.value(query.value(4).toString()));
+
+
+            //ok=postSync("Источник_Key",partIstKeys.value(query.value(4).toString()));
+            if (ok){
+                n++;
+            } else {
+                break;
+            }
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
+    return n;
 }

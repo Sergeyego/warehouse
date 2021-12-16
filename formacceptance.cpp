@@ -30,6 +30,8 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     ui->tableViewAcCont->setModel(modelAcceeptanceData);
     ui->tableViewAcCont->setColumnHidden(0,true);
     ui->tableViewAcCont->setColumnHidden(1,true);
+    ui->tableViewAcCont->setColumnWidth(2,400);
+    ui->tableViewAcCont->setColumnWidth(3,80);
 
     mapper = new DbMapper(ui->tableViewAc,this);
     ui->horizontalLayoutMapper->insertWidget(0,mapper);
@@ -37,11 +39,11 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     mapper->addMapping(ui->dateEdit,2);
     mapper->addMapping(ui->comboBoxType,3);
 
-    updAcc();
-
-    connect(ui->pushButton1C,SIGNAL(clicked(bool)),sync1C,SLOT(syncCatalogEl()));
+    connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
+
+    updAcc();
 }
 
 FormAcceptance::~FormAcceptance()
@@ -62,4 +64,9 @@ void FormAcceptance::updAccData(int index)
     modelAcceeptanceData->setFilter("acceptance_data.id_acceptance = "+QString::number(id_acc));
     modelAcceeptanceData->setDefaultValue(1,id_acc);
     modelAcceeptanceData->select();
+}
+
+void FormAcceptance::sync()
+{
+    sync1C->syncPriemEl(mapper->modelData(mapper->currentIndex(),0).toInt());
 }

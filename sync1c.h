@@ -37,11 +37,14 @@ public:
 public slots:
     void syncCatalogEl();
     void syncCatalogWire();
+    void syncPriemEl(int id_doc);
 
 private:
     base1CSettigs base1C;
     QString elParentKey;
     QString wireParentKey;
+    QHash <QString, QString> partIstKeys;
+    QHash <QString, QString> catalogTypeKeys;
     QHash <QString, QString> catalogKeys;
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
@@ -51,10 +54,13 @@ private:
     QJsonObject getSync(QString obj);
     QJsonObject tmpCatalog(QString name);
     bool containsPack(QString ownerKey, QString nam);
+    QHash <QString, QString> updateKeys(QString obj, QString key, QString val);
+    int updatePartIstKeys();
+    int updateCatologTypeKeys();
     int updateCatologKeys();
     int updateCatalogPacks();
     int updateCatalogEans();
-    int catalogSync(QString queryStr, QString parentKey);
+    int catalogSync(QString queryStr, QString parentKey, QString typeKey);
     int packSync(QString queryStr);
     int eanSync(QString queryStr);
     int elCatalogSync();
@@ -63,6 +69,7 @@ private:
     int wireCatalogSync();
     int wirePackSync();
     int wireEanSync();
+    int syncPartEl(int id_doc);
 
 private slots:
     void showErrMes(QString err);
