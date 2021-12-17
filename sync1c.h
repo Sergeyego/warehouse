@@ -40,6 +40,10 @@ public slots:
     void syncPriemEl(int id_doc);
 
 private:
+    const QString emptyKey="00000000-0000-0000-0000-000000000000";
+    const QString namEl="Сварочные электроды";
+    const QString namWire="Сварочная проволока";
+
     base1CSettigs base1C;
     QString elParentKey;
     QString wireParentKey;
@@ -48,9 +52,11 @@ private:
     QHash <QString, QString> catalogKeys;
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
+    QMultiHash <QString, QString> catalogParts;
     QString syncCatalog(bool syncEl=true, bool syncWire=true);
     QNetworkRequest baseRequest(QString obj);
-    bool postSync(QString obj, QJsonObject &data);
+    bool patchSync(QString obj, QJsonObject &data, QJsonObject *respData = nullptr);
+    bool postSync(QString obj, QJsonObject &data, QJsonObject *respData = nullptr);
     QJsonObject getSync(QString obj);
     QJsonObject tmpCatalog(QString name);
     bool containsPack(QString ownerKey, QString nam);

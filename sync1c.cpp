@@ -23,6 +23,7 @@ void Sync1C::syncCatalogWire()
 
 void Sync1C::syncPriemEl(int id_doc)
 {
+    syncCatalog(true,false);
     syncPartEl(id_doc);
     //QSqlQuery query;
     //query.prepare("");
@@ -97,11 +98,17 @@ QNetworkRequest Sync1C::baseRequest(QString obj)
     return request;
 }
 
-bool Sync1C::postSync(QString obj, QJsonObject &data)
+bool Sync1C::patchSync(QString obj, QJsonObject &data, QJsonObject *respData)
+{
+    bool ok=false;
+    return ok;
+}
+
+bool Sync1C::postSync(QString obj, QJsonObject &data, QJsonObject *respData)
 {
     QJsonDocument doc;
     doc.setObject(data);
-    QByteArray d= doc.toJson();
+    QByteArray d = doc.toJson();
     QNetworkRequest request(baseRequest(obj));
 
     QEventLoop loop;
@@ -111,9 +118,17 @@ bool Sync1C::postSync(QString obj, QJsonObject &data)
     if (!reply->isFinished()){
         loop.exec();
     }
+
+    QJsonDocument respDoc;
+    respDoc=QJsonDocument::fromJson(reply->readAll());
+
+    if (respData){
+        *respData = respDoc.object();
+    }
+
     bool ok=(reply->error()==QNetworkReply::NoError);
     if (!ok){
-        qDebug()<<QString::fromUtf8(reply->readAll());
+        qDebug()<<QString::fromUtf8(respDoc.toJson());
         showErrMes(reply->errorString());
     }
     reply->deleteLater();
@@ -180,7 +195,7 @@ QHash<QString, QString> Sync1C::updateKeys(QString obj, QString key, QString val
             hash.insert(hkey,hvalue);
         }
     }
-    //qDebug()<<obj<<" keys: "<<hash.size();
+    qDebug()<<obj<<" keys: "<<hash.size();
     return hash;
 }
 
@@ -205,9 +220,9 @@ int Sync1C::updateCatologKeys()
         QString key=val.toObject().value("КодКИС").toString();
         QString value=val.toObject().value("Ref_Key").toString();
         QString nam=val.toObject().value("Description").toString();
-        if (nam==QString("Сварочные электроды")){
+        if (nam==namEl){
             elParentKey=value;
-        } else if (nam==QString("Сварочная проволока")){
+        } else if (nam==namWire){
             wireParentKey=value;
         }
         if (!key.isEmpty()){
@@ -450,19 +465,36 @@ int Sync1C::syncPartEl(int id_doc)
                   "where ad.id_acceptance = :id_doc "
                   "order by p.n_s, p.dat_part");
     query.bindValue(":id_doc",id_doc);
-    if (query.exec() && ok){
+    if (query.exec()){
         while (query.next()){
-            //qDebug()<<query.value(0).toString();
+            QString desc=query.value(2).toString()+"-"+QString::number(query.value(3).toDate().year());
+            QString ownerKey=catalogKeys.value(query.value(1).toString(),emptyKey);
 
-            obj.insert("Description",query.value(2).toString());
-            obj.insert("Code",query.value(2).toString());
-            obj.insert("Owner_Key",catalogKeys.value(query.value(1).toString()));
-            //obj.insert("ДатаПартии",query.value(3).toDate());
-            //obj.insert("ДатаПроизводства",query.value(3).toDate());
-            obj.insert("Источник_Key",partIstKeys.value(query.value(4).toString()));
+            QString filter=QString("?$filter=Description eq '%1' and Owner_Key eq guid'%2'").arg(desc).arg(ownerKey);
 
+            QJsonObject partObj=getSync("Catalog_усПартииНоменклатуры"+filter);
+            QJsonArray json=partObj.value("value").toArray();
+            qDebug()<<json.size();
 
-            //ok=postSync("Источник_Key",partIstKeys.value(query.value(4).toString()));
+            if (!json.size()){
+                //qDebug()<<query.value(0).toString();
+                obj.insert("КодКис","e:"+query.value(0).toString());
+                obj.insert("Description",desc);
+                obj.insert("Code",query.value(2).toString());
+                obj.insert("Owner_Key",ownerKey);
+                obj.insert("ДатаПартии",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
+                obj.insert("ДатаПроизводства",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
+                obj.insert("СрокГодности",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
+                obj.insert("Источник_Key",partIstKeys.value(query.value(4).toString()));
+                obj.insert("Комментарий",query.value(5).toString());
+                obj.insert("РецептураПлавка",query.value(6).toString());
+
+                ok=postSync("Catalog_усПартииНоменклатуры",obj);
+            } else {
+                //QJsonDocument doc;
+                //doc.setObject(partObj);
+                qDebug()<<"Партия существует! "+desc;
+            }
             if (ok){
                 n++;
             } else {
