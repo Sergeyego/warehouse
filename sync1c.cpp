@@ -25,7 +25,7 @@ void Sync1C::syncPriemEl(int id_doc)
 {
     syncCatalog(true,false);
     syncPartEl(id_doc);
-    syncOpDoc(id_doc);
+    syncOpDocEl(id_doc);
 }
 
 QString Sync1C::syncCatalog(bool syncEl, bool syncWire)
@@ -548,21 +548,13 @@ bool Sync1C::deletePriemStr(QString docKey)
     return ok;
 }
 
-int Sync1C::syncPartEl(int id_doc)
+int Sync1C::syncPart(QString queryPart)
 {
     int n=0;
     bool ok=true;
     QJsonObject obj=tmpCatalog("tmppart.json");
     QSqlQuery query;
-    query.prepare("select ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
-                  "p.n_s, p.dat_part, i.key1c, p.prim_prod, rn.nam "
-                  "from acceptance_data ad "
-                  "inner join parti p on p.id = ad.id_part "
-                  "inner join istoch i on i.id = p.id_ist "
-                  "left join rcp_nam rn on rn.id = p.id_rcp "
-                  "where ad.id_acceptance = :id_doc "
-                  "order by p.n_s, p.dat_part");
-    query.bindValue(":id_doc",id_doc);
+    query.prepare(queryPart);
     if (query.exec()){
         while (query.next()){
             QString desc=query.value(2).toString()+"-"+QString::number(query.value(3).toDate().year());
@@ -573,7 +565,7 @@ int Sync1C::syncPartEl(int id_doc)
             QJsonObject partObj=getSync("Catalog_усПартииНоменклатуры"+filter);
             QJsonArray json=partObj.value("value").toArray();
 
-            obj.insert("КодКис","e:"+query.value(0).toString());
+            obj.insert("КодКис",query.value(0).toString());
             obj.insert("Description",desc);
             obj.insert("Code",query.value(2).toString());
             obj.insert("Owner_Key",ownerKey);
@@ -603,17 +595,13 @@ int Sync1C::syncPartEl(int id_doc)
     return n;
 }
 
-int Sync1C::syncOpDoc(int id_doc)
+int Sync1C::syncOpDoc(QString queryDoc, QString queryCont)
 {
     int n=0;
     QJsonObject obj=tmpCatalog("tmpop.json");
 
     QSqlQuery query;
-    query.prepare("select a.id, a.num, a.\"date\", at2.\"1ckey\" "
-                  "from acceptance a "
-                  "inner join acceptance_type at2 on at2.id = a.id_type "
-                  "where a.id = :id ");
-    query.bindValue(":id",id_doc);
+    query.prepare(queryDoc);
     if (query.exec()){
         if (query.next()){
             QString num=QString::number(query.value(2).toDate().year())+"-"+query.value(1).toString();
@@ -634,7 +622,7 @@ int Sync1C::syncOpDoc(int id_doc)
                 bool ok= postSync("Document_усОжидаемаяПриемка",obj, &ret);
                 if (ok){
                     setPriemStatus(ret.value("Ref_Key").toString());
-                    syncOpDocDataEl(id_doc,ret.value("Ref_Key").toString());
+                    syncOpDocData(queryCont,ret.value("Ref_Key").toString());
                 }
             } else {
                 int b = QMessageBox::question(nullptr,tr("Предупреждение"),QString("Документ с номером %1 уже существует. Перезаписать документ?").arg(num),QMessageBox::Yes,QMessageBox::No);
@@ -650,12 +638,12 @@ int Sync1C::syncOpDoc(int id_doc)
                             showErrMes(tr("Можно перезаписать документ только со статусом 'Новый'"));
                         } else {
                             patchSync(QString("Document_усОжидаемаяПриемка(guid'%1')").arg(docKey),obj);
-                            syncOpDocDataEl(id_doc,docKey);
+                            syncOpDocData(queryCont,docKey);
                         }
                     } else {
                         setPriemStatus(docKey);
                         patchSync(QString("Document_усОжидаемаяПриемка(guid'%1')").arg(docKey),obj);
-                        syncOpDocDataEl(id_doc,docKey);
+                        syncOpDocData(queryCont,docKey);
                     }
 
                 }
@@ -668,20 +656,12 @@ int Sync1C::syncOpDoc(int id_doc)
     return n;
 }
 
-int Sync1C::syncOpDocDataEl(int id_doc, QString docKey)
+int Sync1C::syncOpDocData(QString queryCont, QString docKey)
 {
     int i=1;
     QJsonObject obj=tmpCatalog("tmpopst.json");
-
     QSqlQuery query;
-    query.prepare("select 'e:'||ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
-                  "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, ad.kvo "
-                  "from acceptance_data ad "
-                  "inner join parti p on p.id = ad.id_part "
-                  "inner join el_pack ep on ep.id = p.id_pack "
-                  "where ad.id_acceptance = :id_doc "
-                  "order by p.n_s, p.dat_part");
-    query.bindValue(":id_doc",id_doc);
+    query.prepare(queryCont);
     if (query.exec()){
         bool ok = deletePriemStr(docKey);
         while (query.next() && ok){
@@ -704,4 +684,33 @@ int Sync1C::syncOpDocDataEl(int id_doc, QString docKey)
         showErrMes(query.lastError().text());
     }
     return i;
+}
+
+int Sync1C::syncPartEl(int id_doc)
+{    
+    QString query= QString("select 'e:'||ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
+                           "p.n_s, p.dat_part, i.key1c, p.prim_prod, rn.nam "
+                           "from acceptance_data ad "
+                           "inner join parti p on p.id = ad.id_part "
+                           "inner join istoch i on i.id = p.id_ist "
+                           "left join rcp_nam rn on rn.id = p.id_rcp "
+                           "where ad.id_acceptance = %1 "
+                           "order by p.n_s, p.dat_part").arg(id_doc);
+    return syncPart(query);
+}
+
+int Sync1C::syncOpDocEl(int id_doc)
+{
+    QString queryDoc = QString("select a.id, a.num, a.\"date\", at2.\"1ckey\" "
+                              "from acceptance a "
+                              "inner join acceptance_type at2 on at2.id = a.id_type "
+                              "where a.id = %1 ").arg(id_doc);
+    QString queryCont = QString("select 'e:'||ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
+                                "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, ad.kvo "
+                                "from acceptance_data ad "
+                                "inner join parti p on p.id = ad.id_part "
+                                "inner join el_pack ep on ep.id = p.id_pack "
+                                "where ad.id_acceptance = %1 "
+                                "order by ad.id").arg(id_doc);
+    return syncOpDoc(queryDoc,queryCont);
 }

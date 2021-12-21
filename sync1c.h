@@ -81,9 +81,11 @@ private:
     int wireEanSync();
     bool setPriemStatus(QString docKey);
     bool deletePriemStr(QString docKey);
+    int syncPart(QString queryPart);
+    int syncOpDoc(QString queryDoc, QString queryCont);
+    int syncOpDocData(QString queryCont, QString docKey);
     int syncPartEl(int id_doc);
-    int syncOpDoc(int id_doc);
-    int syncOpDocDataEl(int id_doc, QString docKey);
+    int syncOpDocEl(int id_doc);
 
 private slots:
     void showErrMes(QString err);

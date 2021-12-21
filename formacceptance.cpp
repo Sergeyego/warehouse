@@ -16,6 +16,8 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     modelAcceeptance->addColumn("num",tr("Номер"));
     modelAcceeptance->addColumn("date",tr("Дата"));
     modelAcceeptance->addColumn("id_type",tr("Тип"),Models::instance()->relAccType);
+    modelAcceeptance->setDefaultValue(3,1);
+    modelAcceeptance->setSort("acceptance.num, acceptance.date");
     ui->tableViewAc->setModel(modelAcceeptance);
     ui->tableViewAc->setColumnHidden(0,true);
     ui->tableViewAc->setColumnWidth(1,80);
@@ -27,6 +29,7 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     modelAcceeptanceData->addColumn("id_acceptance","id_acceptance");
     modelAcceeptanceData->addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
     modelAcceeptanceData->addColumn("kvo",tr("Масса, кг"));
+    modelAcceeptanceData->setSort("acceptance_data.id");
     ui->tableViewAcCont->setModel(modelAcceeptanceData);
     ui->tableViewAcCont->setColumnHidden(0,true);
     ui->tableViewAcCont->setColumnHidden(1,true);
