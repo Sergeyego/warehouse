@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QNetworkReply>
+#include <QBuffer>
 #include <QMessageBox>
 #include <QFile>
 #include <QSqlQuery>
@@ -58,8 +59,11 @@ private:
     bool patchSync(QString obj, QJsonObject &data, QJsonObject *respData = nullptr);
     bool postSync(QString obj, QJsonObject &data, QJsonObject *respData = nullptr);
     QJsonObject getSync(QString obj);
+    bool deleteSync(QString obj);
     QJsonObject tmpCatalog(QString name);
     bool containsPack(QString ownerKey, QString nam);
+    QString packKey(QString ownerKey, QString nam);
+    QString partiKey(QString id);
     QHash <QString, QString> updateKeys(QString obj, QString key, QString val);
     int updatePartIstKeys();
     int updateCatologTypeKeys();
@@ -75,7 +79,11 @@ private:
     int wireCatalogSync();
     int wirePackSync();
     int wireEanSync();
+    bool setPriemStatus(QString docKey);
+    bool deletePriemStr(QString docKey);
     int syncPartEl(int id_doc);
+    int syncOpDoc(int id_doc);
+    int syncOpDocDataEl(int id_doc, QString docKey);
 
 private slots:
     void showErrMes(QString err);
