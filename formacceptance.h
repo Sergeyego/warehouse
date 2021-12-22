@@ -11,6 +11,24 @@ namespace Ui {
 class FormAcceptance;
 }
 
+class ModelAcceptance: public DbTableModel
+{
+    Q_OBJECT
+public:
+    ModelAcceptance(QObject *parent = 0);
+    void refresh(QDate beg, QDate end);
+    bool insertRow(int row, const QModelIndex &parent);
+};
+
+class ModelAcceptanceWire: public DbTableModel
+{
+    Q_OBJECT
+public:
+    ModelAcceptanceWire(QObject *parent = 0);
+    void refresh(QDate beg, QDate end);
+    bool insertRow(int row, const QModelIndex &parent);
+};
+
 class FormAcceptance : public QWidget
 {
     Q_OBJECT
@@ -22,14 +40,19 @@ public:
 private:
     Ui::FormAcceptance *ui;
     Sync1C *sync1C;
-    DbTableModel *modelAcceeptance;
+    ModelAcceptance *modelAcceeptance;
+    ModelAcceptanceWire *modelAcceptanceWire;
     DbTableModel *modelAcceeptanceData;
+    DbTableModel *modelAcceeptanceDataWire;
     DbMapper *mapper;
+    DbMapper *mapperWire;
 
 private slots:
     void updAcc();
     void updAccData(int index);
+    void updAccDataWire(int index);
     void sync();
+    void setCurrentWidget();
 };
 
 #endif // FORMACCEPTANCE_H

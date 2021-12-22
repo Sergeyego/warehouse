@@ -23,9 +23,17 @@ void Sync1C::syncCatalogWire()
 
 void Sync1C::syncPriemEl(int id_doc)
 {
+    checkEanEl(id_doc);
     syncCatalog(true,false);
     syncPartEl(id_doc);
     syncOpDocEl(id_doc);
+}
+
+void Sync1C::syncPriemWire(int id_doc)
+{
+    syncCatalog(false,true);
+    syncPartWire(id_doc);
+    syncOpDocWire(id_doc);
 }
 
 QString Sync1C::syncCatalog(bool syncEl, bool syncWire)
@@ -604,7 +612,7 @@ int Sync1C::syncOpDoc(QString queryDoc, QString queryCont)
     query.prepare(queryDoc);
     if (query.exec()){
         if (query.next()){
-            QString num=QString::number(query.value(2).toDate().year())+"-"+query.value(1).toString();
+            QString num=query.value(1).toString();
             QString strDat=QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss");
             obj.insert("Number",num);
             obj.insert("Date", strDat);
@@ -688,7 +696,7 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
 
 int Sync1C::syncPartEl(int id_doc)
 {    
-    QString query= QString("select 'e:'||ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
+    QString query = QString("select 'e:'||ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
                            "p.n_s, p.dat_part, i.key1c, p.prim_prod, rn.nam "
                            "from acceptance_data ad "
                            "inner join parti p on p.id = ad.id_part "
@@ -699,12 +707,26 @@ int Sync1C::syncPartEl(int id_doc)
     return syncPart(query);
 }
 
+int Sync1C::syncPartWire(int id_doc)
+{
+    QString query = QString("select 'w:'||wp.id as id_part, wpm.id_provol||':'||wpm.id_diam||':'||wp.id_pack as kis, "
+                            "wpm.n_s, wpm.dat, ws.key1c, null, pb.n_plav "
+                            "from wire_acceptance_data wad "
+                            "inner join wire_parti wp on wp.id = wad.id_part "
+                            "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                            "inner join wire_source ws on ws.id = wpm.id_source "
+                            "inner join  prov_buht pb on pb.id = wpm.id_buht "
+                            "where wad.id_acceptance = %1 "
+                            "order by wpm.n_s, wpm.dat").arg(id_doc);
+    return syncPart(query);
+}
+
 int Sync1C::syncOpDocEl(int id_doc)
 {
-    QString queryDoc = QString("select a.id, a.num, a.\"date\", at2.\"1ckey\" "
+    QString queryDoc = QString("select a.id, at2.prefix_el||date_part('year',a.\"date\")||'-'||a.num, a.\"date\", at2.\"1ckey\"  "
                               "from acceptance a "
                               "inner join acceptance_type at2 on at2.id = a.id_type "
-                              "where a.id = %1 ").arg(id_doc);
+                              "where a.id = %1").arg(id_doc);
     QString queryCont = QString("select 'e:'||ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
                                 "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, ad.kvo "
                                 "from acceptance_data ad "
@@ -713,4 +735,64 @@ int Sync1C::syncOpDocEl(int id_doc)
                                 "where ad.id_acceptance = %1 "
                                 "order by ad.id").arg(id_doc);
     return syncOpDoc(queryDoc,queryCont);
+}
+
+int Sync1C::syncOpDocWire(int id_doc)
+{
+    QString queryDoc = QString("select a.id, at2.prefix_wire||date_part('year',a.\"date\")||'-'||a.num, a.\"date\", at2.\"1ckey\"  "
+                               "from wire_acceptance a "
+                               "inner join acceptance_type at2 on at2.id = a.id_type "
+                               "where a.id = %1").arg(id_doc);
+    QString queryCont = QString("select 'w:'||ad.id_part, wpm.id_provol ||':'||wpm.id_diam||':'||p.id_pack as kis, "
+                                "wpm.n_s, wpm.dat, "
+                                "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
+                                "wp.mas_ed, ad.kvo "
+                                "from wire_acceptance_data ad "
+                                "inner join wire_parti p on p.id = ad.id_part "
+                                "inner join wire_parti_m wpm on wpm.id = p.id_m "
+                                "inner join wire_pack wp on wp.id = p.id_pack_type "
+                                "where ad.id_acceptance = %1 "
+                                "order by ad.id").arg(id_doc);
+    return syncOpDoc(queryDoc,queryCont);
+}
+
+bool Sync1C::checkEan(QString queryDoc, QString queryGen)
+{
+    QSqlQuery query;
+    query.prepare(queryDoc);
+    bool ok=query.exec();
+    if (ok){
+        while (query.next()){
+            if (query.value(1).toString().isEmpty()){
+                bool b=genEan(queryGen,query.value(0).toInt());
+                ok=ok && b;
+            }
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
+    return ok;
+}
+
+bool Sync1C::genEan(QString queryGen, int id_part)
+{
+    QSqlQuery query;
+    query.prepare(queryGen);
+    query.bindValue(":id_part",id_part);
+    bool ok=query.exec();
+    if (!ok){
+        showErrMes(query.lastError().text());
+    }
+    return ok;
+}
+
+bool Sync1C::checkEanEl(int id_doc)
+{
+    QString queryDoc = QString("select ad.id_part, ee.ean_ed from acceptance_data ad "
+                               "inner join parti p on p.id = ad.id_part "
+                               "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam = p.diam) and ee.id_pack = p.id_pack "
+                               "where ad.id_acceptance = %1").arg(id_doc);
+    QString queryGen = QString("select * from add_ean_el( :id_part )");
+
+    return checkEan(queryDoc, queryGen);
 }

@@ -39,6 +39,7 @@ public slots:
     void syncCatalogEl();
     void syncCatalogWire();
     void syncPriemEl(int id_doc);
+    void syncPriemWire(int id_doc);
 
 private:
     const QString emptyKey="00000000-0000-0000-0000-000000000000";
@@ -85,7 +86,12 @@ private:
     int syncOpDoc(QString queryDoc, QString queryCont);
     int syncOpDocData(QString queryCont, QString docKey);
     int syncPartEl(int id_doc);
+    int syncPartWire(int id_doc);
     int syncOpDocEl(int id_doc);
+    int syncOpDocWire(int id_doc);
+    bool checkEan(QString queryDoc, QString queryGen);
+    bool genEan(QString queryGen, int id_part);
+    bool checkEanEl(int id_doc);
 
 private slots:
     void showErrMes(QString err);
