@@ -53,6 +53,7 @@ private slots:
     void updAccDataWire(int index);
     void sync();
     void setCurrentWidget();
+    void setPartFilter();
 };
 
 #endif // FORMACCEPTANCE_H

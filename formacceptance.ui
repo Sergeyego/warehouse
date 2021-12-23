@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>825</width>
-    <height>586</height>
+    <width>994</width>
+    <height>576</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,6 +78,23 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Выбирать партии</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxPart"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonUpdPart">
+       <property name="text">
+        <string>Обновить список партий</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButton1C">

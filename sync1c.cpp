@@ -31,6 +31,7 @@ void Sync1C::syncPriemEl(int id_doc)
 
 void Sync1C::syncPriemWire(int id_doc)
 {
+    checkEanWire(id_doc);
     syncCatalog(false,true);
     syncPartWire(id_doc);
     syncOpDocWire(id_doc);
@@ -105,17 +106,29 @@ QNetworkRequest Sync1C::baseRequest(QString obj)
     return request;
 }
 
-bool Sync1C::patchSync(QString obj, QJsonObject &data, QJsonObject *respData)
+bool Sync1C::sendRequest(QString obj, QString req, QJsonObject *data, QJsonObject *respData)
 {
-    QJsonDocument doc;
-    doc.setObject(data);
-    QByteArray d = doc.toJson();
     QNetworkRequest request(baseRequest(obj));
-
+    QByteArray d;
+    if (data){
+        QJsonDocument doc;
+        doc.setObject(*data);
+        d = doc.toJson();
+    }
     QEventLoop loop;
     QNetworkAccessManager man;
     connect(&man,SIGNAL(finished(QNetworkReply*)),&loop,SLOT(quit()));
-    QNetworkReply *reply = man.sendCustomRequest(request, "PATCH",d);
+    QNetworkReply *reply;
+    if (req=="GET"){
+        reply=man.get(request);
+    } else if (req=="POST"){
+        reply=man.post(request,d);
+    } else if (req=="DELETE"){
+        reply=man.deleteResource(request);
+    } else {
+        reply=man.sendCustomRequest(request,req.toUtf8(),d);
+    }
+
     if (!reply->isFinished()){
         loop.exec();
     }
@@ -123,97 +136,37 @@ bool Sync1C::patchSync(QString obj, QJsonObject &data, QJsonObject *respData)
     QJsonDocument respDoc;
     respDoc=QJsonDocument::fromJson(reply->readAll());
 
-    if (respData){
-        *respData = respDoc.object();
-    }
-
     bool ok=(reply->error()==QNetworkReply::NoError);
     if (!ok){
         QString mes=respDoc.object().value("odata.error").toObject().value("message").toObject().value("value").toString();
         showErrMes(reply->errorString()+":\n"+mes);
+    } else if (respData){
+        *respData = respDoc.object();
     }
     reply->deleteLater();
     return ok;
+}
+
+bool Sync1C::patchSync(QString obj, QJsonObject &data, QJsonObject *respData)
+{
+    return sendRequest(obj,"PATCH",&data,respData);
 }
 
 bool Sync1C::postSync(QString obj, QJsonObject &data, QJsonObject *respData)
 {
-    QJsonDocument doc;
-    doc.setObject(data);
-    QByteArray d = doc.toJson();
-    QNetworkRequest request(baseRequest(obj));
-
-    QEventLoop loop;
-    QNetworkAccessManager man;
-    connect(&man,SIGNAL(finished(QNetworkReply*)),&loop,SLOT(quit()));
-    QNetworkReply *reply = man.post(request,d);
-    if (!reply->isFinished()){
-        loop.exec();
-    }
-
-    QJsonDocument respDoc;
-    respDoc=QJsonDocument::fromJson(reply->readAll());
-
-    if (respData){
-        *respData = respDoc.object();
-    }
-
-    bool ok=(reply->error()==QNetworkReply::NoError);
-    if (!ok){
-        QString mes=respDoc.object().value("odata.error").toObject().value("message").toObject().value("value").toString();
-        showErrMes(reply->errorString()+":\n"+mes);
-    }
-    reply->deleteLater();
-    return ok;
+    return sendRequest(obj,"POST",&data,respData);
 }
 
 QJsonObject Sync1C::getSync(QString obj)
 {
-    QJsonDocument doc;
-    QNetworkRequest request(baseRequest(obj));
-
-    QEventLoop loop;
-    QNetworkAccessManager man;
-    connect(&man,SIGNAL(finished(QNetworkReply*)),&loop,SLOT(quit()));
-    QNetworkReply *reply = man.get(request);
-    if (!reply->isFinished()){
-        loop.exec();
-    }
-
-    doc=QJsonDocument::fromJson(reply->readAll());
-
-    if (reply->error()!=QNetworkReply::NoError){
-        QString mes=doc.object().value("odata.error").toObject().value("message").toObject().value("value").toString();
-        showErrMes(reply->errorString()+":\n"+mes);
-        showErrMes(reply->errorString());
-    }
-
-    reply->deleteLater();
-    return doc.object();
+    QJsonObject d;
+    sendRequest(obj,"GET",nullptr,&d);
+    return d;
 }
 
 bool Sync1C::deleteSync(QString obj)
 {
-    QJsonDocument doc;
-    QNetworkRequest request(baseRequest(obj));
-
-    QEventLoop loop;
-    QNetworkAccessManager man;
-    connect(&man,SIGNAL(finished(QNetworkReply*)),&loop,SLOT(quit()));
-    QNetworkReply *reply = man.deleteResource(request);
-    if (!reply->isFinished()){
-        loop.exec();
-    }
-
-    doc=QJsonDocument::fromJson(reply->readAll());
-
-    bool ok=reply->error()==QNetworkReply::NoError;
-    if (!ok){
-        QString mes=doc.object().value("odata.error").toObject().value("message").toObject().value("value").toString();
-        showErrMes(reply->errorString()+":\n"+mes);
-    }
-    reply->deleteLater();
-    return ok;
+    return sendRequest(obj,"DELETE");
 }
 
 QJsonObject Sync1C::tmpCatalog(QString name)
@@ -793,6 +746,18 @@ bool Sync1C::checkEanEl(int id_doc)
                                "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam = p.diam) and ee.id_pack = p.id_pack "
                                "where ad.id_acceptance = %1").arg(id_doc);
     QString queryGen = QString("select * from add_ean_el( :id_part )");
+
+    return checkEan(queryDoc, queryGen);
+}
+
+bool Sync1C::checkEanWire(int id_doc)
+{
+    QString queryDoc = QString("select ad.id_part, we.ean_ed from wire_acceptance_data ad "
+                               "inner join wire_parti wp on wp.id = ad.id_part "
+                               "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                               "left join wire_ean we on we.id_prov=wpm.id_provol and we.id_diam=wpm.id_diam and we.id_spool=wp.id_pack and we.id_pack=wp.id_pack_type "
+                               "where ad.id_acceptance = %1").arg(id_doc);
+    QString queryGen = QString("select * from add_ean_wire(:id_part)");
 
     return checkEan(queryDoc, queryGen);
 }

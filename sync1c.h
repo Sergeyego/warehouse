@@ -57,6 +57,7 @@ private:
     QMultiHash <QString, QString> catalogParts;
     QString syncCatalog(bool syncEl=true, bool syncWire=true);
     QNetworkRequest baseRequest(QString obj);
+    bool sendRequest(QString obj, QString req, QJsonObject *data = nullptr, QJsonObject *respData = nullptr);
     bool patchSync(QString obj, QJsonObject &data, QJsonObject *respData = nullptr);
     bool postSync(QString obj, QJsonObject &data, QJsonObject *respData = nullptr);
     QJsonObject getSync(QString obj);
@@ -92,6 +93,7 @@ private:
     bool checkEan(QString queryDoc, QString queryGen);
     bool genEan(QString queryGen, int id_part);
     bool checkEanEl(int id_doc);
+    bool checkEanWire(int id_doc);
 
 private slots:
     void showErrMes(QString err);

@@ -9,6 +9,11 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    ui->comboBoxPart->addItem(tr("начиная с текущего года"));
+    ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
+    ui->comboBoxPart->addItem(tr("за всё время"));
+    ui->comboBoxPart->setCurrentIndex(1);
+
     sync1C = new Sync1C(this);
 
     modelAcceeptance = new ModelAcceptance(this);
@@ -67,6 +72,10 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     mapperWire->addLock(ui->pushButtonUpd);
     mapperWire->addLock(ui->radioButtonEl);
 
+    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
+    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart->model(),SLOT(refresh()));
+    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart->model(),SLOT(refresh()));
+
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
 
@@ -122,6 +131,11 @@ void FormAcceptance::setCurrentWidget()
     } else {
         ui->stackedWidget->setCurrentIndex(1);
     }
+}
+
+void FormAcceptance::setPartFilter()
+{
+    Models::instance()->setFilter(ui->comboBoxPart->currentIndex());
 }
 
 ModelAcceptance::ModelAcceptance(QObject *parent) : DbTableModel("acceptance",parent)
