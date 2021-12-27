@@ -172,12 +172,16 @@ bool Sync1C::deleteSync(QString obj)
 QJsonObject Sync1C::tmpCatalog(QString name)
 {
     QJsonObject obj;
-    QFile file(name);
-    if (file.open(QIODevice::ReadOnly)){
-        QByteArray cont=file.readAll();
-        QJsonDocument doc=QJsonDocument::fromJson(cont);
-        obj=doc.object();
-        file.close();
+    QSqlQuery query;
+    query.prepare("select tmp from warehouse_tmp where nam = :nam ");
+    query.bindValue(":nam",name);
+    if (query.exec()){
+        if (query.next()){
+            QJsonDocument doc=QJsonDocument::fromJson(query.value(0).toByteArray());
+            obj=doc.object();
+        }
+    } else {
+        showErrMes(query.lastError().text());
     }
     return obj;
 }
@@ -386,31 +390,30 @@ int Sync1C::eanSync(QString queryStr)
                 QString ean_group=query.value(3).toString();
                 QString mas_ed=query.value(4).toString();
                 QString mas_group=query.value(5).toString();
-                QList<packVal> packs=catalogPacks.values(i.value());
-                for (packVal p: packs){
-                    QString packKey=p.id;
-                    QString nomKey=i.value();
-                    obj.insert("Номенклатура_Key",nomKey);
-                    obj.insert("УпаковкаНоменклатуры_Key",packKey);
-                    if (!ean_ed.isEmpty() && !catalogEans.values(nomKey).contains(ean_ed)){
-                        obj.insert("Количество",mas_ed);
-                        obj.insert("Штрихкод",ean_ed);
-                        ok=postSync("InformationRegister_усШтрихкоды",obj);
-                        if (ok){
-                            n++;
-                        } else {
-                            break;
-                        }
+                QString nomKey=i.value();
+                QString packK = packKey(nomKey,query.value(1).toString());
+                obj.insert("Номенклатура_Key",nomKey);
+                obj.insert("УпаковкаНоменклатуры_Key",packK);
+                if (!ean_ed.isEmpty() && !catalogEans.values(nomKey).contains(ean_ed)){
+                    obj.insert("Количество",mas_ed);
+                    obj.insert("Штрихкод",ean_ed);
+                    ok=postSync("InformationRegister_усШтрихкоды",obj);
+                    if (ok){
+                        catalogEans.insert(i.value(),ean_ed);
+                        n++;
+                    } else {
+                        break;
                     }
-                    if (!ean_group.isEmpty()&& !catalogEans.values(nomKey).contains(ean_group)){
-                        obj.insert("Количество",mas_group);
-                        obj.insert("Штрихкод",ean_group);
-                        ok=postSync("InformationRegister_усШтрихкоды",obj);
-                        if (ok){
-                            n++;
-                        } else {
-                            break;
-                        }
+                }
+                if (!ean_group.isEmpty()&& !catalogEans.values(nomKey).contains(ean_group)){
+                    obj.insert("Количество",mas_group);
+                    obj.insert("Штрихкод",ean_group);
+                    ok=postSync("InformationRegister_усШтрихкоды",obj);
+                    if (ok){
+                        catalogEans.insert(i.value(),ean_group);
+                        n++;
+                    } else {
+                        break;
                     }
                 }
             }

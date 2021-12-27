@@ -7,9 +7,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QNetworkReply>
-#include <QBuffer>
 #include <QMessageBox>
-#include <QFile>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QEventLoop>
