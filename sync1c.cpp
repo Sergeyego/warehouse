@@ -3,7 +3,8 @@
 Sync1C::Sync1C(QObject *parent): QObject(parent)
 {
     base1C.url=QString("http://192.168.1.9/wms/odata/standard.odata/");
-    base1C.user=QString("Администратор");   
+    base1C.user=QString("Администратор");
+    base1C.password=QString("szsm");
 
     updateCatologTypeKeys();
     updatePartIstKeys();
@@ -97,12 +98,13 @@ QString Sync1C::syncCatalog(bool syncEl, bool syncWire)
 
 QNetworkRequest Sync1C::baseRequest(QString obj)
 {
+    QString authData = base1C.user+":"+base1C.password;
     QNetworkRequest request(QUrl(base1C.url+obj));
     request.setRawHeader("Accept","application/json");
     request.setRawHeader("Accept-Charset", "UTF-8");
     request.setRawHeader("Content-Type", "application/json");
     request.setRawHeader("User-Agent", "Appszsm");
-    request.setRawHeader("Authorization", "Basic "+base1C.user.toLocal8Bit().toBase64());
+    request.setRawHeader("Authorization", "Basic "+authData.toLocal8Bit().toBase64());
     return request;
 }
 
@@ -345,27 +347,43 @@ int Sync1C::catalogSync(QString queryStr, QString parentKey, QString typeKey)
 int Sync1C::packSync(QString queryStr)
 {
     int n=0;
-    bool ok=true;
+    struct spack
+    {
+        QString npack;
+        QVariant mass_ed;
+    };
+    spack packstr;
+    QMultiHash<QString,spack> phash;
+    QSqlQuery query;
+    query.prepare(queryStr);
+    bool ok=query.exec();
+    if (ok){
+        while (query.next()){
+            packstr.npack=query.value(1).toString();
+            packstr.mass_ed=query.value(2);
+            phash.insert(query.value(0).toString(),packstr);
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
+
     QJsonObject obj=tmpCatalog("tmppack.json");
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
     while (i != catalogKeys.constEnd() && ok) {
-        QSqlQuery query;
-        query.prepare(queryStr);
-        query.bindValue(":kis",i.key());
-        if (query.exec()){
-            while (query.next() && ok){
-                QString pack=query.value(1).toString();
-                if (!containsPack(i.value(),pack)){
-                    obj.insert("Description",pack);
-                    obj.insert("Owner_Key",i.value());
-                    obj.insert("Коэффициент",query.value(2).toDouble());
-                    obj.insert("Масса",query.value(2).toDouble());
-                    ok=postSync("Catalog_усУпаковкиНоменклатуры",obj);
-                    if (ok){
-                        n++;
-                    } else {
-                        break;
-                    }
+        QList<spack> packs = phash.values(i.key());
+        for (spack p : packs){
+            QString pack=p.npack;
+            double mas_ed=p.mass_ed.toDouble();
+            if (!containsPack(i.value(),pack)){
+                obj.insert("Description",pack);
+                obj.insert("Owner_Key",i.value());
+                obj.insert("Коэффициент",mas_ed);
+                obj.insert("Масса",mas_ed);
+                ok=postSync("Catalog_усУпаковкиНоменклатуры",obj);
+                if (ok){
+                    n++;
+                } else {
+                    break;
                 }
             }
         }
@@ -377,44 +395,65 @@ int Sync1C::packSync(QString queryStr)
 int Sync1C::eanSync(QString queryStr)
 {
     int n=0;
-    bool ok=true;
+    struct sean
+    {
+        QString npack;
+        QString ean_ed;
+        QString ean_group;
+        QVariant mass_ed;
+        QVariant mass_group;
+    };
+    sean eanstr;
+    QMultiHash<QString,sean> ehash;
+    QSqlQuery query;
+    query.prepare(queryStr);
+    bool ok=query.exec();
+    if (ok){
+        while (query.next()){
+            eanstr.npack=query.value(1).toString();
+            eanstr.ean_ed=query.value(2).toString();
+            eanstr.ean_group=query.value(3).toString();
+            eanstr.mass_ed=query.value(4);
+            eanstr.mass_group=query.value(5).toString();
+            ehash.insert(query.value(0).toString(),eanstr);
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
+
     QJsonObject obj=tmpCatalog("tmpean.json");
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
     while (i != catalogKeys.constEnd() && ok) {
-        QSqlQuery query;
-        query.prepare(queryStr);
-        query.bindValue(":kis",i.key());
-        if (query.exec()){
-            while (query.next() && ok){
-                QString ean_ed=query.value(2).toString();
-                QString ean_group=query.value(3).toString();
-                QString mas_ed=query.value(4).toString();
-                QString mas_group=query.value(5).toString();
-                QString nomKey=i.value();
-                QString packK = packKey(nomKey,query.value(1).toString());
-                obj.insert("Номенклатура_Key",nomKey);
-                obj.insert("УпаковкаНоменклатуры_Key",packK);
-                if (!ean_ed.isEmpty() && !catalogEans.values(nomKey).contains(ean_ed)){
-                    obj.insert("Количество",mas_ed);
-                    obj.insert("Штрихкод",ean_ed);
-                    ok=postSync("InformationRegister_усШтрихкоды",obj);
-                    if (ok){
-                        catalogEans.insert(i.value(),ean_ed);
-                        n++;
-                    } else {
-                        break;
-                    }
+        QList<sean> eans = ehash.values(i.key());
+        for (sean e: eans){
+            QString ean_ed=e.ean_ed;
+            QString ean_group=e.ean_group;
+            QString mas_ed=e.mass_ed.toString();
+            QString mas_group=e.mass_group.toString();
+            QString nomKey=i.value();
+            QString packK = packKey(nomKey,e.npack);
+            obj.insert("Номенклатура_Key",nomKey);
+            obj.insert("УпаковкаНоменклатуры_Key",packK);
+            if (!ean_ed.isEmpty() && !catalogEans.values(nomKey).contains(ean_ed)){
+                obj.insert("Количество",mas_ed);
+                obj.insert("Штрихкод",ean_ed);
+                ok=postSync("InformationRegister_усШтрихкоды",obj);
+                if (ok){
+                    catalogEans.insert(nomKey,ean_ed);
+                    n++;
+                } else {
+                    break;
                 }
-                if (!ean_group.isEmpty()&& !catalogEans.values(nomKey).contains(ean_group)){
-                    obj.insert("Количество",mas_group);
-                    obj.insert("Штрихкод",ean_group);
-                    ok=postSync("InformationRegister_усШтрихкоды",obj);
-                    if (ok){
-                        catalogEans.insert(i.value(),ean_group);
-                        n++;
-                    } else {
-                        break;
-                    }
+            }
+            if (!ean_group.isEmpty()&& !catalogEans.values(nomKey).contains(ean_group)){
+                obj.insert("Количество",mas_group);
+                obj.insert("Штрихкод",ean_group);
+                ok=postSync("InformationRegister_усШтрихкоды",obj);
+                if (ok){
+                    catalogEans.insert(nomKey,ean_group);
+                    n++;
+                } else {
+                    break;
                 }
             }
         }
@@ -438,7 +477,6 @@ int Sync1C::elPackSync()
     QString query("select distinct ee.id_el||':'||ee.id_diam as kis, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed "
                   "from ean_el ee "
                   "inner join el_pack ep on ep.id = ee.id_pack "
-                  "where ee.id_el||':'||ee.id_diam = :kis "
                   "order by npack");
     return packSync(query);
 }
@@ -449,7 +487,6 @@ int Sync1C::elEanSync()
                   "ee.ean_ed, ee.ean_group, ep.mass_ed, ep.mass_group "
                   "from ean_el ee "
                   "inner join el_pack ep on ep.id = ee.id_pack "
-                  "where ee.id_el||':'||ee.id_diam = :kis "
                   "order by npack");
     return eanSync(query);
 }
@@ -472,7 +509,6 @@ int Sync1C::wirePackSync()
                   "wp.mas_ed "
                   "from wire_ean we "
                   "inner join wire_pack wp on wp.id = we.id_pack "
-                  "where we.id_prov ||':'||we.id_diam||':'||we.id_spool = :kis "
                   "order by npack");
     return packSync(query);
 }
@@ -484,7 +520,6 @@ int Sync1C::wireEanSync()
                   "we.ean_ed, we.ean_group, wp.mas_ed, wp.mas_group "
                   "from wire_ean we "
                   "inner join wire_pack wp on wp.id = we.id_pack "
-                  "where we.id_prov ||':'||we.id_diam||':'||we.id_spool = :kis "
                   "order by npack");
     return eanSync(query);
 }
