@@ -2,12 +2,8 @@
 
 Sync1C::Sync1C(QObject *parent): QObject(parent)
 {
-    base1C.url=QString("http://192.168.1.9/wms/odata/standard.odata/");
-    base1C.user=QString("Администратор");
-    base1C.password=QString("szsm");
-
-    updateCatologTypeKeys();
-    updatePartIstKeys();
+    updateBaseSettings(1);
+    updateKeys();
 }
 
 void Sync1C::syncCatalogEl()
@@ -36,6 +32,47 @@ void Sync1C::syncPriemWire(int id_doc)
     syncCatalog(false,true);
     syncPartWire(id_doc);
     syncOpDocWire(id_doc);
+}
+
+void Sync1C::updateKeys()
+{
+    partIstKeys = updateKeys("Catalog_усИсточникиПартий","Code","Ref_Key");
+    catalogTypeKeys = updateKeys("Catalog_усВидыНоменклатуры","Description","Ref_Key");
+    postIstKeys = updateKeys("Catalog_усИсточникиПоступления","Description","Ref_Key");
+    counterKeys = updateKeys("Catalog_усКонтрагенты","Code","Ref_Key");
+
+    constKeys.clear();
+    constKeys.insert(namEl,getKey("Catalog_усНоменклатура",namEl,"Description"));
+    constKeys.insert(namWire,getKey("Catalog_усНоменклатура",namWire,"Description"));
+    constKeys.insert(namStages,getKey("Catalog_усСтадииПриемки",namStages,"Description"));
+    constKeys.insert(namGates,getKey("Catalog_усЯчейки",namGates,"Code"));
+    constKeys.insert(namUnit,getKey("Catalog_усЕдиницыИзмерения",namUnit,"Description"));
+    constKeys.insert(namAccounting,getKey("Catalog_усМоделиУчетаНоменклатуры",namAccounting,"Description"));
+    constKeys.insert(namStatus,getKey("Catalog_усСтатусыНоменклатуры",namStatus,"Description"));
+    constKeys.insert(namContType,getKey("Catalog_усТипыКонтейнеров",namContType,"Description"));
+    constKeys.insert(namCodOrg,getKey("Catalog_Организации",namCodOrg,"Code"));
+
+    //qDebug()<<constKeys;
+}
+
+bool Sync1C::updateBaseSettings(int id_base)
+{
+    QSqlQuery query;
+    query.prepare("select wd.url, wd.usr, wd.pass from warehouse_data as wd where wd.id = :id_base ");
+    query.bindValue(":id_base",id_base);
+    bool ok=false;
+    if (query.exec()){
+        if (query.next()){
+            base1C.url=query.value(0).toString();
+            base1C.user=query.value(1).toString();
+            base1C.password=query.value(2).toString();
+            ok=true;
+        }
+
+    } else {
+        showErrMes(query.lastError().text());
+    }
+    return ok;
 }
 
 QString Sync1C::syncCatalog(bool syncEl, bool syncWire)
@@ -216,13 +253,7 @@ QString Sync1C::packKey(QString ownerKey, QString nam)
 
 QString Sync1C::partiKey(QString id)
 {
-    QString key=emptyKey;
-    QJsonObject o = getSync(QString("Catalog_усПартииНоменклатуры?$filter=КодКис eq '%1'").arg(id));
-    QJsonArray json=o.value("value").toArray();
-    if (json.size()){
-        key= json.at(0).toObject().value("Ref_Key").toString();
-    }
-    return key;
+    return getKey("Catalog_усПартииНоменклатуры",id,"КодКис");
 }
 
 QHash<QString, QString> Sync1C::updateKeys(QString obj, QString key, QString val)
@@ -241,38 +272,22 @@ QHash<QString, QString> Sync1C::updateKeys(QString obj, QString key, QString val
     return hash;
 }
 
-int Sync1C::updatePartIstKeys()
+QString Sync1C::getKey(QString obj, QString nam, QString param)
 {
-    partIstKeys = updateKeys("Catalog_усИсточникиПартий","Code","Ref_Key");
-    return partIstKeys.size();
-}
-
-int Sync1C::updateCatologTypeKeys()
-{
-    catalogTypeKeys = updateKeys("Catalog_усВидыНоменклатуры","Description","Ref_Key");
-    return catalogTypeKeys.size();
+    QString filter=QString("?$select=Ref_Key&$filter=%1 eq '%2'").arg(param).arg(nam);
+    QString key=emptyKey;
+    QJsonObject o=getSync(obj+filter);
+    QJsonArray json=o.value("value").toArray();
+    if (json.size()){
+        key=json.at(0).toObject().value("Ref_Key").toString();
+    }
+    return key;
 }
 
 int Sync1C::updateCatologKeys()
 {
-    QJsonObject obj=getSync("Catalog_усНоменклатура");
-    QJsonArray json=obj.value("value").toArray();
-    catalogKeys.clear();
-    for (QJsonValue val : json){
-        QString key=val.toObject().value("КодКИС").toString();
-        QString value=val.toObject().value("Ref_Key").toString();
-        QString nam=val.toObject().value("Description").toString();
-        if (nam==namEl){
-            elParentKey=value;
-        } else if (nam==namWire){
-            wireParentKey=value;
-        }
-        if (!key.isEmpty()){
-            catalogKeys.insert(key,value);
-        }
-    }
-    //qDebug()<<"kvo noms: "<<json.size();
-    return json.size();
+    catalogKeys=updateKeys("Catalog_усНоменклатура","КодКИС","Ref_Key");
+    return catalogKeys.size();
 }
 
 int Sync1C::updateCatalogPacks()
@@ -330,6 +345,8 @@ int Sync1C::catalogSync(QString queryStr, QString parentKey, QString typeKey)
                 obj.insert("КодКИС",key);
                 obj.insert("Parent_Key",parentKey);
                 obj.insert("ВидНоменклатуры_Key",typeKey);
+                obj.insert("МодельУчета_Key",constKeys.value(namAccounting,emptyKey));
+                obj.insert("ЕдиницаИзмерения_Key",constKeys.value(namUnit,emptyKey));
                 ok=postSync("Catalog_усНоменклатура",obj);
                 if (ok){
                     n++;
@@ -379,6 +396,7 @@ int Sync1C::packSync(QString queryStr)
                 obj.insert("Owner_Key",i.value());
                 obj.insert("Коэффициент",mas_ed);
                 obj.insert("Масса",mas_ed);
+                obj.insert("ЕдиницаИзмерения_Key",constKeys.value(namUnit,emptyKey));
                 ok=postSync("Catalog_усУпаковкиНоменклатуры",obj);
                 if (ok){
                     n++;
@@ -469,7 +487,7 @@ int Sync1C::elCatalogSync()
                   "inner join elrtr e on e.id = ee.id_el "
                   "inner  join diam d on d.id = ee.id_diam "
                   "order by e.marka ||' ф '|| d.sdim");
-    return catalogSync(query,elParentKey,catalogTypeKeys.value("Сварочные электроды"));
+    return catalogSync(query,constKeys.value(namEl,emptyKey),catalogTypeKeys.value(namEl,emptyKey));
 }
 
 int Sync1C::elPackSync()
@@ -499,7 +517,7 @@ int Sync1C::wireCatalogSync()
                   "inner  join diam d on d.id = we.id_diam "
                   "inner join wire_pack_kind wpk on wpk.id = we.id_spool "
                   "order by nam");
-    return catalogSync(query,wireParentKey,catalogTypeKeys.value("Сварочная проволока"));
+    return catalogSync(query,constKeys.value(namWire,emptyKey),catalogTypeKeys.value(namWire,emptyKey));
 }
 
 int Sync1C::wirePackSync()
@@ -571,7 +589,7 @@ int Sync1C::syncPart(QString queryPart)
             obj.insert("ДатаПартии",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
             obj.insert("ДатаПроизводства",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
             obj.insert("СрокГодности",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
-            obj.insert("Источник_Key",partIstKeys.value(query.value(4).toString()));
+            obj.insert("Источник_Key",partIstKeys.value(query.value(4).toString(),emptyKey));
             obj.insert("Комментарий",query.value(5).toString());
             obj.insert("РецептураПлавка",query.value(6).toString());
 
@@ -609,8 +627,13 @@ int Sync1C::syncOpDoc(QString queryDoc, QString queryCont)
             obj.insert("Date", strDat);
             obj.insert("НомерКИС",num);
             obj.insert("ДатаКИС",query.value(2).toDate().toString("yyyy-MM-dd")+"T00:00:00");
-            obj.insert("ИсточникПоступления_Key",query.value(3).toString());
+            obj.insert("ИсточникПоступления_Key",postIstKeys.value(query.value(3).toString(),emptyKey));
             obj.insert("ДатаПоступления",strDat);
+            obj.insert("Поклажедатель_Key",counterKeys.value(query.value(4).toString(),emptyKey));
+            obj.insert("Контрагент_Key",counterKeys.value(query.value(5).toString(),emptyKey));
+            obj.insert("СтадииПриемки_Key",constKeys.value(namStages,emptyKey));
+            obj.insert("Организация_Key",constKeys.value(namCodOrg,emptyKey));
+            obj.insert("ВоротаПриемки_Key",constKeys.value(namGates,emptyKey));
 
             QString filter= QString("Document_усОжидаемаяПриемка?$filter=Number eq '%1'").arg(num);
             QJsonObject retEx=getSync(filter);
@@ -675,6 +698,9 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
             obj.insert("КоличествоУпаковок",kvo);
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
+            obj.insert("ТипКонтейнера_Key",constKeys.value(namContType,emptyKey));
+            obj.insert("НомерКонтейнера",contPrefix+"-"+query.value(7).toString());
+            obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
 
             postSync("Document_усСтрокаОжидаемойПриемки",obj);
             i++;
@@ -714,13 +740,16 @@ int Sync1C::syncPartWire(int id_doc)
 
 int Sync1C::syncOpDocEl(int id_doc)
 {
-    QString queryDoc = QString("select a.id, at2.prefix_el||date_part('year',a.\"date\")||'-'||a.num, a.\"date\", at2.\"1ckey\"  "
+    QString queryDoc = QString("select a.id, at2.prefix_el||date_part('year',a.dat)||'-'||a.num, a.dat, at2.nam, at2.codfromel, at2.codto  "
                               "from acceptance a "
                               "inner join acceptance_type at2 on at2.id = a.id_type "
                               "where a.id = %1").arg(id_doc);
     QString queryCont = QString("select 'e:'||ad.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
-                                "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, ad.kvo "
+                                "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, ad.kvo, "
+                                "at2.prefix_el ||date_part('year',a.dat) ||'-'||a.num ||'-'||ad.numcont as numcont "
                                 "from acceptance_data ad "
+                                "inner join acceptance a on a.id = ad.id_acceptance "
+                                "inner join acceptance_type at2 on at2.id = a.id_type "
                                 "inner join parti p on p.id = ad.id_part "
                                 "inner join el_pack ep on ep.id = p.id_pack "
                                 "where ad.id_acceptance = %1 "
@@ -730,15 +759,18 @@ int Sync1C::syncOpDocEl(int id_doc)
 
 int Sync1C::syncOpDocWire(int id_doc)
 {
-    QString queryDoc = QString("select a.id, at2.prefix_wire||date_part('year',a.\"date\")||'-'||a.num, a.\"date\", at2.\"1ckey\"  "
+    QString queryDoc = QString("select a.id, at2.prefix_wire||date_part('year',a.dat)||'-'||a.num, a.dat, at2.nam, at2.codfromwire, at2.codto  "
                                "from wire_acceptance a "
                                "inner join acceptance_type at2 on at2.id = a.id_type "
                                "where a.id = %1").arg(id_doc);
     QString queryCont = QString("select 'w:'||ad.id_part, wpm.id_provol ||':'||wpm.id_diam||':'||p.id_pack as kis, "
                                 "wpm.n_s, wpm.dat, "
                                 "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
-                                "wp.mas_ed, ad.kvo "
+                                "wp.mas_ed, ad.kvo, "
+                                "at2.prefix_wire ||date_part('year',wa.dat) ||'-'||wa.num ||'-'||ad.numcont as numcont "
                                 "from wire_acceptance_data ad "
+                                "inner join wire_acceptance wa on wa.id = ad.id_acceptance "
+                                "inner join acceptance_type at2 on at2.id = wa.id_type "
                                 "inner join wire_parti p on p.id = ad.id_part "
                                 "inner join wire_parti_m wpm on wpm.id = p.id_m "
                                 "inner join wire_pack wp on wp.id = p.id_pack_type "

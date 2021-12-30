@@ -38,21 +38,34 @@ public slots:
     void syncCatalogWire();
     void syncPriemEl(int id_doc);
     void syncPriemWire(int id_doc);
+    void updateKeys();
 
 private:
     const QString emptyKey="00000000-0000-0000-0000-000000000000";
+
     const QString namEl="Сварочные электроды";
     const QString namWire="Сварочная проволока";
+    const QString namStages="Базовая настройка";
+    const QString namGates="Ворота склада";
+    const QString namUnit="кг";
+    const QString namAccounting="Учет партий товара";
+    const QString namStatus="Кондиция";
+    const QString namContType="Европаллета";
+    const QString namCodOrg="000000001";
+
+    const QString contPrefix="EUR";
 
     base1CSettigs base1C;
-    QString elParentKey;
-    QString wireParentKey;
+    QHash <QString, QString> constKeys;
     QHash <QString, QString> partIstKeys;
     QHash <QString, QString> catalogTypeKeys;
     QHash <QString, QString> catalogKeys;
+    QHash <QString, QString> postIstKeys;
+    QHash <QString, QString> counterKeys;
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
     QMultiHash <QString, QString> catalogParts;
+    bool updateBaseSettings(int id_base);
     QString syncCatalog(bool syncEl=true, bool syncWire=true);
     QNetworkRequest baseRequest(QString obj);
     bool sendRequest(QString obj, QString req, QJsonObject *data = nullptr, QJsonObject *respData = nullptr);
@@ -65,8 +78,7 @@ private:
     QString packKey(QString ownerKey, QString nam);
     QString partiKey(QString id);
     QHash <QString, QString> updateKeys(QString obj, QString key, QString val);
-    int updatePartIstKeys();
-    int updateCatologTypeKeys();
+    QString getKey(QString obj, QString nam, QString param);
     int updateCatologKeys();
     int updateCatalogPacks();
     int updateCatalogEans();

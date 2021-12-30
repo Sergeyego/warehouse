@@ -142,15 +142,15 @@ ModelAcceptance::ModelAcceptance(QObject *parent) : DbTableModel("acceptance",pa
 {
     addColumn("id","id");
     addColumn("num",tr("Номер"));
-    addColumn("date",tr("Дата"));
+    addColumn("dat",tr("Дата"));
     addColumn("id_type",tr("Тип"),Models::instance()->relAccType);
     setDefaultValue(3,1);
-    setSort("acceptance.num, acceptance.date");
+    setSort("acceptance.num, acceptance.dat");
 }
 
 void ModelAcceptance::refresh(QDate beg, QDate end)
 {
-    QString filter="acceptance.date between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
+    QString filter="acceptance.dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
     setFilter(filter);
     select();
 }
@@ -171,15 +171,15 @@ ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_a
 {
     addColumn("id","id");
     addColumn("num",tr("Номер"));
-    addColumn("date",tr("Дата"));
+    addColumn("dat",tr("Дата"));
     addColumn("id_type",tr("Тип"),Models::instance()->relAccType);
     setDefaultValue(3,1);
-    setSort("wire_acceptance.num, wire_acceptance.date");
+    setSort("wire_acceptance.num, wire_acceptance.dat");
 }
 
 void ModelAcceptanceWire::refresh(QDate beg, QDate end)
 {
-    QString filter="wire_acceptance.date between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
+    QString filter="wire_acceptance.dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
     setFilter(filter);
     select();
 }
