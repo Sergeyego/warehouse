@@ -141,6 +141,7 @@ public:
     void setColumnFlags(int column, Qt::ItemFlags flags);
     QVariant defaultValue(int column);
     bool setDecimals(int column, int dec);
+    QString name();
 
 protected:
     QString tableName;

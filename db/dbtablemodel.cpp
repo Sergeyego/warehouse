@@ -280,6 +280,11 @@ bool DbTableModel::setDecimals(int column, int dec)
     return ok;
 }
 
+QString DbTableModel::name()
+{
+    return tableName;
+}
+
 bool DbTableModel::insertDb()
 {
     QSqlQuery query;

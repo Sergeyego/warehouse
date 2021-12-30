@@ -16,43 +16,35 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
 
     sync1C = new Sync1C(this);
 
-    modelAcceeptance = new ModelAcceptance(this);
+    modelAcceeptance = new ModelAcceptance("acceptance",this);
     ui->tableViewAc->setModel(modelAcceeptance);
     ui->tableViewAc->setColumnHidden(0,true);
     ui->tableViewAc->setColumnWidth(1,80);
     ui->tableViewAc->setColumnWidth(2,100);
     ui->tableViewAc->setColumnWidth(3,200);
 
-    modelAcceptanceWire = new ModelAcceptanceWire(this);
+    modelAcceptanceWire = new ModelAcceptance("wire_acceptance",this);
     ui->tableViewAcWire->setModel(modelAcceptanceWire);
     ui->tableViewAcWire->setColumnHidden(0,true);
     ui->tableViewAcWire->setColumnWidth(1,80);
     ui->tableViewAcWire->setColumnWidth(2,100);
     ui->tableViewAcWire->setColumnWidth(3,200);
 
-    modelAcceeptanceData = new DbTableModel("acceptance_data",this);
-    modelAcceeptanceData->addColumn("id","id");
-    modelAcceeptanceData->addColumn("id_acceptance","id_acceptance");
-    modelAcceeptanceData->addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
-    modelAcceeptanceData->addColumn("kvo",tr("Масса, кг"));
-    modelAcceeptanceData->setSort("acceptance_data.id");
+    modelAcceeptanceData = new ModelAcceptanceData("acceptance_data",Models::instance()->relElPart,this);
     ui->tableViewAcCont->setModel(modelAcceeptanceData);
     ui->tableViewAcCont->setColumnHidden(0,true);
     ui->tableViewAcCont->setColumnHidden(1,true);
     ui->tableViewAcCont->setColumnWidth(2,400);
     ui->tableViewAcCont->setColumnWidth(3,80);
+    ui->tableViewAcCont->setColumnWidth(4,100);
 
-    modelAcceeptanceDataWire = new DbTableModel("wire_acceptance_data",this);
-    modelAcceeptanceDataWire->addColumn("id","id");
-    modelAcceeptanceDataWire->addColumn("id_acceptance","id_acceptance");
-    modelAcceeptanceDataWire->addColumn("id_part",tr("Партия"),Models::instance()->relWirePart);
-    modelAcceeptanceDataWire->addColumn("kvo",tr("Масса, кг"));
-    modelAcceeptanceDataWire->setSort("wire_acceptance_data.id");
+    modelAcceeptanceDataWire = new ModelAcceptanceData("wire_acceptance_data",Models::instance()->relWirePart,this);
     ui->tableViewAcContWire->setModel(modelAcceeptanceDataWire);
     ui->tableViewAcContWire->setColumnHidden(0,true);
     ui->tableViewAcContWire->setColumnHidden(1,true);
     ui->tableViewAcContWire->setColumnWidth(2,400);
     ui->tableViewAcContWire->setColumnWidth(3,80);
+    ui->tableViewAcContWire->setColumnWidth(4,100);
 
     mapper = new DbMapper(ui->tableViewAc,this);
     ui->horizontalLayoutMapper->insertWidget(0,mapper);
@@ -102,17 +94,13 @@ void FormAcceptance::updAcc()
 void FormAcceptance::updAccData(int index)
 {
     int id_acc=mapper->modelData(index,0).toInt();
-    modelAcceeptanceData->setFilter("acceptance_data.id_acceptance = "+QString::number(id_acc));
-    modelAcceeptanceData->setDefaultValue(1,id_acc);
-    modelAcceeptanceData->select();
+    modelAcceeptanceData->refresh(id_acc);
 }
 
 void FormAcceptance::updAccDataWire(int index)
 {
     int id_acc=mapperWire->modelData(index,0).toInt();
-    modelAcceeptanceDataWire->setFilter("wire_acceptance_data.id_acceptance = "+QString::number(id_acc));
-    modelAcceeptanceDataWire->setDefaultValue(1,id_acc);
-    modelAcceeptanceDataWire->select();
+    modelAcceeptanceDataWire->refresh(id_acc);
 }
 
 void FormAcceptance::sync()
@@ -138,19 +126,19 @@ void FormAcceptance::setPartFilter()
     Models::instance()->setFilter(ui->comboBoxPart->currentIndex());
 }
 
-ModelAcceptance::ModelAcceptance(QObject *parent) : DbTableModel("acceptance",parent)
+ModelAcceptance::ModelAcceptance(QString table, QObject *parent) : DbTableModel(table,parent)
 {
     addColumn("id","id");
     addColumn("num",tr("Номер"));
     addColumn("dat",tr("Дата"));
     addColumn("id_type",tr("Тип"),Models::instance()->relAccType);
     setDefaultValue(3,1);
-    setSort("acceptance.num, acceptance.dat");
+    setSort(name()+".num, "+name()+".dat");
 }
 
 void ModelAcceptance::refresh(QDate beg, QDate end)
 {
-    QString filter="acceptance.dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
+    QString filter=name()+".dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
     setFilter(filter);
     select();
 }
@@ -158,40 +146,37 @@ void ModelAcceptance::refresh(QDate beg, QDate end)
 bool ModelAcceptance::insertRow(int row, const QModelIndex &parent)
 {
     select();
-    int old_num=0;
     if (rowCount()>0 && !isAdd()) {
-        old_num=this->data(this->index(rowCount()-1,1),Qt::EditRole).toInt();
+        int old_num=this->data(this->index(rowCount()-1,1),Qt::EditRole).toInt();
         setDefaultValue(1,QString("%1").arg((old_num+1),4,'d',0,QChar('0')));
         setDefaultValue(2,QDate::currentDate());
     }
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_acceptance",parent)
+ModelAcceptanceData::ModelAcceptanceData(QString table, DbRelation *relPart, QObject *parent) : DbTableModel(table,parent)
 {
     addColumn("id","id");
-    addColumn("num",tr("Номер"));
-    addColumn("dat",tr("Дата"));
-    addColumn("id_type",tr("Тип"),Models::instance()->relAccType);
-    setDefaultValue(3,1);
-    setSort("wire_acceptance.num, wire_acceptance.dat");
+    addColumn("id_acceptance","id_acceptance");
+    addColumn("id_part",tr("Партия"),relPart);
+    addColumn("kvo",tr("Масса, кг"));
+    addColumn("numcont",tr("№ поддона"));
+    setSort(name()+".id");
 }
 
-void ModelAcceptanceWire::refresh(QDate beg, QDate end)
+void ModelAcceptanceData::refresh(int id_acc)
 {
-    QString filter="wire_acceptance.dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
-    setFilter(filter);
+    setFilter(name()+".id_acceptance = "+QString::number(id_acc));
+    setDefaultValue(1,id_acc);
+    setDefaultValue(4,1);
     select();
 }
 
-bool ModelAcceptanceWire::insertRow(int row, const QModelIndex &parent)
+bool ModelAcceptanceData::insertRow(int row, const QModelIndex &parent)
 {
-    select();
-    int old_num=0;
     if (rowCount()>0 && !isAdd()) {
-        old_num=this->data(this->index(rowCount()-1,1),Qt::EditRole).toInt();
-        setDefaultValue(1,QString("%1").arg((old_num+1),4,'d',0,QChar('0')));
-        setDefaultValue(2,QDate::currentDate());
+        int old_num=this->data(this->index(rowCount()-1,4),Qt::EditRole).toInt();
+        setDefaultValue(4,old_num+1);
     }
     return DbTableModel::insertRow(row,parent);
 }

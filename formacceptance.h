@@ -15,17 +15,17 @@ class ModelAcceptance: public DbTableModel
 {
     Q_OBJECT
 public:
-    ModelAcceptance(QObject *parent = 0);
+    ModelAcceptance(QString table, QObject *parent = 0);
     void refresh(QDate beg, QDate end);
     bool insertRow(int row, const QModelIndex &parent);
 };
 
-class ModelAcceptanceWire: public DbTableModel
+class ModelAcceptanceData: public DbTableModel
 {
     Q_OBJECT
 public:
-    ModelAcceptanceWire(QObject *parent = 0);
-    void refresh(QDate beg, QDate end);
+    ModelAcceptanceData(QString table, DbRelation *relPart, QObject *parent = 0);
+    void refresh(int id_acc);
     bool insertRow(int row, const QModelIndex &parent);
 };
 
@@ -41,9 +41,9 @@ private:
     Ui::FormAcceptance *ui;
     Sync1C *sync1C;
     ModelAcceptance *modelAcceeptance;
-    ModelAcceptanceWire *modelAcceptanceWire;
-    DbTableModel *modelAcceeptanceData;
-    DbTableModel *modelAcceeptanceDataWire;
+    ModelAcceptance *modelAcceptanceWire;
+    ModelAcceptanceData *modelAcceeptanceData;
+    ModelAcceptanceData *modelAcceeptanceDataWire;
     DbMapper *mapper;
     DbMapper *mapperWire;
 
