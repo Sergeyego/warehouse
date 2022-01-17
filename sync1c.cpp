@@ -34,12 +34,21 @@ void Sync1C::syncPriemWire(int id_doc)
     syncOpDocWire(id_doc);
 }
 
+void Sync1C::syncShip(int id_ship)
+{
+    checkEan(id_ship);
+    syncCatalog(true,true);
+    syncPartShip(id_ship);
+    syncShipDoc(id_ship);
+}
+
 void Sync1C::updateKeys()
 {
     partIstKeys = updateKeys("Catalog_усИсточникиПартий","Code","Ref_Key");
     catalogTypeKeys = updateKeys("Catalog_усВидыНоменклатуры","Description","Ref_Key");
     postIstKeys = updateKeys("Catalog_усИсточникиПоступления","Description","Ref_Key");
     counterKeys = updateKeys("Catalog_усКонтрагенты","Code","Ref_Key");
+    shipTypeKeys = updateKeys("Catalog_усНаправлениеОтгрузки","Description","Ref_Key");
 
     constKeys.clear();
     constKeys.insert(namEl,getKey("Catalog_усНоменклатура",namEl,"Description"));
@@ -280,6 +289,112 @@ QString Sync1C::getKey(QString obj, QString nam, QString param)
     QJsonArray json=o.value("value").toArray();
     if (json.size()){
         key=json.at(0).toObject().value("Ref_Key").toString();
+    }
+    return key;
+}
+
+QString Sync1C::getCounterCategoryKey(QString nam)
+{
+    QString key=getKey("Catalog_усКонтрагенты",nam,"Description");
+    if (key==emptyKey){
+        QJsonObject obj=tmpCatalog("tmpcounter.json");
+        obj.insert("Description",nam);
+        obj.insert("IsFolder",true);
+        QJsonObject ret;
+        bool ok= postSync("Catalog_усКонтрагенты",obj, &ret);
+        if (ok){
+            key = ret.value("Ref_Key").toString();
+        }
+    }
+    return key;
+}
+
+QString Sync1C::getCounterKey(int id)
+{
+    QString key=emptyKey;
+    QSqlQuery query;
+    query.prepare("select p.short, p.naim, coalesce(p.adres_egrul, p.adres ), p.telef, p.innkpp, p.okpo, "
+                  "pk.nam, p.bank, p.city, p.bik, p.rs, p.ks from poluch p "
+                  "inner join pol_kat pk on pk.id = p.id_kat "
+                  "where p.id = :id");
+    query.bindValue(":id",id);
+    if (query.exec()){
+        if (query.next()){
+            QJsonObject obj=tmpCatalog("tmpcounter.json");
+
+            QString snam = query.value(0).toString();
+            QString nam = query.value(1).toString();
+            //QString adr = query.value(2).toString();
+            //QString telef = query.value(3).toString();
+            QString innkpp = query.value(4).toString();
+            QString okpo = query.value(5).toString();
+            QString kat = query.value(6).toString();
+            QString bank = query.value(7).toString();
+            QString city = query.value(8).toString();
+            QString bik = query.value(9).toString();
+            QString rs = query.value(10).toString();
+            QString ks = query.value(11).toString();
+
+            QString inn, kpp;
+            QStringList innkpplist = innkpp.split("/");
+            if (innkpplist.size()>1){
+                inn=innkpplist.at(0);
+                kpp=innkpplist.at(1);
+            } else if (innkpplist.size()){
+                inn=innkpplist.at(0);
+            }
+            inn=inn.simplified();
+            kpp=kpp.simplified();
+
+            QString rekv=bank;
+            if (!city.isEmpty()){
+                if (!rekv.isEmpty()){
+                    rekv+=" ";
+                }
+                rekv+=city;
+            }
+            if (!rs.isEmpty()){
+                if (!rekv.isEmpty()){
+                    rekv+=", ";
+                }
+                rekv+="p/c "+rs;
+            }
+            if (!ks.isEmpty()){
+                if (!rekv.isEmpty()){
+                    rekv+=", ";
+                }
+                rekv+="к/c "+ks;
+            }
+            if (!bik.isEmpty()){
+                if (!rekv.isEmpty()){
+                    rekv+=", ";
+                }
+                rekv+="БИК "+bik;
+            }
+
+            obj.insert("Description",snam);
+            obj.insert("НаименованиеПолное",nam);
+            obj.insert("ИНН",inn);
+            obj.insert("КПП",kpp);
+            obj.insert("ОКПО",okpo);
+            obj.insert("БанковскиеРеквизиты",rekv);
+            obj.insert("Parent_Key",getCounterCategoryKey(kat));
+
+            key = getKey("Catalog_усКонтрагенты",snam,"Description");
+
+            if (key==emptyKey){
+                QJsonObject ret;
+                bool ok= postSync("Catalog_усКонтрагенты",obj, &ret);
+                if (ok){
+                    key = ret.value("Ref_Key").toString();
+                }
+            } else {
+                patchSync(QString("Catalog_усКонтрагенты(guid'%1')").arg(key),obj);
+            }
+
+        }
+    } else {
+        showErrMes(query.lastError().text());
     }
     return key;
 }
@@ -551,15 +666,24 @@ bool Sync1C::setPriemStatus(QString docKey)
     return postSync("InformationRegister_усСтатусыОжидаемыхПриемок",status);
 }
 
-bool Sync1C::deletePriemStr(QString docKey)
+bool Sync1C::setShipStatus(QString docKey)
+{
+    QJsonObject status=tmpCatalog("tmpshipstatus.json");
+    status.insert("ЗаказНаОтгрузку_Key",docKey);
+    status.insert("ДатаВРаботу",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
+    status.insert("Статус","Новый");
+    return postSync("InformationRegister_усСтатусыЗаказовНаОтгрузку",status);
+}
+
+bool Sync1C::deleteDocStr(QString obj, QString docKey)
 {
     bool ok=true;
-    QString filter=QString("Document_усСтрокаОжидаемойПриемки?$filter=Владелец_Key eq guid'%1'").arg(docKey);
+    QString filter=QString(obj+"?$filter=Владелец_Key eq guid'%1'").arg(docKey);
     QJsonObject o=getSync(filter);
     QJsonArray json=o.value("value").toArray();
     for(QJsonValue v: json){
-        qDebug()<<"delete Document_усСтрокаОжидаемойПриемки: "<<v.toObject().value("Ref_Key").toString();
-        bool b = deleteSync(QString("Document_усСтрокаОжидаемойПриемки(guid'%1')").arg(v.toObject().value("Ref_Key").toString()));
+        qDebug()<<"delete "+obj+":"<<v.toObject().value("Ref_Key").toString();
+        bool b = deleteSync(QString(obj+"(guid'%1')").arg(v.toObject().value("Ref_Key").toString()));
         ok = ok && b;
     }
     return ok;
@@ -685,7 +809,7 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
     QSqlQuery query;
     query.prepare(queryCont);
     if (query.exec()){
-        bool ok = deletePriemStr(docKey);
+        bool ok = deleteDocStr("Document_усСтрокаОжидаемойПриемки",docKey);
         while (query.next() && ok){
             double masEd=query.value(5).toDouble();
             int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
@@ -703,6 +827,44 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
             obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
 
             postSync("Document_усСтрокаОжидаемойПриемки",obj);
+            i++;
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
+    return i;
+}
+
+int Sync1C::syncShipDocData(int id_ship, QString docKey)
+{
+    int i=1;
+    QJsonObject obj=tmpCatalog("tmpshipst.json");
+    QSqlQuery query;
+    query.prepare("select 'e:'||o.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
+                  "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, o.massa "
+                  "from otpusk o "
+                  "inner join parti p on p.id = o.id_part "
+                  "inner join el_pack ep on ep.id = p.id_pack "
+                  "where o.id_sert = :id_ship "
+                  "order by o.id");
+    query.bindValue(":id_ship",id_ship);
+    if (query.exec()){
+        bool ok = deleteDocStr("Document_усСтрокаЗаказаНаОтгрузку",docKey);
+        while (query.next() && ok){
+            double masEd=query.value(5).toDouble();
+            int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
+            QString nomKey=catalogKeys.value(query.value(1).toString(),emptyKey);
+            obj.insert("Number",QString::number(i));
+            obj.insert("Date",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
+            obj.insert("Владелец_Key",docKey);
+            obj.insert("Номенклатура_Key",nomKey);
+            obj.insert("УпаковкаНоменклатуры_Key",packKey(nomKey,query.value(4).toString()));
+            obj.insert("КоличествоУпаковок",kvo);
+            obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
+            obj.insert("Количество",query.value(6).toDouble());
+            obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
+
+            postSync("Document_усСтрокаЗаказаНаОтгрузку",obj);
             i++;
         }
     } else {
@@ -736,6 +898,31 @@ int Sync1C::syncPartWire(int id_doc)
                             "where wad.id_acceptance = %1 "
                             "order by wpm.n_s, wpm.dat").arg(id_doc);
     return syncPart(query);
+}
+
+int Sync1C::syncPartShip(int id_ship)
+{
+    int n=0;
+    QString queryEl = QString("select 'e:'||o.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
+                              "p.n_s, p.dat_part, i.key1c, p.prim_prod, rn.nam "
+                              "from otpusk o "
+                              "inner join parti p on p.id = o.id_part "
+                              "inner join istoch i on i.id = p.id_ist "
+                              "left join rcp_nam rn on rn.id = p.id_rcp "
+                              "where o.id_sert = %1 "
+                              "order by p.n_s, p.dat_part").arg(id_ship);
+    QString queryWire = QString("select 'w:'||wp.id as id_part, wpm.id_provol||':'||wpm.id_diam||':'||wp.id_pack as kis, "
+                                "wpm.n_s, wpm.dat, ws.key1c, null, pb.n_plav "
+                                "from wire_shipment_consist wsc "
+                                "inner join wire_parti wp on wp.id = wsc.id_wparti "
+                                "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                                "inner join wire_source ws on ws.id = wpm.id_source "
+                                "inner join  prov_buht pb on pb.id = wpm.id_buht "
+                                "where wsc.id_ship = %1 "
+                                "order by wpm.n_s, wpm.dat").arg(id_ship);
+    n+=syncPart(queryEl);
+    n+=syncPart(queryWire);
+    return n;
 }
 
 int Sync1C::syncOpDocEl(int id_doc)
@@ -777,6 +964,72 @@ int Sync1C::syncOpDocWire(int id_doc)
                                 "where ad.id_acceptance = %1 "
                                 "order by ad.id").arg(id_doc);
     return syncOpDoc(queryDoc,queryCont);
+}
+
+int Sync1C::syncShipDoc(int id_ship)
+{
+    int n=0;
+    QJsonObject obj=tmpCatalog("tmpship.json");
+    QSqlQuery query;
+    query.prepare("select s.nom_s, st.prefix||date_part('year',s.dat_vid)||'-'|| s.nom_s, s.dat_vid, s.id_pol, st.nam from sertifikat s "
+                  "inner join sert_type st on st.id = s.id_type "
+                  "where s.id = :id_ship");
+    query.bindValue(":id_ship",id_ship);
+    if (query.exec()){
+        if (query.next()){
+            QString num=query.value(1).toString();
+            QString strDat=QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss");
+            obj.insert("Number",query.value(0).toString());
+            obj.insert("Date", strDat);
+            obj.insert("НомерКИС",num);
+            obj.insert("ДатаКИС",query.value(2).toDate().toString("yyyy-MM-dd")+"T00:00:00");
+            obj.insert("ДатаОтгрузки",strDat);
+            obj.insert("Организация_Key",constKeys.value(namCodOrg,emptyKey));
+            obj.insert("НаправлениеОтгрузки_Key",shipTypeKeys.value(query.value(4).toString(),emptyKey));
+            obj.insert("СтадииОтгрузки_Key",getKey("Catalog_усСтадииОтгрузки",namStages,"Description"));
+            obj.insert("Контрагент_Key",getCounterKey(query.value(3).toInt()));
+
+            QString filter= QString("Document_усЗаказНаОтгрузку?$filter=НомерКИС eq '%1'").arg(num);
+            QJsonObject retEx=getSync(filter);
+            QJsonArray json=retEx.value("value").toArray();
+
+            if (!json.size()){
+                QJsonObject ret;
+                bool ok= postSync("Document_усЗаказНаОтгрузку",obj, &ret);
+                if (ok){
+                    setShipStatus(ret.value("Ref_Key").toString());
+                    syncShipDocData(id_ship,ret.value("Ref_Key").toString());
+                }
+            } else {
+                int b = QMessageBox::question(nullptr,tr("Предупреждение"),QString("Документ с номером %1 уже существует. Перезаписать документ?").arg(num),QMessageBox::Yes,QMessageBox::No);
+                if (b==QMessageBox::Yes){
+                    QJsonObject o = json.at(0).toObject();
+                    QString docKey=o.value("Ref_Key").toString();
+
+                    QString stFilter = QString("InformationRegister_усСтатусыЗаказовНаОтгрузку?$filter=ЗаказНаОтгрузку_Key eq guid'%1'").arg(docKey);
+                    QJsonObject st= getSync(stFilter);
+                    QJsonArray stAr=st.value("value").toArray();
+                    if (stAr.size()){
+                        if (stAr.at(0).toObject().value("Статус").toString()!=QString("Новый")){
+                            showErrMes(tr("Можно перезаписать документ только со статусом 'Новый'"));
+                        } else {
+                            patchSync(QString("Document_усЗаказНаОтгрузку(guid'%1')").arg(docKey),obj);
+                            syncShipDocData(id_ship,docKey);
+                        }
+                    } else {
+                        setShipStatus(docKey);
+                        patchSync(QString("Document_усЗаказНаОтгрузку(guid'%1')").arg(docKey),obj);
+                        syncShipDocData(id_ship,docKey);
+                    }
+
+                }
+            }
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
+
+    return n;
 }
 
 bool Sync1C::checkEan(QString queryDoc, QString queryGen)
@@ -830,4 +1083,22 @@ bool Sync1C::checkEanWire(int id_doc)
     QString queryGen = QString("select * from add_ean_wire(:id_part)");
 
     return checkEan(queryDoc, queryGen);
+}
+
+bool Sync1C::checkEan(int id_ship)
+{
+    QString queryDocEl = QString("select o.id_part, ee.ean_ed from otpusk o "
+                                 "inner join parti p on p.id = o.id_part "
+                                 "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam = p.diam) and ee.id_pack = p.id_pack "
+                                 "where o.id_sert = %1").arg(id_ship);
+    QString queryGenEl = QString("select * from add_ean_el( :id_part )");
+    QString queryDocWire = QString("select wsc.id_wparti, we.ean_ed from wire_shipment_consist wsc "
+                                   "inner join wire_parti wp on wp.id = wsc.id_wparti "
+                                   "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                                   "left join wire_ean we on we.id_prov=wpm.id_provol and we.id_diam=wpm.id_diam and we.id_spool=wp.id_pack and we.id_pack=wp.id_pack_type "
+                                   "where wsc.id_ship = %1").arg(id_ship);
+    QString queryGenWire = QString("select * from add_ean_wire(:id_part)");
+    bool okEl = checkEan(queryDocEl,queryGenEl);
+    bool okWire = checkEan(queryDocWire,queryGenWire);
+    return okEl && okWire;
 }

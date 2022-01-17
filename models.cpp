@@ -5,6 +5,8 @@ Models* Models::models_instance=0;
 Models::Models(QObject *parent) :
     QObject(parent)
 {
+    sync1C = new Sync1C(this);
+
     relWirePart = new DbRelation(new DbRelationalModel("select p.id, m.n_s ||' '||date_part('year',m.dat) ||' '||pr.nam ||' '|| d.sdim || ' '|| k.short || "
                                                        "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || '"+tr(" кг)")+"') ELSE ' ' END as part, date_part('year',m.dat) "
                                                        "from wire_parti as p "

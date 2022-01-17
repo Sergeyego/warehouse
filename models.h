@@ -6,12 +6,14 @@
 #include <QMessageBox>
 #include <QtSql>
 #include "db/dbtablemodel.h"
+#include "sync1c.h"
 
 class Models : public QObject
 {
     Q_OBJECT
 public:
     static Models *instance();
+    Sync1C *sync1C;
     DbRelation *relWirePart;
     DbRelation *relElPart;
     DbRelation *relEl;

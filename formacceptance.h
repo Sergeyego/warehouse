@@ -2,7 +2,6 @@
 #define FORMACCEPTANCE_H
 
 #include <QWidget>
-#include "sync1c.h"
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
 #include "models.h"
@@ -39,7 +38,6 @@ public:
 
 private:
     Ui::FormAcceptance *ui;
-    Sync1C *sync1C;
     ModelAcceptance *modelAcceeptance;
     ModelAcceptance *modelAcceptanceWire;
     ModelAcceptanceData *modelAcceeptanceData;

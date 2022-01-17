@@ -14,8 +14,6 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     ui->comboBoxPart->addItem(tr("за всё время"));
     ui->comboBoxPart->setCurrentIndex(1);
 
-    sync1C = new Sync1C(this);
-
     modelAcceeptance = new ModelAcceptance("acceptance",this);
     ui->tableViewAc->setModel(modelAcceeptance);
     ui->tableViewAc->setColumnHidden(0,true);
@@ -106,9 +104,9 @@ void FormAcceptance::updAccDataWire(int index)
 void FormAcceptance::sync()
 {
     if (ui->radioButtonEl->isChecked()){
-        sync1C->syncPriemEl(mapper->modelData(mapper->currentIndex(),0).toInt());
+        Models::instance()->sync1C->syncPriemEl(mapper->modelData(mapper->currentIndex(),0).toInt());
     } else {
-        sync1C->syncPriemWire(mapperWire->modelData(mapperWire->currentIndex(),0).toInt());
+        Models::instance()->sync1C->syncPriemWire(mapperWire->modelData(mapperWire->currentIndex(),0).toInt());
     }
 }
 

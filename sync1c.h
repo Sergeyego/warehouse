@@ -38,6 +38,7 @@ public slots:
     void syncCatalogWire();
     void syncPriemEl(int id_doc);
     void syncPriemWire(int id_doc);
+    void syncShip(int id_ship);
     void updateKeys();
 
 private:
@@ -62,6 +63,7 @@ private:
     QHash <QString, QString> catalogKeys;
     QHash <QString, QString> postIstKeys;
     QHash <QString, QString> counterKeys;
+    QHash <QString, QString> shipTypeKeys;
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
     QMultiHash <QString, QString> catalogParts;
@@ -79,6 +81,8 @@ private:
     QString partiKey(QString id);
     QHash <QString, QString> updateKeys(QString obj, QString key, QString val);
     QString getKey(QString obj, QString nam, QString param);
+    QString getCounterCategoryKey(QString nam);
+    QString getCounterKey(int id);
     int updateCatologKeys();
     int updateCatalogPacks();
     int updateCatalogEans();
@@ -92,18 +96,23 @@ private:
     int wirePackSync();
     int wireEanSync();
     bool setPriemStatus(QString docKey);
-    bool deletePriemStr(QString docKey);
+    bool setShipStatus(QString docKey);
+    bool deleteDocStr(QString obj, QString docKey);
     int syncPart(QString queryPart);
     int syncOpDoc(QString queryDoc, QString queryCont);
     int syncOpDocData(QString queryCont, QString docKey);
+    int syncShipDocData(int id_ship, QString docKey);
     int syncPartEl(int id_doc);
     int syncPartWire(int id_doc);
+    int syncPartShip(int id_ship);
     int syncOpDocEl(int id_doc);
     int syncOpDocWire(int id_doc);
+    int syncShipDoc(int id_ship);
     bool checkEan(QString queryDoc, QString queryGen);
     bool genEan(QString queryGen, int id_part);
     bool checkEanEl(int id_doc);
     bool checkEanWire(int id_doc);
+    bool checkEan(int id_ship);
 
 private slots:
     void showErrMes(QString err);

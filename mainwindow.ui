@@ -45,11 +45,23 @@
     </property>
     <addaction name="actionAcceptance"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Отгрузить со склада</string>
+    </property>
+    <addaction name="actionShip"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <action name="actionAcceptance">
    <property name="text">
-    <string>Предварительная приемка</string>
+    <string>Отправление на склад</string>
+   </property>
+  </action>
+  <action name="actionShip">
+   <property name="text">
+    <string>Отгрузка со склада</string>
    </property>
   </action>
  </widget>
