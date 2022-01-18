@@ -37,6 +37,14 @@ DbMapper::DbMapper(QAbstractItemView *v, QWidget *parent) :
 
     DbTableModel *sqlModel = qobject_cast<DbTableModel *>(mapper->model());
     if (sqlModel){
+        for (int j=0; j<sqlModel->columnCount(); j++){
+            if (sqlModel->relation(j)){
+                DbRelationalModel *rmodel = qobject_cast<DbRelationalModel *>(sqlModel->relation(j)->model());
+                if (rmodel){
+                    connect(rmodel,SIGNAL(sigRefresh()),this,SLOT(slotEsc()));
+                }
+            }
+        }
         connect(sqlModel,SIGNAL(sigRefresh()),this,SLOT(last()));
         connect(sqlModel,SIGNAL(sigRefresh()),this,SLOT(checkEmpty()));
     }

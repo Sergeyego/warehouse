@@ -79,6 +79,7 @@ private:
     bool containsPack(QString ownerKey, QString nam);
     QString packKey(QString ownerKey, QString nam);
     QString partiKey(QString id);
+    QString partiKey(QString ownerKey, QString nam);
     QHash <QString, QString> updateKeys(QString obj, QString key, QString val);
     QString getKey(QString obj, QString nam, QString param);
     QString getCounterCategoryKey(QString nam);
@@ -99,6 +100,7 @@ private:
     bool setShipStatus(QString docKey);
     bool deleteDocStr(QString obj, QString docKey);
     int syncPart(QString queryPart);
+    bool postDoc(QString obj, QString docKey);
     int syncOpDoc(QString queryDoc, QString queryCont);
     int syncOpDocData(QString queryCont, QString docKey);
     int syncShipDocData(int id_ship, QString docKey);

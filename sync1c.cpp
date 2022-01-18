@@ -265,6 +265,19 @@ QString Sync1C::partiKey(QString id)
     return getKey("Catalog_усПартииНоменклатуры",id,"КодКис");
 }
 
+QString Sync1C::partiKey(QString ownerKey, QString nam)
+{
+    QString key = emptyKey;
+    QString filter=QString("?$select=Ref_Key&$filter=Description eq '%1' and Owner_Key eq guid'%2'").arg(nam).arg(ownerKey);
+    QJsonObject partObj=getSync("Catalog_усПартииНоменклатуры"+filter);
+    QJsonArray json=partObj.value("value").toArray();
+    if (json.size()){
+        QJsonObject o = json.at(0).toObject();
+        key = o.value("Ref_Key").toString();
+    }
+    return key;
+}
+
 QHash<QString, QString> Sync1C::updateKeys(QString obj, QString key, QString val)
 {
     QJsonObject o=getSync(obj);
@@ -678,12 +691,12 @@ bool Sync1C::setShipStatus(QString docKey)
 bool Sync1C::deleteDocStr(QString obj, QString docKey)
 {
     bool ok=true;
-    QString filter=QString(obj+"?$filter=Владелец_Key eq guid'%1'").arg(docKey);
+    QString filter=obj+QString("?$filter=Владелец_Key eq guid'%1'").arg(docKey);
     QJsonObject o=getSync(filter);
     QJsonArray json=o.value("value").toArray();
     for(QJsonValue v: json){
         qDebug()<<"delete "+obj+":"<<v.toObject().value("Ref_Key").toString();
-        bool b = deleteSync(QString(obj+"(guid'%1')").arg(v.toObject().value("Ref_Key").toString()));
+        bool b = deleteSync(obj+QString("(guid'%1')").arg(v.toObject().value("Ref_Key").toString()));
         ok = ok && b;
     }
     return ok;
@@ -697,14 +710,19 @@ int Sync1C::syncPart(QString queryPart)
     QSqlQuery query;
     query.prepare(queryPart);
     if (query.exec()){
+        QProgressDialog d;
+        d.setWindowTitle(tr("Синхронизация данных"));
+        d.setLabelText(tr("Обновление партий"));
+        d.setCancelButton(nullptr);
+        d.setMinimum(0);
+        d.setMaximum(query.size());
+        d.show();
         while (query.next()){
             QString desc=query.value(2).toString()+"-"+QString::number(query.value(3).toDate().year());
             QString ownerKey=catalogKeys.value(query.value(1).toString(),emptyKey);
 
-            QString filter=QString("?$filter=Description eq '%1' and Owner_Key eq guid'%2'").arg(desc).arg(ownerKey);
-
-            QJsonObject partObj=getSync("Catalog_усПартииНоменклатуры"+filter);
-            QJsonArray json=partObj.value("value").toArray();
+            QString key = partiKey(ownerKey,desc);
+            //qDebug()<<key;
 
             obj.insert("КодКис",query.value(0).toString());
             obj.insert("Description",desc);
@@ -717,18 +735,19 @@ int Sync1C::syncPart(QString queryPart)
             obj.insert("Комментарий",query.value(5).toString());
             obj.insert("РецептураПлавка",query.value(6).toString());
 
-            if (!json.size()){
+            if (key==emptyKey){
                 ok=postSync("Catalog_усПартииНоменклатуры",obj);
             } else {
-                QJsonObject o = json.at(0).toObject();
-                ok=patchSync(QString("Catalog_усПартииНоменклатуры(guid'%1')").arg(o.value("Ref_Key").toString()),obj);
-                qDebug()<<"Партия существует! "+desc;
+                ok=patchSync(QString("Catalog_усПартииНоменклатуры(guid'%1')").arg(key),obj);
             }
             if (ok){
                 n++;
             } else {
                 break;
             }
+            QApplication::processEvents();
+            d.setValue(n);
+            d.setLabelText("Обновление партии: "+desc);
         }
     } else {
         showErrMes(query.lastError().text());
@@ -736,10 +755,17 @@ int Sync1C::syncPart(QString queryPart)
     return n;
 }
 
+bool Sync1C::postDoc(QString obj, QString docKey)
+{
+    QJsonObject d;
+    return postSync(obj+QString("(guid'%1')/Post?PostingModeOperational=false").arg(docKey),d);
+}
+
 int Sync1C::syncOpDoc(QString queryDoc, QString queryCont)
 {
     int n=0;
     QJsonObject obj=tmpCatalog("tmpop.json");
+    const QString objname = "Document_усОжидаемаяПриемка";
 
     QSqlQuery query;
     query.prepare(queryDoc);
@@ -759,22 +785,25 @@ int Sync1C::syncOpDoc(QString queryDoc, QString queryCont)
             obj.insert("Организация_Key",constKeys.value(namCodOrg,emptyKey));
             obj.insert("ВоротаПриемки_Key",constKeys.value(namGates,emptyKey));
 
-            QString filter= QString("Document_усОжидаемаяПриемка?$filter=Number eq '%1'").arg(num);
+            QString filter = objname+QString("?$filter=Number eq '%1'").arg(num);
             QJsonObject retEx=getSync(filter);
             QJsonArray json=retEx.value("value").toArray();
+            QString docKey;
 
             if (!json.size()){
                 QJsonObject ret;
-                bool ok= postSync("Document_усОжидаемаяПриемка",obj, &ret);
+                bool ok= postSync(objname,obj, &ret);
                 if (ok){
-                    setPriemStatus(ret.value("Ref_Key").toString());
-                    syncOpDocData(queryCont,ret.value("Ref_Key").toString());
+                    docKey=ret.value("Ref_Key").toString();
+                    setPriemStatus(docKey);
+                    syncOpDocData(queryCont,docKey);
+                    postDoc(objname,docKey);
                 }
             } else {
                 int b = QMessageBox::question(nullptr,tr("Предупреждение"),QString("Документ с номером %1 уже существует. Перезаписать документ?").arg(num),QMessageBox::Yes,QMessageBox::No);
                 if (b==QMessageBox::Yes){
                     QJsonObject o = json.at(0).toObject();
-                    QString docKey=o.value("Ref_Key").toString();
+                    docKey=o.value("Ref_Key").toString();
 
                     QString stFilter = QString("InformationRegister_усСтатусыОжидаемыхПриемок?$filter=ОжидаемаяПриемка_Key eq guid'%1'").arg(docKey);
                     QJsonObject st= getSync(stFilter);
@@ -783,13 +812,15 @@ int Sync1C::syncOpDoc(QString queryDoc, QString queryCont)
                         if (stAr.at(0).toObject().value("Статус").toString()!=QString("Новая")){
                             showErrMes(tr("Можно перезаписать документ только со статусом 'Новый'"));
                         } else {
-                            patchSync(QString("Document_усОжидаемаяПриемка(guid'%1')").arg(docKey),obj);
+                            patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                             syncOpDocData(queryCont,docKey);
+                            postDoc(objname,docKey);
                         }
                     } else {
                         setPriemStatus(docKey);
-                        patchSync(QString("Document_усОжидаемаяПриемка(guid'%1')").arg(docKey),obj);
+                        patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                         syncOpDocData(queryCont,docKey);
+                        postDoc(objname,docKey);
                     }
 
                 }
@@ -840,13 +871,24 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
     int i=1;
     QJsonObject obj=tmpCatalog("tmpshipst.json");
     QSqlQuery query;
-    query.prepare("select 'e:'||o.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
-                  "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, o.massa "
+    query.prepare("(select 'e:'||o.id_part as idp, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
+                  "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed, o.massa, 'e:'||o.id as idship "
                   "from otpusk o "
                   "inner join parti p on p.id = o.id_part "
                   "inner join el_pack ep on ep.id = p.id_pack "
                   "where o.id_sert = :id_ship "
-                  "order by o.id");
+                  ") "
+                  "union "
+                  "(select 'w:'||wsc.id_wparti, wpm.id_provol ||':'||wpm.id_diam||':'||p.id_pack, "
+                  "wpm.n_s, wpm.dat, "
+                  "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
+                  "wp.mas_ed, wsc.m_netto, 'w:'||wsc.id "
+                  "from wire_shipment_consist wsc "
+                  "inner join wire_parti p on p.id = wsc.id_wparti "
+                  "inner join wire_parti_m wpm on wpm.id = p.id_m "
+                  "inner join wire_pack wp on wp.id = p.id_pack_type "
+                  "where wsc.id_ship = :id_ship "
+                  ") order by idship");
     query.bindValue(":id_ship",id_ship);
     if (query.exec()){
         bool ok = deleteDocStr("Document_усСтрокаЗаказаНаОтгрузку",docKey);
@@ -969,6 +1011,7 @@ int Sync1C::syncOpDocWire(int id_doc)
 int Sync1C::syncShipDoc(int id_ship)
 {
     int n=0;
+    const QString objname = "Document_усЗаказНаОтгрузку";
     QJsonObject obj=tmpCatalog("tmpship.json");
     QSqlQuery query;
     query.prepare("select s.nom_s, st.prefix||date_part('year',s.dat_vid)||'-'|| s.nom_s, s.dat_vid, s.id_pol, st.nam from sertifikat s "
@@ -989,22 +1032,26 @@ int Sync1C::syncShipDoc(int id_ship)
             obj.insert("СтадииОтгрузки_Key",getKey("Catalog_усСтадииОтгрузки",namStages,"Description"));
             obj.insert("Контрагент_Key",getCounterKey(query.value(3).toInt()));
 
-            QString filter= QString("Document_усЗаказНаОтгрузку?$filter=НомерКИС eq '%1'").arg(num);
+            QString filter = objname+QString("?$filter=НомерКИС eq '%1'").arg(num);
             QJsonObject retEx=getSync(filter);
             QJsonArray json=retEx.value("value").toArray();
+            QString docKey;
 
             if (!json.size()){
                 QJsonObject ret;
-                bool ok= postSync("Document_усЗаказНаОтгрузку",obj, &ret);
+
+                bool ok= postSync(objname,obj, &ret);
                 if (ok){
-                    setShipStatus(ret.value("Ref_Key").toString());
-                    syncShipDocData(id_ship,ret.value("Ref_Key").toString());
+                    docKey=ret.value("Ref_Key").toString();
+                    setShipStatus(docKey);
+                    syncShipDocData(id_ship,docKey);
+                    postDoc(objname,docKey);
                 }
             } else {
                 int b = QMessageBox::question(nullptr,tr("Предупреждение"),QString("Документ с номером %1 уже существует. Перезаписать документ?").arg(num),QMessageBox::Yes,QMessageBox::No);
                 if (b==QMessageBox::Yes){
                     QJsonObject o = json.at(0).toObject();
-                    QString docKey=o.value("Ref_Key").toString();
+                    docKey=o.value("Ref_Key").toString();
 
                     QString stFilter = QString("InformationRegister_усСтатусыЗаказовНаОтгрузку?$filter=ЗаказНаОтгрузку_Key eq guid'%1'").arg(docKey);
                     QJsonObject st= getSync(stFilter);
@@ -1013,13 +1060,15 @@ int Sync1C::syncShipDoc(int id_ship)
                         if (stAr.at(0).toObject().value("Статус").toString()!=QString("Новый")){
                             showErrMes(tr("Можно перезаписать документ только со статусом 'Новый'"));
                         } else {
-                            patchSync(QString("Document_усЗаказНаОтгрузку(guid'%1')").arg(docKey),obj);
+                            patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                             syncShipDocData(id_ship,docKey);
+                            postDoc(objname,docKey);
                         }
                     } else {
                         setShipStatus(docKey);
-                        patchSync(QString("Document_усЗаказНаОтгрузку(guid'%1')").arg(docKey),obj);
+                        patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                         syncShipDocData(id_ship,docKey);
+                        postDoc(objname,docKey);
                     }
 
                 }

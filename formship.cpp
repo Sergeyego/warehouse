@@ -82,9 +82,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(ui->cmdEdtCods,SIGNAL(clicked(bool)),this,SLOT(edtCods()));
 
-    if (ui->tableViewShip->model()->rowCount()){
-        ui->tableViewShip->selectRow(0);
-    }
+    push->last();
 }
 
 FormShip::~FormShip()

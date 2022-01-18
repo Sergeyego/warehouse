@@ -6,6 +6,7 @@
 #include <QSettings>
 #include "formacceptance.h"
 #include "formship.h"
+#include "formpoluch.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,6 +29,7 @@ private slots:
     void closeTab(int index);
     void newFormAcceptance();
     void newFormShip();
+    void newFormPoluch();
 
 private:
     Ui::MainWindow *ui;

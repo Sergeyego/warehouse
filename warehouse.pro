@@ -35,7 +35,8 @@ SOURCES += \
     sync1c.cpp \
     models.cpp \
     formship.cpp \
-    dialogcods.cpp
+    dialogcods.cpp \
+    formpoluch.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -48,14 +49,16 @@ HEADERS += \
     sync1c.h \
     models.h \
     formship.h \
-    dialogcods.h
+    dialogcods.h \
+    formpoluch.h
 
 FORMS += \
         mainwindow.ui \
     db/dblogin.ui \
     formacceptance.ui \
     formship.ui \
-    dialogcods.ui
+    dialogcods.ui \
+    formpoluch.ui
 
 RC_FILE = ico.rc
 

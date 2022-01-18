@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     actAction(ui->actionAcceptance,&MainWindow::newFormAcceptance);
     actAction(ui->actionShip,&MainWindow::newFormShip);
+    actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
 
     loadSettings();
     connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
@@ -76,6 +77,13 @@ void MainWindow::newFormShip()
 {
     if (!exist(sender())){
         addSubWindow(new FormShip(false),sender());
+    }
+}
+
+void MainWindow::newFormPoluch()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormPoluch(),sender());
     }
 }
 
