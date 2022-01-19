@@ -522,7 +522,7 @@ int Sync1C::packSync(QString queryStr)
             if (!containsPack(i.value(),pack)){
                 obj.insert("Description",pack);
                 obj.insert("Owner_Key",i.value());
-                obj.insert("Коэффициент",mas_ed);
+                obj.insert("Коэффициент",/*mas_ed*/1);
                 obj.insert("Масса",mas_ed);
                 obj.insert("ЕдиницаИзмерения_Key",constKeys.value(namUnit,emptyKey));
                 ok=postSync("Catalog_усУпаковкиНоменклатуры",obj);
@@ -674,7 +674,6 @@ bool Sync1C::setPriemStatus(QString docKey)
 {
     QJsonObject status=tmpCatalog("tmpstatus.json");
     status.insert("ОжидаемаяПриемка_Key",docKey);
-    status.insert("ДатаВРаботу",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
     status.insert("Статус","Новая");
     return postSync("InformationRegister_усСтатусыОжидаемыхПриемок",status);
 }
@@ -683,7 +682,6 @@ bool Sync1C::setShipStatus(QString docKey)
 {
     QJsonObject status=tmpCatalog("tmpshipstatus.json");
     status.insert("ЗаказНаОтгрузку_Key",docKey);
-    status.insert("ДатаВРаботу",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
     status.insert("Статус","Новый");
     return postSync("InformationRegister_усСтатусыЗаказовНаОтгрузку",status);
 }
@@ -722,7 +720,6 @@ int Sync1C::syncPart(QString queryPart)
             QString ownerKey=catalogKeys.value(query.value(1).toString(),emptyKey);
 
             QString key = partiKey(ownerKey,desc);
-            //qDebug()<<key;
 
             obj.insert("КодКис",query.value(0).toString());
             obj.insert("Description",desc);
@@ -785,41 +782,35 @@ int Sync1C::syncOpDoc(QString queryDoc, QString queryCont)
             obj.insert("Организация_Key",constKeys.value(namCodOrg,emptyKey));
             obj.insert("ВоротаПриемки_Key",constKeys.value(namGates,emptyKey));
 
-            QString filter = objname+QString("?$filter=Number eq '%1'").arg(num);
-            QJsonObject retEx=getSync(filter);
-            QJsonArray json=retEx.value("value").toArray();
-            QString docKey;
+            QString docKey=getKey(objname,num,"Number");
 
-            if (!json.size()){
+            if (docKey==emptyKey){
                 QJsonObject ret;
                 bool ok= postSync(objname,obj, &ret);
                 if (ok){
                     docKey=ret.value("Ref_Key").toString();
-                    setPriemStatus(docKey);
                     syncOpDocData(queryCont,docKey);
+                    setPriemStatus(docKey);
                     postDoc(objname,docKey);
                 }
             } else {
                 int b = QMessageBox::question(nullptr,tr("Предупреждение"),QString("Документ с номером %1 уже существует. Перезаписать документ?").arg(num),QMessageBox::Yes,QMessageBox::No);
                 if (b==QMessageBox::Yes){
-                    QJsonObject o = json.at(0).toObject();
-                    docKey=o.value("Ref_Key").toString();
-
                     QString stFilter = QString("InformationRegister_усСтатусыОжидаемыхПриемок?$filter=ОжидаемаяПриемка_Key eq guid'%1'").arg(docKey);
                     QJsonObject st= getSync(stFilter);
                     QJsonArray stAr=st.value("value").toArray();
                     if (stAr.size()){
                         if (stAr.at(0).toObject().value("Статус").toString()!=QString("Новая")){
-                            showErrMes(tr("Можно перезаписать документ только со статусом 'Новый'"));
+                            showErrMes(tr("Можно перезаписать документ Ожидаемая приемка только со статусом 'Новая'"));
                         } else {
                             patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                             syncOpDocData(queryCont,docKey);
                             postDoc(objname,docKey);
                         }
                     } else {
-                        setPriemStatus(docKey);
                         patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                         syncOpDocData(queryCont,docKey);
+                        setPriemStatus(docKey);
                         postDoc(objname,docKey);
                     }
 
@@ -842,15 +833,15 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
     if (query.exec()){
         bool ok = deleteDocStr("Document_усСтрокаОжидаемойПриемки",docKey);
         while (query.next() && ok){
-            double masEd=query.value(5).toDouble();
-            int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
+            //double masEd=query.value(5).toDouble();
+            //int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
             QString nomKey=catalogKeys.value(query.value(1).toString(),emptyKey);
             obj.insert("Number",QString::number(i));
             obj.insert("Date",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
             obj.insert("Владелец_Key",docKey);
             obj.insert("Номенклатура_Key",nomKey);
             obj.insert("УпаковкаНоменклатуры_Key",packKey(nomKey,query.value(4).toString()));
-            obj.insert("КоличествоУпаковок",kvo);
+            obj.insert("КоличествоУпаковок",/*kvo*/query.value(6).toDouble());
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
             obj.insert("ТипКонтейнера_Key",constKeys.value(namContType,emptyKey));
@@ -893,15 +884,15 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
     if (query.exec()){
         bool ok = deleteDocStr("Document_усСтрокаЗаказаНаОтгрузку",docKey);
         while (query.next() && ok){
-            double masEd=query.value(5).toDouble();
-            int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
+            //double masEd=query.value(5).toDouble();
+            //int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
             QString nomKey=catalogKeys.value(query.value(1).toString(),emptyKey);
             obj.insert("Number",QString::number(i));
             obj.insert("Date",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
             obj.insert("Владелец_Key",docKey);
             obj.insert("Номенклатура_Key",nomKey);
             obj.insert("УпаковкаНоменклатуры_Key",packKey(nomKey,query.value(4).toString()));
-            obj.insert("КоличествоУпаковок",kvo);
+            obj.insert("КоличествоУпаковок",/*kvo*/query.value(6).toDouble());
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
             obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
@@ -1032,42 +1023,35 @@ int Sync1C::syncShipDoc(int id_ship)
             obj.insert("СтадииОтгрузки_Key",getKey("Catalog_усСтадииОтгрузки",namStages,"Description"));
             obj.insert("Контрагент_Key",getCounterKey(query.value(3).toInt()));
 
-            QString filter = objname+QString("?$filter=НомерКИС eq '%1'").arg(num);
-            QJsonObject retEx=getSync(filter);
-            QJsonArray json=retEx.value("value").toArray();
-            QString docKey;
+            QString docKey=getKey(objname,num,"НомерКИС");
 
-            if (!json.size()){
+            if (docKey==emptyKey){
                 QJsonObject ret;
-
                 bool ok= postSync(objname,obj, &ret);
                 if (ok){
                     docKey=ret.value("Ref_Key").toString();
-                    setShipStatus(docKey);
                     syncShipDocData(id_ship,docKey);
+                    setShipStatus(docKey);
                     postDoc(objname,docKey);
                 }
             } else {
                 int b = QMessageBox::question(nullptr,tr("Предупреждение"),QString("Документ с номером %1 уже существует. Перезаписать документ?").arg(num),QMessageBox::Yes,QMessageBox::No);
                 if (b==QMessageBox::Yes){
-                    QJsonObject o = json.at(0).toObject();
-                    docKey=o.value("Ref_Key").toString();
-
                     QString stFilter = QString("InformationRegister_усСтатусыЗаказовНаОтгрузку?$filter=ЗаказНаОтгрузку_Key eq guid'%1'").arg(docKey);
                     QJsonObject st= getSync(stFilter);
                     QJsonArray stAr=st.value("value").toArray();
                     if (stAr.size()){
                         if (stAr.at(0).toObject().value("Статус").toString()!=QString("Новый")){
-                            showErrMes(tr("Можно перезаписать документ только со статусом 'Новый'"));
+                            showErrMes(tr("Можно перезаписать документ Заказ на отгрузку только со статусом 'Новый'"));
                         } else {
                             patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                             syncShipDocData(id_ship,docKey);
                             postDoc(objname,docKey);
                         }
                     } else {
-                        setShipStatus(docKey);
                         patchSync(objname+QString("(guid'%1')").arg(docKey),obj);
                         syncShipDocData(id_ship,docKey);
+                        setShipStatus(docKey);
                         postDoc(objname,docKey);
                     }
 
