@@ -36,7 +36,8 @@ SOURCES += \
     models.cpp \
     formship.cpp \
     dialogcods.cpp \
-    formpoluch.cpp
+    formpoluch.cpp \
+    formbalance.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -50,7 +51,8 @@ HEADERS += \
     models.h \
     formship.h \
     dialogcods.h \
-    formpoluch.h
+    formpoluch.h \
+    formbalance.h
 
 FORMS += \
         mainwindow.ui \
@@ -58,7 +60,8 @@ FORMS += \
     formacceptance.ui \
     formship.ui \
     dialogcods.ui \
-    formpoluch.ui
+    formpoluch.ui \
+    formbalance.ui
 
 RC_FILE = ico.rc
 

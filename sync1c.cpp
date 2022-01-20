@@ -6,6 +6,34 @@ Sync1C::Sync1C(QObject *parent): QObject(parent)
     updateKeys();
 }
 
+void Sync1C::getBalance(QDate dat, QMultiHash<markInfo, partInfo> &info)
+{
+    QString obj=QString("AccumulationRegister_усОстаткиТоваровВУпаковках/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*,УпаковкаНоменклатуры").arg(dat.toString("yyyy-MM-dd"));
+    QJsonObject o=getSync(obj);
+    QJsonArray json=o.value("value").toArray();
+    info.clear();
+    for (QJsonValue v : json){
+        QJsonObject keyAn=v.toObject().value("КлючАналитикиУчетаНоменклатуры").toObject();
+        QJsonObject part=keyAn.value("ПартияНоменклатуры").toObject();
+        QJsonObject nom=keyAn.value("Номенклатура").toObject();
+        partInfo inf;
+        markInfo mark;
+        QString id_kis=nom.value("КодКИС").toString();
+        inf.kvo=v.toObject().value("КоличествоBalance").toDouble();
+        inf.id_part_kis=part.value("КодКис").toString();
+        inf.name=nom.value("Description").toString();
+        inf.number=part.value("Description").toString();
+        inf.rcp=part.value("РецептураПлавка").toString();
+        inf.desc=part.value("Комментарий").toString();
+        inf.packName=v.toObject().value("УпаковкаНоменклатуры").toObject().value("Description").toString();
+        inf.ist=partIstNams.value(part.value("Источник_Key").toString());
+        mark.id_kis=id_kis;
+        mark.name=inf.name;
+        info.insert(mark,inf);
+        //qDebug()<<id_kis<<":"<<inf.id_part_kis<<" "<<inf.name<<""<<inf.packName<<" "<<inf.number<<" "<<inf.ist<<" "<<inf.rcp<<" "<<inf.desc<<" "<<inf.kvo;
+    }
+}
+
 void Sync1C::syncCatalogEl()
 {
     QString info=syncCatalog(true,false);
@@ -45,6 +73,7 @@ void Sync1C::syncShip(int id_ship)
 void Sync1C::updateKeys()
 {
     partIstKeys = updateKeys("Catalog_усИсточникиПартий","Code","Ref_Key");
+    partIstNams = updateKeys("Catalog_усИсточникиПартий","Ref_Key","Description");
     catalogTypeKeys = updateKeys("Catalog_усВидыНоменклатуры","Description","Ref_Key");
     postIstKeys = updateKeys("Catalog_усИсточникиПоступления","Description","Ref_Key");
     counterKeys = updateKeys("Catalog_усКонтрагенты","Code","Ref_Key");
@@ -1134,4 +1163,14 @@ bool Sync1C::checkEan(int id_ship)
     bool okEl = checkEan(queryDocEl,queryGenEl);
     bool okWire = checkEan(queryDocWire,queryGenWire);
     return okEl && okWire;
+}
+
+bool operator==(const markInfo &mc1, const markInfo &mc2)
+{
+    return (mc1.id_kis==mc2.id_kis) && (mc1.name==mc2.name);
+}
+
+uint qHash(const markInfo &mc)
+{
+    return qHash(mc.id_kis+mc.name);
 }

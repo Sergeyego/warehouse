@@ -7,6 +7,7 @@
 #include "formacceptance.h"
 #include "formship.h"
 #include "formpoluch.h"
+#include "formbalance.h"
 
 namespace Ui {
 class MainWindow;
@@ -30,6 +31,7 @@ private slots:
     void newFormAcceptance();
     void newFormShip();
     void newFormPoluch();
+    void newFormBalance();
 
 private:
     Ui::MainWindow *ui;

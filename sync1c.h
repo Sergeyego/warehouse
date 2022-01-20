@@ -27,11 +27,33 @@ struct packVal
     QString nam;
 };
 
+struct partInfo
+{
+    QString id_part_kis;
+    QString name;
+    QString number;
+    QString packName;
+    QString rcp;
+    QString desc;
+    QString ist;
+    double kvo;
+};
+
+struct markInfo
+{
+    QString id_kis;
+    QString name;
+};
+
+inline bool operator==(const markInfo& mc1, const markInfo& mc2);
+inline uint qHash(const markInfo& mc);
+
 class Sync1C: public QObject
 {
     Q_OBJECT
 public:
     Sync1C(QObject *parent);
+    void getBalance(QDate dat, QMultiHash<markInfo, partInfo> &info);
 
 public slots:
     void syncCatalogEl();
@@ -59,6 +81,7 @@ private:
     base1CSettigs base1C;
     QHash <QString, QString> constKeys;
     QHash <QString, QString> partIstKeys;
+    QHash <QString, QString> partIstNams;
     QHash <QString, QString> catalogTypeKeys;
     QHash <QString, QString> catalogKeys;
     QHash <QString, QString> postIstKeys;

@@ -80,6 +80,7 @@ private:
     ModelShipWire *modelShipWire;
     void loadsettings();
     void savesettings();
+    QDomElement newElement(QString nam, QString val,  QDomDocument *doc);
 
 public slots:
     void setPartFilter();
@@ -91,7 +92,7 @@ private slots:
     void goXml();
     void edtCods();
     void updPol();
-    QDomElement newElement(QString nam, QString val,  QDomDocument *doc);
+    void updBalance();
 };
 
 #endif // FORMSHIP_H

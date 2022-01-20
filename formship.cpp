@@ -75,8 +75,11 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(ui->comboBoxOnly,SIGNAL(currentIndexChanged(int)),this,SLOT(updShip()));
     connect(push,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentShip(int)));
     connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
-    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart->model(),SLOT(refresh()));
-    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart->model(),SLOT(refresh()));
+
+    //connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart->model(),SLOT(refresh()));
+    //connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart->model(),SLOT(refresh()));
+    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),this,SLOT(updBalance()));
+
     connect(modelShipEl, SIGNAL(sigStock(QString)),ui->labelEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigStock(QString)),ui->labelWire,SLOT(setText(QString)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
@@ -287,6 +290,12 @@ void FormShip::updPol()
     Models::instance()->relPol->refreshModel();
     ui->comboBoxOnly->blockSignals(false);
     updShip();
+}
+
+void FormShip::updBalance()
+{
+    QMultiHash<markInfo,partInfo> info;
+    Models::instance()->sync1C->getBalance(QDate::currentDate().addDays(1),info);
 }
 
 QDomElement FormShip::newElement(QString nam, QString val, QDomDocument *doc)
