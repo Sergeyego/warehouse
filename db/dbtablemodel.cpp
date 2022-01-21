@@ -685,6 +685,12 @@ QVariant DbRelation::data(QString key)
     return relQueryModel->data(dict.value(key,QModelIndex()),Qt::EditRole);
 }
 
+QVariant DbRelation::data(QString key, int modelColumn)
+{
+    QModelIndex ind=relQueryModel->index(modelIndex(key).row(),modelColumn);
+    return relQueryModel->data(ind,Qt::EditRole);
+}
+
 QModelIndex DbRelation::modelIndex(QString key)
 {
     return dict.value(key,QModelIndex());

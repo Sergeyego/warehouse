@@ -20,6 +20,7 @@ public:
     DbRelation *relPol;
     DbRelation *relShipType;
     DbRelation *relAccType;
+    DbRelation *relKis;
 
 public slots:
     void refresh();

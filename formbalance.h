@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "models.h"
 #include <QAbstractTableModel>
+#include <QSortFilterProxyModel>
 
 namespace Ui {
 class FormBalance;
@@ -27,6 +28,15 @@ private:
     QStringList headerMark;
 };
 
+class ProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    explicit ProxyModel(QObject *parent=nullptr);
+    virtual bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
+    void setNomFilret(bool el, bool wire);
+};
+
 class FormBalance : public QWidget
 {
     Q_OBJECT
@@ -38,8 +48,11 @@ public:
 private:
     Ui::FormBalance *ui;
     BalanceModel *modelBalance;
+    ProxyModel *proxyModel;
 private slots:
     void refresh();
+    void setFilter();
+    void save();
 };
 
 #endif // FORMBALANCE_H

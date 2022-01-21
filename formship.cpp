@@ -294,7 +294,7 @@ void FormShip::updPol()
 
 void FormShip::updBalance()
 {
-    QMultiHash<markInfo,partInfo> info;
+    QMultiHash<QString,partInfo> info;
     Models::instance()->sync1C->getBalance(QDate::currentDate().addDays(1),info);
 }
 

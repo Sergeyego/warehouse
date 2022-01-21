@@ -38,6 +38,7 @@ public:
     DbRelation(QAbstractItemModel *queryModel, int key, int disp, QObject *parent=0);
     DbRelation(const QString &query, int key, int disp, QObject *parent=0);
     QVariant data(QString key);
+    QVariant data(QString key, int modelColumn);
     QModelIndex modelIndex(QString key);
     QAbstractItemModel *model() const;
     QSortFilterProxyModel *proxyModel() const;

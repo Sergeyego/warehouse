@@ -22,6 +22,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+include(xlsx/qtxlsx.pri)
 
 SOURCES += \
         main.cpp \
@@ -37,7 +38,8 @@ SOURCES += \
     formship.cpp \
     dialogcods.cpp \
     formpoluch.cpp \
-    formbalance.cpp
+    formbalance.cpp \
+    tableview.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -52,7 +54,8 @@ HEADERS += \
     formship.h \
     dialogcods.h \
     formpoluch.h \
-    formbalance.h
+    formbalance.h \
+    tableview.h
 
 FORMS += \
         mainwindow.ui \

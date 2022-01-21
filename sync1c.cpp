@@ -6,9 +6,9 @@ Sync1C::Sync1C(QObject *parent): QObject(parent)
     updateKeys();
 }
 
-void Sync1C::getBalance(QDate dat, QMultiHash<markInfo, partInfo> &info)
+void Sync1C::getBalance(QDate dat, QMultiHash<QString, partInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усОстаткиТоваровВУпаковках/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*,УпаковкаНоменклатуры").arg(dat.toString("yyyy-MM-dd"));
+    QString obj=QString("AccumulationRegister_усОстаткиТоваров/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*").arg(dat.toString("yyyy-MM-dd"));
     QJsonObject o=getSync(obj);
     QJsonArray json=o.value("value").toArray();
     info.clear();
@@ -17,19 +17,17 @@ void Sync1C::getBalance(QDate dat, QMultiHash<markInfo, partInfo> &info)
         QJsonObject part=keyAn.value("ПартияНоменклатуры").toObject();
         QJsonObject nom=keyAn.value("Номенклатура").toObject();
         partInfo inf;
-        markInfo mark;
-        QString id_kis=nom.value("КодКИС").toString();
+        inf.id_kis=nom.value("КодКИС").toString();
         inf.kvo=v.toObject().value("КоличествоBalance").toDouble();
+        inf.prich=v.toObject().value("КоличествоПриходBalance").toDouble();
+        inf.rasch=v.toObject().value("КоличествоРасходBalance").toDouble();
         inf.id_part_kis=part.value("КодКис").toString();
         inf.name=nom.value("Description").toString();
         inf.number=part.value("Description").toString();
         inf.rcp=part.value("РецептураПлавка").toString();
         inf.desc=part.value("Комментарий").toString();
-        inf.packName=v.toObject().value("УпаковкаНоменклатуры").toObject().value("Description").toString();
         inf.ist=partIstNams.value(part.value("Источник_Key").toString());
-        mark.id_kis=id_kis;
-        mark.name=inf.name;
-        info.insert(mark,inf);
+        info.insert(inf.id_kis,inf);
         //qDebug()<<id_kis<<":"<<inf.id_part_kis<<" "<<inf.name<<""<<inf.packName<<" "<<inf.number<<" "<<inf.ist<<" "<<inf.rcp<<" "<<inf.desc<<" "<<inf.kvo;
     }
 }
@@ -1163,14 +1161,4 @@ bool Sync1C::checkEan(int id_ship)
     bool okEl = checkEan(queryDocEl,queryGenEl);
     bool okWire = checkEan(queryDocWire,queryGenWire);
     return okEl && okWire;
-}
-
-bool operator==(const markInfo &mc1, const markInfo &mc2)
-{
-    return (mc1.id_kis==mc2.id_kis) && (mc1.name==mc2.name);
-}
-
-uint qHash(const markInfo &mc)
-{
-    return qHash(mc.id_kis+mc.name);
 }
