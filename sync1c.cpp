@@ -549,9 +549,10 @@ int Sync1C::packSync(QString queryStr)
             if (!containsPack(i.value(),pack)){
                 obj.insert("Description",pack);
                 obj.insert("Owner_Key",i.value());
-                obj.insert("Коэффициент",/*mas_ed*/1);
-                obj.insert("Масса",mas_ed);
+                obj.insert("Коэффициент",mas_ed);
+                obj.insert("Масса",0);
                 obj.insert("ЕдиницаИзмерения_Key",constKeys.value(namUnit,emptyKey));
+                obj.insert("ТипГрузообработки","Мелкий");
                 ok=postSync("Catalog_усУпаковкиНоменклатуры",obj);
                 if (ok){
                     n++;
@@ -860,15 +861,15 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
     if (query.exec()){
         bool ok = deleteDocStr("Document_усСтрокаОжидаемойПриемки",docKey);
         while (query.next() && ok){
-            //double masEd=query.value(5).toDouble();
-            //int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
+            double masEd=query.value(5).toDouble();
+            int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
             QString nomKey=catalogKeys.value(query.value(1).toString(),emptyKey);
             obj.insert("Number",QString::number(i));
             obj.insert("Date",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
             obj.insert("Владелец_Key",docKey);
             obj.insert("Номенклатура_Key",nomKey);
             obj.insert("УпаковкаНоменклатуры_Key",packKey(nomKey,query.value(4).toString()));
-            obj.insert("КоличествоУпаковок",/*kvo*/query.value(6).toDouble());
+            obj.insert("КоличествоУпаковок",kvo);
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
             obj.insert("ТипКонтейнера_Key",constKeys.value(namContType,emptyKey));
@@ -911,15 +912,15 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
     if (query.exec()){
         bool ok = deleteDocStr("Document_усСтрокаЗаказаНаОтгрузку",docKey);
         while (query.next() && ok){
-            //double masEd=query.value(5).toDouble();
-            //int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
+            double masEd=query.value(5).toDouble();
+            int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
             QString nomKey=catalogKeys.value(query.value(1).toString(),emptyKey);
             obj.insert("Number",QString::number(i));
             obj.insert("Date",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
             obj.insert("Владелец_Key",docKey);
             obj.insert("Номенклатура_Key",nomKey);
             obj.insert("УпаковкаНоменклатуры_Key",packKey(nomKey,query.value(4).toString()));
-            obj.insert("КоличествоУпаковок",/*kvo*/query.value(6).toDouble());
+            obj.insert("КоличествоУпаковок",kvo);
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
             obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
