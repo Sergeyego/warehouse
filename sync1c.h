@@ -68,6 +68,7 @@ private:
     const QString namStatus="Кондиция";
     const QString namContType="Европаллета";
     const QString namCodOrg="000000001";
+    const QString namZoneOt="Хранение";
 
     const QString contPrefix="EUR";
 
@@ -83,6 +84,7 @@ private:
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
     QMultiHash <QString, QString> catalogParts;
+    QMultiHash <QString, QString> catalogZoneOt;
     bool updateBaseSettings(int id_base);
     QString syncCatalog(bool syncEl=true, bool syncWire=true);
     QNetworkRequest baseRequest(QString obj);
@@ -103,6 +105,7 @@ private:
     int updateCatologKeys();
     int updateCatalogPacks();
     int updateCatalogEans();
+    int updateCatalogZoneOt();
     int catalogSync(QString queryStr, QString parentKey, QString typeKey);
     int packSync(QString queryStr);
     int eanSync(QString queryStr);
@@ -112,6 +115,7 @@ private:
     int wireCatalogSync();
     int wirePackSync();
     int wireEanSync();
+    int zoneOtSync();
     bool setPriemStatus(QString docKey);
     bool setShipStatus(QString docKey);
     bool deleteDocStr(QString obj, QString docKey);

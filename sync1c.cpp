@@ -87,6 +87,7 @@ void Sync1C::updateKeys()
     constKeys.insert(namStatus,getKey("Catalog_усСтатусыНоменклатуры",namStatus,"Description"));
     constKeys.insert(namContType,getKey("Catalog_усТипыКонтейнеров",namContType,"Description"));
     constKeys.insert(namCodOrg,getKey("Catalog_Организации",namCodOrg,"Code"));
+    constKeys.insert(namZoneOt,getKey("Catalog_усЗоны",namZoneOt,"Description"));
 
     //qDebug()<<constKeys;
 }
@@ -160,6 +161,9 @@ QString Sync1C::syncCatalog(bool syncEl, bool syncWire)
     if (syncWire){
         ne+=wireEanSync();
     }
+
+    updateCatalogZoneOt();
+    zoneOtSync();
 
     d.hide();
     QString info;
@@ -479,6 +483,22 @@ int Sync1C::updateCatalogEans()
     return json.size();
 }
 
+int Sync1C::updateCatalogZoneOt()
+{
+    QJsonObject obj=getSync("InformationRegister_усЗоныОтбора");
+    QJsonArray json=obj.value("value").toArray();
+    catalogZoneOt.clear();
+    for (QJsonValue val : json){
+        QString key=val.toObject().value("Номенклатура_Key").toString();
+        QString zon=val.toObject().value("Зона_Key").toString();
+        if (!key.isEmpty()){
+            catalogZoneOt.insert(key,zon);
+        }
+    }
+    qDebug()<<"kvo zoneOt: "<<json.size();
+    return json.size();
+}
+
 
 void Sync1C::showErrMes(QString err)
 {
@@ -696,6 +716,30 @@ int Sync1C::wireEanSync()
                   "inner join wire_pack wp on wp.id = we.id_pack "
                   "order by npack");
     return eanSync(query);
+}
+
+int Sync1C::zoneOtSync()
+{
+    bool ok=true;
+    int n=0;
+    QJsonObject obj=tmpCatalog("tmpzoneot.json");
+    QString zoneKey=constKeys.value(namZoneOt);
+    QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
+    while (i != catalogKeys.constEnd() && ok) {
+        if (!catalogZoneOt.values(i.value()).contains(zoneKey)){
+            obj.insert("Номенклатура_Key",i.value());
+            obj.insert("ТипЗоны","ОтборМелкий");
+            obj.insert("Зона_Key",zoneKey);
+            ok=postSync("InformationRegister_усЗоныОтбора",obj);
+            if (ok){
+                n++;
+            } else {
+                break;
+            }
+        }
+        ++i;
+    }
+    return n;
 }
 
 bool Sync1C::setPriemStatus(QString docKey)
