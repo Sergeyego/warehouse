@@ -36,6 +36,17 @@ struct partInfo
     QString rcp;
     QString desc;
     QString ist;
+    QString contKey;
+    double kvo;
+    double prich;
+    double rasch;
+};
+
+struct contInfo
+{
+    QString name;
+    QString cell;
+    QString zone;
     double kvo;
     double prich;
     double rasch;
@@ -47,6 +58,7 @@ class Sync1C: public QObject
 public:
     Sync1C(QObject *parent);
     void getBalance(QDate dat, QMultiHash<QString, partInfo> &info);
+    void getContBalance(QDate dat, QHash<QString, contInfo> &info);
 
 public slots:
     void syncCatalogEl();
@@ -81,6 +93,7 @@ private:
     QHash <QString, QString> postIstKeys;
     QHash <QString, QString> counterKeys;
     QHash <QString, QString> shipTypeKeys;
+    QHash <QString, QString> zoneKeys;
     QMultiHash <QString, packVal> catalogPacks;
     QMultiHash <QString, QString> catalogEans;
     QMultiHash <QString, QString> catalogParts;

@@ -3,29 +3,31 @@
 
 #include <QWidget>
 #include "models.h"
-#include <QAbstractTableModel>
+#include "tablemodel.h"
 #include <QSortFilterProxyModel>
 
 namespace Ui {
 class FormBalance;
 }
 
-class BalanceModel : public QAbstractTableModel
+class BalanceModel : public TableModel
 {
         Q_OBJECT
 
 public:
     explicit BalanceModel(QObject *parent=nullptr);
-    int rowCount(const QModelIndex &parent=QModelIndex()) const;
-    int columnCount(const QModelIndex &parent=QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    QVariant data(const QModelIndex &index, int role) const;
     void refresh(QDate dat, bool bypart=true);
+    QList<partInfo> getPartList(QString key);
+    contInfo getContInfo(QString contKey);
+
 private:
-    QVector<QVector<QVariant>> d;
     bool byp;
     QStringList headerPart;
     QStringList headerMark;
+
+    QMultiHash<QString,partInfo> part;
+    QHash<QString,contInfo> cont;
 };
 
 class ProxyModel : public QSortFilterProxyModel

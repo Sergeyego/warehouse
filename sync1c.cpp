@@ -13,22 +13,46 @@ void Sync1C::getBalance(QDate dat, QMultiHash<QString, partInfo> &info)
     QJsonArray json=o.value("value").toArray();
     info.clear();
     for (QJsonValue v : json){
-        QJsonObject keyAn=v.toObject().value("КлючАналитикиУчетаНоменклатуры").toObject();
+        QJsonObject bal=v.toObject();
+        QJsonObject keyAn=bal.value("КлючАналитикиУчетаНоменклатуры").toObject();
         QJsonObject part=keyAn.value("ПартияНоменклатуры").toObject();
         QJsonObject nom=keyAn.value("Номенклатура").toObject();
         partInfo inf;
         inf.id_kis=nom.value("КодКИС").toString();
-        inf.kvo=v.toObject().value("КоличествоBalance").toDouble();
-        inf.prich=v.toObject().value("КоличествоПриходBalance").toDouble();
-        inf.rasch=v.toObject().value("КоличествоРасходBalance").toDouble();
+        inf.kvo=bal.value("КоличествоBalance").toDouble();
+        inf.prich=bal.value("КоличествоПриходBalance").toDouble();
+        inf.rasch=bal.value("КоличествоРасходBalance").toDouble();
         inf.id_part_kis=part.value("КодКис").toString();
         inf.name=nom.value("Description").toString();
         inf.number=part.value("Description").toString();
         inf.rcp=part.value("РецептураПлавка").toString();
         inf.desc=part.value("Комментарий").toString();
         inf.ist=partIstNams.value(part.value("Источник_Key").toString());
+        inf.contKey=bal.value("Контейнер_Key").toString();
         info.insert(inf.id_kis,inf);
         //qDebug()<<id_kis<<":"<<inf.id_part_kis<<" "<<inf.name<<""<<inf.packName<<" "<<inf.number<<" "<<inf.ist<<" "<<inf.rcp<<" "<<inf.desc<<" "<<inf.kvo;
+    }
+}
+
+void Sync1C::getContBalance(QDate dat, QHash<QString, contInfo> &info)
+{
+    QString obj=QString("AccumulationRegister_усПоложениеКонтейнеров/Balance(Period=datetime'%1')?$expand=Ячейка,Контейнер").arg(dat.toString("yyyy-MM-dd"));
+    QJsonObject o=getSync(obj);
+    QJsonArray json=o.value("value").toArray();
+    info.clear();
+    for (QJsonValue v : json){
+        QJsonObject bal=v.toObject();
+        QString contKey=bal.value("Контейнер_Key").toString();
+        QJsonObject cell=bal.value("Ячейка_Expanded").toObject();
+        QString zoneKey=cell.value("Зона_Key").toString();
+        contInfo inf;
+        inf.name=bal.value("Контейнер").toObject().value("Description").toString();
+        inf.cell=cell.value("Code").toString();
+        inf.zone=zoneKeys.value(zoneKey);
+        inf.kvo=bal.value("КоличествоBalance").toDouble();
+        inf.prich=bal.value("КоличествоПриходBalance").toDouble();
+        inf.rasch=bal.value("КоличествоРасходBalance").toDouble();
+        info.insert(contKey,inf);
     }
 }
 
@@ -76,6 +100,7 @@ void Sync1C::updateKeys()
     postIstKeys = updateKeys("Catalog_усИсточникиПоступления","Description","Ref_Key");
     counterKeys = updateKeys("Catalog_усКонтрагенты","Code","Ref_Key");
     shipTypeKeys = updateKeys("Catalog_усНаправлениеОтгрузки","Description","Ref_Key");
+    zoneKeys = updateKeys("Catalog_усЗоны","Ref_Key","Description");
 
     constKeys.clear();
     constKeys.insert(namEl,getKey("Catalog_усНоменклатура",namEl,"Description"));

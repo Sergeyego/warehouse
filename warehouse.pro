@@ -39,7 +39,8 @@ SOURCES += \
     dialogcods.cpp \
     formpoluch.cpp \
     formbalance.cpp \
-    tableview.cpp
+    tableview.cpp \
+    tablemodel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -55,7 +56,8 @@ HEADERS += \
     dialogcods.h \
     formpoluch.h \
     formbalance.h \
-    tableview.h
+    tableview.h \
+    tablemodel.h
 
 FORMS += \
         mainwindow.ui \

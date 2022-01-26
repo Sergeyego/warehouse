@@ -45,67 +45,31 @@ void FormBalance::save()
     ui->tableView->save(tr("Остатки на ")+ui->dateEdit->date().toString("dd.MM.yy"),1,true);
 }
 
-BalanceModel::BalanceModel(QObject *parent): QAbstractTableModel(parent)
+BalanceModel::BalanceModel(QObject *parent): TableModel(parent)
 {
     byp=true;
-    headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
-    headerMark<<"t"<<"Номенклатура"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";;
-}
-
-int BalanceModel::rowCount(const QModelIndex &/*parent*/) const
-{
-    return d.size();
-}
-
-int BalanceModel::columnCount(const QModelIndex &/*parent*/) const
-{
-    return byp ? headerPart.size() : headerMark.size();
+    headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон";
+    headerMark<<"t"<<"Номенклатура"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
 }
 
 QVariant BalanceModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid()){
-        return QVariant();
+    if (index.column()==1 && role==Qt::DisplayRole){
+        QString kis=TableModel::data(index,role).toString();
+        return Models::instance()->relKis->data(kis);
     }
-    QVariant origData=d[index.row()][index.column()];
-    QVariant::Type type=origData.type();
-    if (role==Qt::DisplayRole){
-        if (type==QMetaType::Double){
-            return (origData.isNull() || origData==0) ? QString("") : QLocale().toString(origData.toDouble(),'f',1);
-        } else if (type==QMetaType::QDate){
-            return (origData.isNull()) ? QString("") : origData.toDate().toString("dd.MM.yy");
-        }
-    } else if (role==Qt::TextAlignmentRole){
-        return (type==QMetaType::Int || type==QMetaType::Double || type==QMetaType::Float || type==QMetaType::LongLong ) ?
-                    int(Qt::AlignRight | Qt::AlignVCenter) : int(Qt::AlignLeft | Qt::AlignVCenter);
-    }
-
-    if (role==Qt::EditRole || role == Qt::DisplayRole){
-        return origData;
-    }
-    return QVariant();
-}
-
-QVariant BalanceModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    if (orientation==Qt::Horizontal && role==Qt::DisplayRole && section>=0 && section<columnCount()){
-        return byp ? headerPart.at(section) : headerMark.at(section);
-    } else if (orientation==Qt::Vertical && role==Qt::DisplayRole){
-        return QString("  ");
-    }
-    return QAbstractTableModel::headerData(section,orientation,role);
+    return TableModel::data(index,role);
 }
 
 void BalanceModel::refresh(QDate dat, bool bypart)
 {
     byp=bypart;
-    QMultiHash<QString,partInfo> h;
-    Models::instance()->sync1C->getBalance(dat.addDays(1),h);
-    beginResetModel();
-    d.clear();
+    Models::instance()->sync1C->getBalance(dat.addDays(1),part);
+    Models::instance()->sync1C->getContBalance(dat.addDays(1),cont);
+    QVector<QVector<QVariant>> tmpd;
     if (byp){
-        QMultiHash<QString, partInfo>::const_iterator i = h.constBegin();
-        while (i != h.constEnd()) {
+        QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();
+        while (i != part.constEnd()) {
             QVector<QVariant> row;
             partInfo pinfo=i.value();
             QStringList idpl = pinfo.id_part_kis.split(":");
@@ -123,8 +87,9 @@ void BalanceModel::refresh(QDate dat, bool bypart)
                     }
                 }
             }
+            contInfo cinfo = cont.value(pinfo.contKey);
             row.push_back(Models::instance()->relKis->data(pinfo.id_kis,2));
-            row.push_back(pinfo.name);
+            row.push_back(pinfo.id_kis);
             row.push_back(pack);
             row.push_back(pinfo.number);
             row.push_back(pinfo.ist);
@@ -133,19 +98,23 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             row.push_back(pinfo.kvo);
             row.push_back(pinfo.prich);
             row.push_back(pinfo.rasch);
-            d.push_back(row);
+            row.push_back(cinfo.zone);
+            row.push_back(cinfo.cell);
+            row.push_back(cinfo.name);
+            tmpd.push_back(row);
             ++i;
         }
+        setModelData(tmpd,headerPart);
     } else {
-        QList<QString> mlist = h.uniqueKeys();
+        QList<QString> mlist = part.uniqueKeys();
         for (QString kis : mlist){
             QVector<QVariant> row;
             row.push_back(Models::instance()->relKis->data(kis,2));
-            row.push_back(Models::instance()->relKis->data(kis));
+            row.push_back(kis);
             double kvo=0;
             double prich=0;
             double rasch=0;
-            QList <partInfo> plist = h.values(kis);
+            QList <partInfo> plist = part.values(kis);
             for (partInfo pinfo : plist){
                 kvo+=pinfo.kvo;
                 prich+=pinfo.prich;
@@ -154,10 +123,20 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             row.push_back(kvo);
             row.push_back(prich);
             row.push_back(rasch);
-            d.push_back(row);
+            tmpd.push_back(row);
         }
+        setModelData(tmpd,headerMark);
     }
-    endResetModel();
+}
+
+QList<partInfo> BalanceModel::getPartList(QString kis)
+{
+    return part.values(kis);
+}
+
+contInfo BalanceModel::getContInfo(QString contKey)
+{
+    return cont.value(contKey);
 }
 
 ProxyModel::ProxyModel(QObject *parent) : QSortFilterProxyModel(parent)
