@@ -40,7 +40,8 @@ SOURCES += \
     formpoluch.cpp \
     formbalance.cpp \
     tableview.cpp \
-    tablemodel.cpp
+    tablemodel.cpp \
+    formturnovers.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -57,7 +58,8 @@ HEADERS += \
     formpoluch.h \
     formbalance.h \
     tableview.h \
-    tablemodel.h
+    tablemodel.h \
+    formturnovers.h
 
 FORMS += \
         mainwindow.ui \
@@ -66,7 +68,8 @@ FORMS += \
     formship.ui \
     dialogcods.ui \
     formpoluch.ui \
-    formbalance.ui
+    formbalance.ui \
+    formturnovers.ui
 
 RC_FILE = ico.rc
 

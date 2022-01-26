@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionShip,&MainWindow::newFormShip);
     actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
     actAction(ui->actionBalance,&MainWindow::newFormBalance);
+    actAction(ui->actionTurnovers,&MainWindow::newFormTurnovers);
 
     loadSettings();
     connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
@@ -92,6 +93,13 @@ void MainWindow::newFormBalance()
 {
     if (!exist(sender())){
         addSubWindow(new FormBalance(),sender());
+    }
+}
+
+void MainWindow::newFormTurnovers()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormTurnovers(),sender());
     }
 }
 

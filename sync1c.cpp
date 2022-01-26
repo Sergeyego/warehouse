@@ -56,6 +56,17 @@ void Sync1C::getContBalance(QDate dat, QHash<QString, contInfo> &info)
     }
 }
 
+void Sync1C::getTurnovers(QDate beg, QDate end, QMultiHash<QString, turnInfo> &info)
+{
+    QString obj=QString("AccumulationRegister_усОстаткиТоваров/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*");
+    QJsonObject o=getSync(obj);
+    QJsonArray json=o.value("value").toArray();
+    info.clear();
+    for (QJsonValue v : json){
+
+    }
+}
+
 void Sync1C::syncCatalogEl()
 {
     QString info=syncCatalog(true,false);

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FormBalance</class>
- <widget class="QWidget" name="FormBalance">
+ <class>FormTurnovers</class>
+ <widget class="QWidget" name="FormTurnovers">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>911</width>
-    <height>613</height>
+    <width>915</width>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,19 +19,22 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Остатки на</string>
+        <string>С</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDateEdit" name="dateEdit">
-       <property name="displayFormat">
-        <string>dd.MM.yy</string>
-       </property>
-       <property name="calendarPopup">
-        <bool>true</bool>
+      <widget class="DateEdit" name="dateEditBeg"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>По</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="DateEdit" name="dateEditEnd"/>
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonUpd">
@@ -61,23 +64,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButtonPart">
-       <property name="text">
-        <string>По партиям</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="radioButtonMark">
-       <property name="text">
-        <string>По маркам</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -100,27 +86,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <widget class="TableView" name="tableView">
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
-      </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <property name="sortingEnabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="TableView" name="tableViewPart">
-      <property name="sortingEnabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </widget>
+    <widget class="TableView" name="tableView"/>
    </item>
   </layout>
  </widget>
@@ -129,6 +95,11 @@
    <class>TableView</class>
    <extends>QTableView</extends>
    <header>tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DateEdit</class>
+   <extends>QDateEdit</extends>
+   <header>db/dbviewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

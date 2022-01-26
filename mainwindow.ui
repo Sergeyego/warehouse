@@ -62,7 +62,7 @@
      <string>Отчеты</string>
     </property>
     <addaction name="actionBalance"/>
-    <addaction name="action_2"/>
+    <addaction name="actionTurnovers"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -89,7 +89,7 @@
     <string>Остатки</string>
    </property>
   </action>
-  <action name="action_2">
+  <action name="actionTurnovers">
    <property name="text">
     <string>Обороты</string>
    </property>

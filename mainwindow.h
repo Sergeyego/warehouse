@@ -8,6 +8,7 @@
 #include "formship.h"
 #include "formpoluch.h"
 #include "formbalance.h"
+#include "formturnovers.h"
 
 namespace Ui {
 class MainWindow;
@@ -32,6 +33,7 @@ private slots:
     void newFormShip();
     void newFormPoluch();
     void newFormBalance();
+    void newFormTurnovers();
 
 private:
     Ui::MainWindow *ui;

@@ -18,8 +18,9 @@ public:
     explicit BalanceModel(QObject *parent=nullptr);
     QVariant data(const QModelIndex &index, int role) const;
     void refresh(QDate dat, bool bypart=true);
-    QList<partInfo> getPartList(QString key);
-    contInfo getContInfo(QString contKey);
+    QString getPackName(QString id_part_kis);
+    QString getDesc(QString id_part_kis, QString defval=QString());
+    void getPartData(QString kis, QVector<QVector<QVariant>> &data, QStringList &header);
 
 private:
     bool byp;
@@ -49,12 +50,17 @@ public:
 
 private:
     Ui::FormBalance *ui;
-    BalanceModel *modelBalance;
+    BalanceModel *balanceModel;
     ProxyModel *proxyModel;
+    TableModel *partModel;
+    ProxyModel *proxyPartModel;
+    void loadSettings();
+    void saveSettings();
 private slots:
     void refresh();
     void setFilter();
     void save();
+    void updPart(QModelIndex index);
 };
 
 #endif // FORMBALANCE_H

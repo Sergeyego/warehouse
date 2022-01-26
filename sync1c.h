@@ -52,6 +52,11 @@ struct contInfo
     double rasch;
 };
 
+struct turnInfo
+{
+    double kvo;
+};
+
 class Sync1C: public QObject
 {
     Q_OBJECT
@@ -59,6 +64,7 @@ public:
     Sync1C(QObject *parent);
     void getBalance(QDate dat, QMultiHash<QString, partInfo> &info);
     void getContBalance(QDate dat, QHash<QString, contInfo> &info);
+    void getTurnovers(QDate beg, QDate end, QMultiHash<QString, turnInfo> &info);
 
 public slots:
     void syncCatalogEl();

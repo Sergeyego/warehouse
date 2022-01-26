@@ -138,6 +138,7 @@ void TableView::save(QString fnam, int dec, bool fitToHeight, Qt::ScreenOrientat
                                 ws->writeBlank(i+3,m,numFormat);
                             }
                         } else {
+                            value=this->model()->data(this->model()->index(i,j),Qt::DisplayRole);
                             ws->writeString(i+3,m,value.toString(),strFormat);
                         }
                         m++;
