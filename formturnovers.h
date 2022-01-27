@@ -15,8 +15,23 @@ class TurnoversModel : public TableModel
 
 public:
     TurnoversModel(QObject *parent = nullptr);
-    void refresh(QDate beg, QDate end, bool el = true, bool wire = true);
+    void refresh(QDate beg, QDate end);
+public slots:
+    void setElEn(bool b);
+    void setWireEn(bool b);
+    void recalc();
 
+private:
+    QMultiHash<QString,accInfo> acc;
+    QMultiHash<QString,accInfo> ship;
+    QMultiHash<QString,turnInfo> bal;
+
+    QStringList head;
+    void getAcc(QString kis, double &ind, double &ret, double &oth);
+    void getShip(QString kis, double &shp, double &ret, double &oth);
+    void getBal(QString kis, double &beg, double &end);
+    bool el_en;
+    bool wire_en;
 };
 
 class FormTurnovers : public QWidget

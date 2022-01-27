@@ -8,7 +8,12 @@ Sync1C::Sync1C(QObject *parent): QObject(parent)
 
 void Sync1C::getBalance(QDate dat, QMultiHash<QString, partInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усОстаткиТоваров/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*").arg(dat.toString("yyyy-MM-dd"));
+    QString obj=QString("AccumulationRegister_усОстаткиТоваров/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*"
+                        "&$select=КлючАналитикиУчетаНоменклатуры/Номенклатура/КодКИС,КлючАналитикиУчетаНоменклатуры/Номенклатура/Description,"
+                        "КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/КодКис,КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/Description,"
+                        "КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/РецептураПлавка,КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/Комментарий,"
+                        "КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/Источник_Key,Контейнер_Key,"
+                        "КоличествоBalance,КоличествоПриходBalance,КоличествоРасходBalance").arg(dat.toString("yyyy-MM-dd"));
     QJsonObject o=getSync(obj);
     QJsonArray json=o.value("value").toArray();
     info.clear();
@@ -30,13 +35,13 @@ void Sync1C::getBalance(QDate dat, QMultiHash<QString, partInfo> &info)
         inf.ist=partIstNams.value(part.value("Источник_Key").toString());
         inf.contKey=bal.value("Контейнер_Key").toString();
         info.insert(inf.id_kis,inf);
-        //qDebug()<<id_kis<<":"<<inf.id_part_kis<<" "<<inf.name<<""<<inf.packName<<" "<<inf.number<<" "<<inf.ist<<" "<<inf.rcp<<" "<<inf.desc<<" "<<inf.kvo;
     }
 }
 
 void Sync1C::getContBalance(QDate dat, QHash<QString, contInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усПоложениеКонтейнеров/Balance(Period=datetime'%1')?$expand=Ячейка,Контейнер").arg(dat.toString("yyyy-MM-dd"));
+    QString obj=QString("AccumulationRegister_усПоложениеКонтейнеров/Balance(Period=datetime'%1')"
+                        "?$expand=Ячейка,Контейнер&$select=Контейнер_Key,Ячейка,Контейнер/Description,КоличествоBalance,КоличествоПриходBalance,КоличествоРасходBalance").arg(dat.toString("yyyy-MM-dd"));
     QJsonObject o=getSync(obj);
     QJsonArray json=o.value("value").toArray();
     info.clear();
@@ -56,14 +61,75 @@ void Sync1C::getContBalance(QDate dat, QHash<QString, contInfo> &info)
     }
 }
 
-void Sync1C::getTurnovers(QDate beg, QDate end, QMultiHash<QString, turnInfo> &info)
+void Sync1C::getBalanceAndTurnovers(QDate beg, QDate end, QMultiHash<QString, turnInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усОстаткиТоваров/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*");
+    QString obj=QString("AccumulationRegister_усОстаткиТоваров/BalanceAndTurnovers(StartPeriod=datetime'%1', EndPeriod=datetime'%2')"
+                        "?$expand=КлючАналитикиУчетаНоменклатуры/*&$select=КоличествоOpeningBalance,КоличествоReceipt,КоличествоExpense,КоличествоClosingBalance,"
+                        "Контейнер_Key,КлючАналитикиУчетаНоменклатуры/Номенклатура/КодКИС,"
+                        "КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/КодКис").arg(beg.toString("yyyy-MM-dd")).arg(end.toString("yyyy-MM-dd"));
     QJsonObject o=getSync(obj);
     QJsonArray json=o.value("value").toArray();
     info.clear();
     for (QJsonValue v : json){
+        QJsonObject bal=v.toObject();
+        QJsonObject keyAn=bal.value("КлючАналитикиУчетаНоменклатуры").toObject();
+        QJsonObject part=keyAn.value("ПартияНоменклатуры").toObject();
+        QJsonObject nom=keyAn.value("Номенклатура").toObject();
+        turnInfo inf;
+        inf.contKey=bal.value("Контейнер_Key").toString();
+        inf.id_kis=nom.value("КодКИС").toString();
+        inf.id_part_kis=part.value("КодКис").toString();
+        inf.beg_kvo=bal.value("КоличествоOpeningBalance").toDouble();
+        inf.prich=bal.value("КоличествоReceipt").toDouble();
+        inf.rasch=bal.value("КоличествоExpense").toDouble();
+        inf.end_kvo=bal.value("КоличествоClosingBalance").toDouble();
+        info.insert(inf.id_kis,inf);
+    }
+}
 
+void Sync1C::getAcceptanceTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo> &info)
+{
+    QString obj=QString("AccumulationRegister_усКонтрольПриемки/Turnovers(StartPeriod=datetime'%1', EndPeriod=datetime'%2')"
+                        "?$expand=ОжидаемаяПриемка/ИсточникПоступления,Номенклатура,ПартияНоменклатуры&$select=КоличествоПринятоTurnover,ОжидаемаяПриемка/ИсточникПоступления/Description,"
+                        "Номенклатура/КодКИС,Номенклатура/Description,ПартияНоменклатуры/КодКис,ПартияНоменклатуры/Description").arg(beg.toString("yyyy-MM-dd")).arg(end.toString("yyyy-MM-dd"));
+    QJsonObject o=getSync(obj);
+    QJsonArray json=o.value("value").toArray();
+    info.clear();
+    for (QJsonValue v : json){
+        QJsonObject acc=v.toObject();
+        QJsonObject part=acc.value("ПартияНоменклатуры").toObject();
+        QJsonObject nom=acc.value("Номенклатура").toObject();
+        accInfo inf;
+        inf.id_kis=nom.value("КодКИС").toString();
+        inf.name=nom.value("Description").toString();
+        inf.id_part_kis=part.value("КодКис").toString();
+        inf.part_number=part.value("Description").toString();
+        inf.kvo=acc.value("КоличествоПринятоTurnover").toDouble();
+        inf.source=acc.value("ОжидаемаяПриемка").toObject().value("ИсточникПоступления").toObject().value("Description").toString();
+        info.insert(inf.id_kis,inf);
+    }
+}
+
+void Sync1C::getShipTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo> &info)
+{
+    QString obj=QString("AccumulationRegister_усКонтрольОтгрузки/Turnovers(StartPeriod=datetime'%1', EndPeriod=datetime'%2')"
+                        "?$expand=ЗаказНаОтгрузку/НаправлениеОтгрузки,Номенклатура,ПартияНоменклатуры&$select=КоличествоОтгруженоTurnover,ЗаказНаОтгрузку/НаправлениеОтгрузки/Description,"
+                        "Номенклатура/КодКИС,Номенклатура/Description,ПартияНоменклатуры/КодКис,ПартияНоменклатуры/Description").arg(beg.toString("yyyy-MM-dd")).arg(end.toString("yyyy-MM-dd"));
+    QJsonObject o=getSync(obj);
+    QJsonArray json=o.value("value").toArray();
+    info.clear();
+    for (QJsonValue v : json){
+        QJsonObject acc=v.toObject();
+        QJsonObject part=acc.value("ПартияНоменклатуры").toObject();
+        QJsonObject nom=acc.value("Номенклатура").toObject();
+        accInfo inf;
+        inf.id_kis=nom.value("КодКИС").toString();
+        inf.name=nom.value("Description").toString();
+        inf.id_part_kis=part.value("КодКис").toString();
+        inf.part_number=part.value("Description").toString();
+        inf.kvo=acc.value("КоличествоОтгруженоTurnover").toDouble();
+        inf.source=acc.value("ЗаказНаОтгрузку").toObject().value("НаправлениеОтгрузки").toObject().value("Description").toString();
+        info.insert(inf.id_kis,inf);
     }
 }
 

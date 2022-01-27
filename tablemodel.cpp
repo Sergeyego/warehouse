@@ -43,8 +43,6 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation, int ro
 {
     if (orientation==Qt::Horizontal && role==Qt::DisplayRole && section>=0 && section<columnCount()){
         return p_header.at(section);
-    } else if (orientation==Qt::Vertical && role==Qt::DisplayRole){
-        return QString("  ");
     }
     return QAbstractTableModel::headerData(section,orientation,role);
 }
