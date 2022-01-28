@@ -22,6 +22,8 @@ FormBalance::FormBalance(QWidget *parent) :
     proxyModel->setSourceModel(balanceModel);
     proxyModel->sort(1);
 
+    partModel->setHeader(balanceModel->getPartHeader());
+
     ui->tableView->setModel(proxyModel);
     ui->tableView->resizeToContents();
     setFilter();
@@ -74,12 +76,13 @@ void FormBalance::save()
 void FormBalance::updPart(QModelIndex index)
 {
     if (!ui->radioButtonPart->isChecked()){
-        QStringList header;
         QString kis=ui->tableView->model()->data(ui->tableView->model()->index(index.row(),0),Qt::EditRole).toString();
         QVector<QVector<QVariant>> data;
-        balanceModel->getPartData(kis,data,header);
-        partModel->setModelData(data,header);
+        balanceModel->getPartData(kis,data);
+        partModel->setModelData(data);
         ui->tableViewPart->resizeToContents();
+    } else {
+        partModel->clear();
     }
 }
 
@@ -183,7 +186,12 @@ QString BalanceModel::getDesc(QString id_part_kis, QString defval)
     return desc;
 }
 
-void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data, QStringList &header)
+QStringList BalanceModel::getPartHeader()
+{
+    return headerPart;
+}
+
+void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
 {
     QList<partInfo> list = part.values(kis);
     data.clear();
@@ -205,7 +213,6 @@ void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data, Q
         row.push_back(cnt.name);
         data.push_back(row);
     }
-    header=headerPart;
 }
 
 ProxyModel::ProxyModel(QObject *parent) : QSortFilterProxyModel(parent)

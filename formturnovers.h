@@ -26,7 +26,6 @@ private:
     QMultiHash<QString,accInfo> ship;
     QMultiHash<QString,turnInfo> bal;
 
-    QStringList head;
     void getAcc(QString kis, double &ind, double &ret, double &oth);
     void getShip(QString kis, double &shp, double &ret, double &oth);
     void getBal(QString kis, double &beg, double &end);

@@ -28,17 +28,17 @@ Models::Models(QObject *parent) :
     relShipType = new DbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1,this);
     relAccType = new DbRelation(new DbRelationalModel("select id, nam from acceptance_type order by nam",this),0,1,this);
 
-    relKis = new DbRelation(new DbRelationalModel("(select distinct ee.id_el||':'||ee.id_diam as kis, e.marka ||' ф '|| d.sdim as mark, 'e' as typ "
+    relKis = new DbRelation(new DbRelationalModel("(select distinct ee.id_el||':'||ee.id_diam as kis, e.marka ||' ф '|| d.sdim as mark, 'e' as typ, e.id_u as id_u "
                                                   "from ean_el ee "
                                                   "inner join elrtr e on e.id = ee.id_el "
                                                   "inner  join diam d on d.id = ee.id_diam) "
                                                   "union "
-                                                  "(select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short, 'w' "
+                                                  "(select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short, 'w', 1 "
                                                   "from wire_ean we "
                                                   "inner join provol p on p.id=we.id_prov "
                                                   "inner  join diam d on d.id = we.id_diam "
                                                   "inner join wire_pack_kind wpk on wpk.id = we.id_spool) "
-                                                  "order by typ, mark"),0,1,this);
+                                                  "order by typ, id_u, mark"),0,1,this);
 
     rels.push_back(relWirePart);
     rels.push_back(relElPart);
@@ -46,6 +46,7 @@ Models::Models(QObject *parent) :
     rels.push_back(relPol);
     rels.push_back(relShipType);
     rels.push_back(relAccType);
+    rels.push_back(relKis);
     relElPart->proxyModel()->setFilterKeyColumn(2);
     relWirePart->proxyModel()->setFilterKeyColumn(2);
     setFilter(1);

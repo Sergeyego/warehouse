@@ -20,7 +20,8 @@ public:
     void refresh(QDate dat, bool bypart=true);
     QString getPackName(QString id_part_kis);
     QString getDesc(QString id_part_kis, QString defval=QString());
-    void getPartData(QString kis, QVector<QVector<QVariant>> &data, QStringList &header);
+    void getPartData(QString kis, QVector<QVector<QVariant>> &data);
+    QStringList getPartHeader();
 
 private:
     bool byp;

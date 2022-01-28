@@ -38,8 +38,10 @@ TurnoversModel::TurnoversModel(QObject *parent) : TableModel(parent)
 {
     el_en=true;
     wire_en=true;
+    QStringList head;
     head<<"Номенклатура"<<"Наличие на \nначало периода, кг"<<"Поступление \nс производства, кг"<<"Возврат \nот потребителей, кг"<<"Поступление \nдругое, кг"
        <<"Возврат \nв цех, кг"<<"Отгрузка \nпотребителю, кг"<<"Расход \nдругое, кг"<<"Остаток на \nконец периода, кг";
+    setHeader(head);
 }
 
 void TurnoversModel::refresh(QDate beg, QDate end)
@@ -65,7 +67,6 @@ void TurnoversModel::setWireEn(bool b)
 void TurnoversModel::recalc()
 {
     QVector<QVector<QVariant>> data;
-    QList<QString> ballist = bal.uniqueKeys();
 
     double itogo_beg_kvo=0;
     double itogo_rec_ind=0;
@@ -76,11 +77,15 @@ void TurnoversModel::recalc()
     double itogo_exp_oth=0;
     double itogo_end_kvo=0;
 
-    for (QString kis : ballist){
+    QAbstractItemModel *kisModel = Models::instance()->relKis->model();
 
-        QString t=Models::instance()->relKis->data(kis,2).toString();
-        if ((t=="w" && !wire_en) || (t=="e" && !el_en)){
-            break;
+    for (int i=0; i<kisModel->rowCount(); i++){
+
+        QString kis=kisModel->data(kisModel->index(i,0),Qt::EditRole).toString();
+        QString t = kisModel->data(kisModel->index(i,2),Qt::EditRole).toString();
+
+        if ((t=="w" && !wire_en) || (t=="e" && !el_en) || (!bal.contains(kis) && !acc.contains(kis) && !ship.contains(kis))){
+            continue;
         }
 
         QVector<QVariant> row;
@@ -97,7 +102,7 @@ void TurnoversModel::recalc()
         getAcc(kis,rec_ind,rec_ret,rec_oth);
         getShip(kis,exp_shp,exp_ret,exp_oth);
 
-        row.push_back(Models::instance()->relKis->data(kis));
+        row.push_back(kisModel->data(kisModel->index(i,1),Qt::EditRole).toString());
         row.push_back(beg_kvo);
         row.push_back(rec_ind);
         row.push_back(rec_ret);
@@ -117,6 +122,7 @@ void TurnoversModel::recalc()
         itogo_exp_oth+=exp_oth;
         itogo_end_kvo+=end_kvo;
     }
+
     QVector<QVariant> itogo_row;
     itogo_row.push_back("Итого");
     itogo_row.push_back(itogo_beg_kvo);
@@ -128,7 +134,7 @@ void TurnoversModel::recalc()
     itogo_row.push_back(itogo_exp_oth);
     itogo_row.push_back(itogo_end_kvo);
     data.push_back(itogo_row);
-    setModelData(data,head);
+    setModelData(data);
 }
 
 void TurnoversModel::getAcc(QString kis, double &ind, double &ret, double &oth)

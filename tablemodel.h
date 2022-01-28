@@ -16,7 +16,9 @@ public:
     int rowCount(const QModelIndex &parent=QModelIndex()) const;
     int columnCount(const QModelIndex &parent=QModelIndex()) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-    void setModelData(const QVector<QVector<QVariant>> &data, const QStringList &hdata);
+    void setModelData(const QVector<QVector<QVariant>> &data, const QStringList &hdata = QStringList());
+    void setHeader(const QStringList &hdata);
+    void clear();
 
 private:
     QVector<QVector<QVariant>> p_d;

@@ -51,6 +51,24 @@ void TableModel::setModelData(const QVector<QVector<QVariant> > &data, const QSt
 {
     beginResetModel();
     p_d=data;
+    if(!hdata.isEmpty()){
+        p_header=hdata;
+    }
+    endResetModel();
+}
+
+void TableModel::setHeader(const QStringList &hdata)
+{
+    beginResetModel();
     p_header=hdata;
     endResetModel();
+}
+
+void TableModel::clear()
+{
+    if (rowCount()){
+        beginResetModel();
+        p_d.clear();
+        endResetModel();
+    }
 }
