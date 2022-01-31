@@ -177,23 +177,6 @@
           <widget class="QComboBox" name="comboBoxType"/>
          </item>
          <item>
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>Номер</string>
@@ -271,6 +254,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonEdt">
+           <property name="text">
+            <string>Редактировать табличную часть</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -312,6 +302,9 @@
         </widget>
        </item>
        <item>
+        <widget class="TableView" name="tableViewBal"/>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayoutPush">
          <item>
           <spacer name="horizontalSpacer_4">
@@ -344,6 +337,11 @@
    <class>DateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

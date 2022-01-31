@@ -17,6 +17,12 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->comboBoxPart->addItem(tr("за всё время"));
     ui->comboBoxPart->setCurrentIndex(1);
 
+    modelBalance = new ModelBalance(this);
+    proxyModelBalance = new QSortFilterProxyModel(this);
+    proxyModelBalance->setSourceModel(modelBalance);
+    proxyModelBalance->sort(2);
+    ui->tableViewBal->setModel(proxyModelBalance);
+
     modelShip = new ModelShip(this);
     modelShip->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
     ui->tableViewShip->setModel(modelShip);
@@ -36,6 +42,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     push->addEmptyLock(ui->groupBoxEl);
     push->addEmptyLock(ui->groupBoxWire);
     push->addEmptyLock(ui->pushButton1C);
+    push->addEmptyLock(ui->pushButtonEdt);
     push->addLock(ui->cmdUpdShip);
     push->addLock(ui->checkBoxOnly);
     push->addLock(ui->comboBoxOnly);
@@ -46,19 +53,41 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->comboBoxOnly->completer()->setCompletionMode(QCompleter::PopupCompletion);
     ui->comboBoxOnly->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
-    modelShipEl = new ModelShipEl(this);
+    shipContInfo ei;
+    ei.tablename="otpusk";
+    ei.namId="id";
+    ei.namIdDoc="id_sert";
+    ei.namKis="kis";
+    ei.namIdPart="id_part";
+    ei.namKvo="massa";
+    ei.modelBalence=modelBalance;
+    ei.prefix="e";
+    ei.relPart = new DbRelation(Models::instance()->modelElPart,0,1,this);
+    ei.queryState=QString("select otpusk.id_part, "
+                          "(select case when exists (select id_chem from sert_chem where id_part=otpusk.id_part) "
+                          "then 1 else 0 end "
+                          "+ "
+                          "case when exists(select id_mech from sert_mech where id_part=otpusk.id_part) "
+                          "then 2 else 0 end "
+                          "+ "
+                          "case when exists(select cod from td_keys_el where id_el=(select id_el from parti where id=otpusk.id_part) and id_diam=(select id from diam as d where d.diam=(select diam from parti where id=otpusk.id_part)) and id_pack=(select id_pack from parti where id=otpusk.id_part)) "
+                          "then 4 else 0 end "
+                          "as r) from otpusk where otpusk.id_sert = :id ");
+    modelShipEl = new ModelShipData(ei,this);
     ui->tableViewEl->setModel(modelShipEl);
     ui->tableViewEl->setColumnHidden(0,true);
     ui->tableViewEl->setColumnHidden(1,true);
-    ui->tableViewEl->setColumnWidth(2,350);
-    ui->tableViewEl->setColumnWidth(3,100);
+    ui->tableViewEl->setColumnWidth(2,200);
+    ui->tableViewEl->setColumnWidth(3,350);
+    ui->tableViewEl->setColumnWidth(4,100);
 
-    modelShipWire = new ModelShipWire(this);
+    modelShipWire = new ModelShipWire(modelBalance, this);
     ui->tableViewWire->setModel(modelShipWire);
     ui->tableViewWire->setColumnHidden(0,true);
     ui->tableViewWire->setColumnHidden(1,true);
-    ui->tableViewWire->setColumnWidth(2,350);
-    ui->tableViewWire->setColumnWidth(3,100);
+    ui->tableViewWire->setColumnWidth(2,200);
+    ui->tableViewWire->setColumnWidth(3,350);
+    ui->tableViewWire->setColumnWidth(4,100);
 
     if (readonly){
         ui->tableViewEl->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -76,14 +105,17 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(push,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentShip(int)));
     connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
 
-    //connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart->model(),SLOT(refresh()));
-    //connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart->model(),SLOT(refresh()));
-    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),this,SLOT(updBalance()));
+    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart->model(),SLOT(refresh()));
+    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart->model(),SLOT(refresh()));
 
     connect(modelShipEl, SIGNAL(sigStock(QString)),ui->labelEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigStock(QString)),ui->labelWire,SLOT(setText(QString)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(ui->cmdEdtCods,SIGNAL(clicked(bool)),this,SLOT(edtCods()));
+    connect(ui->tableViewEl->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
+    connect(ui->tableViewWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
+    connect(modelBalance,SIGNAL(sigUpd()),ui->tableViewBal,SLOT(resizeToContents()));
+    connect(ui->pushButtonEdt,SIGNAL(clicked(bool)),this,SLOT(updBalance()));
 
     push->last();
 }
@@ -119,23 +151,18 @@ void FormShip::updShip()
 
 void FormShip::setCurrentShip(int index)
 {
+    ui->pushButtonEdt->setEnabled(true);
+    modelBalance->clear();
+
     int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,0),Qt::EditRole).toInt();
-    int id_pol=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,3),Qt::EditRole).toInt();
-    //qDebug()<<id_pol;
-    QSqlQuery query;
-    query.prepare("select naim from poluch where id = :id");
-    query.bindValue(":id",id_pol);
-    if (query.exec()){
-        ui->lineEditPol->clear();
-        while (query.next()){
-            ui->lineEditPol->setText(query.value(0).toString());
-        }
-    } else {
-        QMessageBox::critical(this,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-    }
+    QString id_pol=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,3),Qt::EditRole).toString();
+
+    ui->lineEditPol->setText(Models::instance()->relPol->data(id_pol,2).toString());
 
     modelShipEl->refresh(id_ship);
     modelShipWire->refresh(id_ship);
+    ui->tableViewEl->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableViewWire->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
 void FormShip::sync()
@@ -147,7 +174,10 @@ void FormShip::sync()
 
 void FormShip::setPartFilter()
 {
-    Models::instance()->setFilter(ui->comboBoxPart->currentIndex());
+    int index=ui->comboBoxPart->currentIndex();
+    Models::instance()->setFilter(index);
+    modelShipEl->setPartFlt(index);
+    modelShipWire->setPartFlt(index);
 }
 
 void FormShip::goXml()
@@ -294,8 +324,24 @@ void FormShip::updPol()
 
 void FormShip::updBalance()
 {
-    QMultiHash<QString,partInfo> info;
-    Models::instance()->sync1C->getBalance(QDate::currentDate().addDays(1),info);
+    const QDate date = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),2),Qt::EditRole).toDate();
+    QAbstractItemView::EditTriggers editTrig=QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::AnyKeyPressed;
+    ui->tableViewEl->setEditTriggers(editTrig);
+    ui->tableViewWire->setEditTriggers(editTrig);
+    modelBalance->updData(date);
+    ui->pushButtonEdt->setEnabled(false);
+    modelShipEl->setFlt("");
+    modelShipWire->setFlt("");
+}
+
+void FormShip::updKisBalance(QModelIndex ind)
+{
+    const QAbstractItemModel *m = ind.model();
+    QString kis;
+    if (ind.isValid()){
+        kis = m->data(m->index(ind.row(),2),Qt::EditRole).toString();
+    }
+    modelBalance->refresh(kis);
 }
 
 QDomElement FormShip::newElement(QString nam, QString val, QDomDocument *doc)
@@ -337,125 +383,17 @@ bool ModelShip::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelShipEl::ModelShipEl(QObject *parent) : DbTableModel("otpusk", parent)
+ModelShipWire::ModelShipWire(ModelBalance *m, QObject *parent) : DbTableModel("wire_shipment_consist", parent)
 {
-    addColumn("id",tr("id"));
-    addColumn("id_sert", tr("id_sert"));
-    addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
-    addColumn("massa",tr("Масса, кг"));
-    setSort("otpusk.id");
-    setDecimals(3,3);
-    currentIdShip=-1;
-    connect(this,SIGNAL(sigUpd()),this,SLOT(refreshState()));
-    connect(this,SIGNAL(sigRefresh()),this,SLOT(refreshState()));
-}
-
-QVariant ModelShipEl::data(const QModelIndex &index, int role) const
-{
-    if((role == Qt::BackgroundColorRole)) {
-        int area = colorState.value(DbTableModel::data(this->index(index.row(),2),Qt::EditRole).toInt());
-        if(area == 4) return QVariant(QColor(255,170,170)); else
-            if(area == 5) return QVariant(QColor(Qt::yellow)); else
-                if(area == 6) return QVariant(QColor(Qt::gray)); else
-                    if(area == 7) return QVariant(QColor(170,255,170)); else
-                        return QVariant(QColor(255,200,100));
-    } else return DbTableModel::data(index,role);
-}
-
-void ModelShipEl::refresh(int id_ship)
-{
-    currentIdShip=id_ship;
-    setFilter("otpusk.id_sert = "+QString::number(id_ship));
-    setDefaultValue(1,id_ship);
-    select();
-}
-
-bool ModelShipEl::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-    bool ok=DbTableModel::setData(index,value,role);
-    if (role==Qt::EditRole){
-        emit sigStock(tr("Остаток на день отгрузки: ")+QString::number(getStock(index))+tr(" кг"));
-    }
-    return ok;
-}
-
-void ModelShipEl::revert()
-{
-    emit sigStock("");
-    return DbTableModel::revert();
-}
-
-bool ModelShipEl::submit()
-{
-    bool ok = false;
-    if (this->isEdt()){
-        double kvo=this->data(this->index(currentEdtRow(),3),Qt::EditRole).toDouble();
-        double m=getStock(this->index(currentEdtRow(),3));
-        if (kvo>=0 && m>=kvo){
-            ok=DbTableModel::submit();
-        } else {
-            QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на день отгрузки числится ")+
-                                  QLocale().toString(m,'f',2)+tr(" кг электродов этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Cancel);
-        }
-    }  else {
-        return DbTableModel::submit();
-    }
-    if (ok) emit sigStock("");
-    return ok;
-}
-
-double ModelShipEl::getStock(QModelIndex index)
-{
-    double kvo=0;
-    if (index.row()>=0 && index.row()<this->rowCount()){
-        int id_part = this->data(this->index(index.row(),2),Qt::EditRole).toInt();
-        int id_ship = this->data(this->index(index.row(),1),Qt::EditRole).toInt();
-        QSqlQuery query;
-        query.prepare("select kvoRs from calc_parti_one(:id_part, (select dat_vid from sertifikat where id = :id_ship ))");
-        query.bindValue(":id_part",id_part);
-        query.bindValue(":id_ship",id_ship);
-        if (query.exec()){
-            while (query.next()){
-                kvo = query.value(0).toDouble();
-            }
-        } else {
-            QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-        }
-    }
-    return kvo;
-}
-
-void ModelShipEl::refreshState()
-{
-    QSqlQuery query;
-    query.setForwardOnly(true);
-    query.prepare("select otpusk.id_part, "
-                  "(select case when exists (select id_chem from sert_chem where id_part=otpusk.id_part) "
-                  "then 1 else 0 end "
-                  "+ "
-                  "case when exists(select id_mech from sert_mech where id_part=otpusk.id_part) "
-                  "then 2 else 0 end "
-                  "+ "
-                  "case when exists(select cod from td_keys_el where id_el=(select id_el from parti where id=otpusk.id_part) and id_diam=(select id from diam as d where d.diam=(select diam from parti where id=otpusk.id_part)) and id_pack=(select id_pack from parti where id=otpusk.id_part)) "
-                  "then 4 else 0 end "
-                  "as r) from otpusk where otpusk.id_sert = :id ");
-    query.bindValue(":id",currentIdShip);
-    if (query.exec()){
-        colorState.clear();
-        while (query.next()){
-            colorState[query.value(0).toInt()]=query.value(1).toInt();
-        }
-        emit dataChanged(this->index(0,0),this->index(this->rowCount()-1,this->columnCount()-1));
-    } else {
-        QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Ok);
-    }
-}
-
-ModelShipWire::ModelShipWire(QObject *parent) : DbTableModel("wire_shipment_consist", parent)
-{
+    modelBalence = m;
+    fltind=1;
+    relPart = new DbRelation(Models::instance()->modelWirePart,0,1,this);
+    relPart->proxyModel()->setFilterKeyColumn(2);
+    setFlt("");
     addColumn("id",tr("id"));
     addColumn("id_ship", tr("id_sert"));
-    addColumn("id_wparti",tr("Партия"),Models::instance()->relWirePart);
+    addColumn("kis",tr("Номенклатура"),Models::instance()->relKis);
+    addColumn("id_wparti",tr("Партия"),relPart);
     addColumn("m_netto",tr("Масса, кг"));
     setSort("wire_shipment_consist.id");
     currentIdShip=-1;
@@ -467,7 +405,7 @@ ModelShipWire::ModelShipWire(QObject *parent) : DbTableModel("wire_shipment_cons
 QVariant ModelShipWire::data(const QModelIndex &index, int role) const
 {
     if((role == Qt::BackgroundColorRole)) {
-        int area = colorState.value(DbTableModel::data(this->index(index.row(),2),Qt::EditRole).toInt());
+        int area = colorState.value(DbTableModel::data(this->index(index.row(),3),Qt::EditRole).toInt());
         if(area == 4) return QVariant(QColor(255,170,170)); else
             if(area == 5) return QVariant(QColor(Qt::yellow)); else
                 if(area == 6) return QVariant(QColor(Qt::gray)); else
@@ -487,8 +425,14 @@ void ModelShipWire::refresh(int id_ship)
 bool ModelShipWire::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     bool ok=DbTableModel::setData(index,value,role);
-    if (role==Qt::EditRole){
-        emit sigStock(tr("Остаток на день отгрузки: ")+QString::number(getStock(index))+tr(" кг"));
+    if (role==Qt::EditRole) {
+        if (index.column()==2){
+            QString kis=value.toString();
+            modelBalence->refresh(kis);
+            setFlt(kis);
+        } else if (index.column()==3){
+            emit sigStock(tr("Остаток на день отгрузки: ")+QString::number(getStock(index))+tr(" кг"));
+        }
     }
     return ok;
 }
@@ -497,7 +441,7 @@ bool ModelShipWire::submit()
 {
     bool ok = false;
     if (this->isEdt()){
-        double kvo=this->data(this->index(currentEdtRow(),3),Qt::EditRole).toDouble();
+        double kvo=this->data(this->index(currentEdtRow(),4),Qt::EditRole).toDouble();
         double m=getStock(this->index(currentEdtRow(),3));
         if (kvo>=0 && m>=kvo){
             ok=DbTableModel::submit();
@@ -518,26 +462,26 @@ void ModelShipWire::revert()
     return DbTableModel::revert();
 }
 
+void ModelShipWire::setFlt(QString kis)
+{
+    int year=QDate::currentDate().year();
+    QString pattern;
+    QString fkis = !kis.isEmpty() ? kis+"-" : "";
+    if (fltind==0){
+        pattern=fkis+QString::number(year);
+    } else if (fltind==1){
+        pattern=fkis+QString::number(year-1)+"|"+fkis+QString::number(year);
+    } else {
+        pattern=kis;
+    }
+    relPart->proxyModel()->setFilterRegExp(pattern);
+}
+
 
 double ModelShipWire::getStock(QModelIndex index)
 {
-    double kvo=0;
-    if (index.row()>=0 && index.row()<this->rowCount()){
-        int id_part = this->data(this->index(index.row(),2),Qt::EditRole).toInt();
-        int id_ship = this->data(this->index(index.row(),1),Qt::EditRole).toInt();
-        QSqlQuery query;
-        query.prepare("select st from wire_calc_stock((select dat_vid from sertifikat where id = :id_ship)) where id_wparti= :id_part");
-        query.bindValue(":id_part",id_part);
-        query.bindValue(":id_ship",id_ship);
-        if (query.exec()){
-            while (query.next()){
-                kvo = query.value(0).toDouble();
-            }
-        } else {
-            QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-        }
-    }
-    return kvo;
+    int id_part = this->data(this->index(index.row(),3),Qt::EditRole).toInt();
+    return modelBalence->getStock("w:"+QString::number(id_part));
 }
 
 void ModelShipWire::refreshState()
@@ -570,4 +514,221 @@ void ModelShipWire::refreshState()
     } else {
         QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Ok);
     }
+}
+
+void ModelShipWire::setPartFlt(int ind)
+{
+    fltind=ind;
+    setFlt("");
+}
+
+ModelBalance::ModelBalance(QObject *parent) : TableModel(parent)
+{
+    QStringList head;
+    head<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон";
+    setHeader(head);
+}
+
+void ModelBalance::updData(QDate dat)
+{
+    Models::instance()->sync1C->getBalance(dat.addDays(1),part);
+    Models::instance()->sync1C->getContBalance(dat.addDays(1),cont);
+}
+
+double ModelBalance::getStock(QString ide)
+{
+    double kvo=0;
+    QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();
+    while (i != part.constEnd()) {
+        partInfo pinfo=i.value();
+        if (pinfo.id_part_kis==ide){
+            kvo+=pinfo.kvo;
+        }
+        ++i;
+    }
+    return kvo;
+}
+
+void ModelBalance::clear()
+{
+    part.clear();
+    cont.clear();
+    TableModel::clear();
+}
+
+QString ModelBalance::getPackName(QString id_part_kis)
+{
+    QStringList idpl = id_part_kis.split(":");
+    QString pack;
+    if (idpl.size()>1){
+        QString id_part=idpl.at(1);
+        if (idpl.at(0)=="w"){
+            pack=Models::instance()->relWirePart->data(id_part,3).toString();
+        } else if (idpl.at(0)=="e"){
+            pack=Models::instance()->relElPart->data(id_part,3).toString();
+        }
+    }
+    return pack;
+}
+
+QString ModelBalance::getDesc(QString id_part_kis, QString defval)
+{
+    QStringList idpl = id_part_kis.split(":");
+    QString desc=defval;
+    if (idpl.size()>1){
+        QString id_part=idpl.at(1);
+        if (idpl.at(0)=="e"){
+            QString prim=Models::instance()->relElPart->data(id_part,4).toString();
+            if (!prim.isEmpty()){
+                desc=prim;
+            }
+        }
+    }
+    return desc;
+}
+
+void ModelBalance::refresh(QString kis)
+{
+    QVector<QVector<QVariant>> tmpd;
+    QList<partInfo> list = part.values(kis);
+    for (partInfo i : list){
+        QVector<QVariant> row;
+        contInfo cnt = cont.value(i.contKey);
+        row.push_back(i.name);
+        row.push_back(getPackName(i.id_part_kis));
+        row.push_back(i.number);
+        row.push_back(i.ist);
+        row.push_back(i.rcp);
+        row.push_back(getDesc(i.id_part_kis,i.desc));
+        row.push_back(i.kvo);
+        row.push_back(i.prich);
+        row.push_back(i.rasch);
+        row.push_back(cnt.zone);
+        row.push_back(cnt.cell);
+        row.push_back(cnt.name);
+        tmpd.push_back(row);
+    }
+    setModelData(tmpd);
+}
+
+ModelShipData::ModelShipData(shipContInfo c, QObject *parent) : DbTableModel(c.tablename,parent)
+{
+    info=c;
+    fltind=1;
+    info.relPart->proxyModel()->setFilterKeyColumn(2);
+    setFlt("");
+    addColumn(info.namId,tr("id"));
+    addColumn(info.namIdDoc, tr("id_sert"));
+    addColumn(info.namKis,tr("Номенклатура"),Models::instance()->relKis);
+    addColumn(info.namIdPart,tr("Партия"),info.relPart);
+    addColumn(info.namKvo,tr("Масса, кг"));
+    setSort(info.tablename+"."+info.namId);
+    currentIdShip=-1;
+    setDecimals(4,3);
+    connect(this,SIGNAL(sigUpd()),this,SLOT(refreshState()));
+    connect(this,SIGNAL(sigRefresh()),this,SLOT(refreshState()));
+}
+
+QVariant ModelShipData::data(const QModelIndex &index, int role) const
+{
+    if ((role == Qt::BackgroundColorRole)) {
+        int area = colorState.value(DbTableModel::data(this->index(index.row(),3),Qt::EditRole).toInt());
+        if (area == 4) return QVariant(QColor(255,170,170)); else
+            if (area == 5) return QVariant(QColor(Qt::yellow)); else
+                if (area == 6) return QVariant(QColor(Qt::gray)); else
+                    if (area == 7) return QVariant(QColor(170,255,170)); else
+                        return QVariant(QColor(255,200,100));
+    } else return DbTableModel::data(index,role);
+}
+
+void ModelShipData::refresh(int id_ship)
+{
+    currentIdShip=id_ship;
+    setFilter(info.tablename+"."+info.namIdDoc+" = "+QString::number(id_ship));
+    setDefaultValue(1,id_ship);
+    select();
+}
+
+bool ModelShipData::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    bool ok=DbTableModel::setData(index,value,role);
+    if (role==Qt::EditRole) {
+        if (index.column()==2){
+            QString kis=value.toString();
+            info.modelBalence->refresh(kis);
+            setFlt(kis);
+        } else if (index.column()==3){
+            emit sigStock(tr("Остаток на день отгрузки: ")+QString::number(getStock(index))+tr(" кг"));
+        }
+    }
+    return ok;
+}
+
+bool ModelShipData::submit()
+{
+    bool ok = false;
+    if (this->isEdt()){
+        double kvo=this->data(this->index(currentEdtRow(),4),Qt::EditRole).toDouble();
+        double m=getStock(this->index(currentEdtRow(),3));
+        if (kvo>=0 && m>=kvo){
+            ok=DbTableModel::submit();
+        } else {
+            QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на день отгрузки числится ")+
+                                  QLocale().toString(m,'f',2)+tr(" кг номенклатуры этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Cancel);
+        }
+    } else {
+        return DbTableModel::submit();
+    }
+    if (ok) emit sigStock("");
+    return ok;
+}
+
+void ModelShipData::revert()
+{
+    emit sigStock("");
+    return DbTableModel::revert();
+}
+
+void ModelShipData::setFlt(QString kis)
+{
+    int year=QDate::currentDate().year();
+    QString pattern;
+    QString fkis = !kis.isEmpty() ? kis+"-" : "";
+    if (fltind==0){
+        pattern=fkis+QString::number(year);
+    } else if (fltind==1){
+        pattern=fkis+QString::number(year-1)+"|"+fkis+QString::number(year);
+    } else {
+        pattern=kis;
+    }
+    info.relPart->proxyModel()->setFilterRegExp(pattern);
+}
+
+double ModelShipData::getStock(QModelIndex index)
+{
+    int id_part = this->data(this->index(index.row(),3),Qt::EditRole).toInt();
+    return info.modelBalence->getStock(info.prefix+":"+QString::number(id_part));
+}
+
+void ModelShipData::refreshState()
+{
+    QSqlQuery query;
+    query.setForwardOnly(true);
+    query.prepare(info.queryState);
+    query.bindValue(":id",currentIdShip);
+    if (query.exec()){
+        colorState.clear();
+        while (query.next()){
+            colorState[query.value(0).toInt()]=query.value(1).toInt();
+        }
+        emit dataChanged(this->index(0,0),this->index(this->rowCount()-1,this->columnCount()-1));
+    } else {
+        QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Ok);
+    }
+}
+
+void ModelShipData::setPartFlt(int ind)
+{
+    fltind=ind;
+    setFlt("");
 }

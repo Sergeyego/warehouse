@@ -55,6 +55,7 @@ void TableModel::setModelData(const QVector<QVector<QVariant> > &data, const QSt
         p_header=hdata;
     }
     endResetModel();
+    emit sigUpd();
 }
 
 void TableModel::setHeader(const QStringList &hdata)

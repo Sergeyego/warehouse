@@ -7,24 +7,28 @@ Models::Models(QObject *parent) :
 {
     sync1C = new Sync1C(this);
 
-    relWirePart = new DbRelation(new DbRelationalModel("select p.id, m.n_s ||' '||date_part('year',m.dat) ||' '||pr.nam ||' '|| d.sdim || ' '|| k.short || "
-                                                       "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || '"+tr(" кг)")+"') ELSE ' ' END as part, date_part('year',m.dat), "
-                                                       "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || '"+tr(" кг)")+"') ELSE ' ' END "
-                                                       "from wire_parti as p "
-                                                       "inner join wire_parti_m as m on p.id_m=m.id "
-                                                       "inner join provol as pr on pr.id=m.id_provol "
-                                                       "inner join diam as d on d.id=m.id_diam "
-                                                       "inner join wire_pack_kind as k on k.id=p.id_pack "
-                                                       "inner join wire_pack as t on t.id=p.id_pack_type "
-                                                       "order by part desc",this),0,1,this);
-    relElPart = new DbRelation(new DbRelationalModel("select p.id, p.n_s||' '||cast(p.dat_part as varchar(96))||' '||e.marka||' "+tr("ф")+"'||p.diam || ' ('||ep.pack_ed||')' as str, "
-                                                     "date_part('year',p.dat_part), ep.pack_ed, p.prim_prod "
-                                                     "from parti p "
-                                                     "inner join el_pack ep on ep.id=p.id_pack "
-                                                     "inner join elrtr e on e.id=p.id_el order by str desc",this),0,1,this);
-    relEl = new DbRelation(new DbRelationalModel("select id, marka from elrtr order by marka",this),0,1,this);
+    modelElPart = new DbRelationalModel("select p.id, p.n_s||' '||cast(p.dat_part as varchar(96))||' '||e.marka||'ф'||p.diam || ' ('||ep.pack_ed||')' as str, "
+                                        "p.id_el ||':'||(select d.id from diam d where d.diam=p.diam)||'-'|| date_part('year',p.dat_part), ep.pack_ed, p.prim_prod "
+                                        "from parti p "
+                                        "inner join el_pack ep on ep.id=p.id_pack "
+                                        "inner join elrtr e on e.id=p.id_el order by str desc",this);
 
-    relPol = new DbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-') from poluch order by short",this),0,1,this);
+    modelWirePart = new DbRelationalModel("select p.id, m.n_s ||' '||date_part('year',m.dat) ||' '||pr.nam ||' '|| d.sdim || ' '|| k.short || "
+                                          "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || ' кг)') ELSE ' ' END as part, "
+                                          "m.id_provol ||':'|| m.id_diam ||':'|| p.id_pack ||'-'||date_part('year',m.dat), "
+                                          "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || ' кг)') ELSE ' ' END "
+                                          "from wire_parti as p "
+                                          "inner join wire_parti_m as m on p.id_m=m.id "
+                                          "inner join provol as pr on pr.id=m.id_provol "
+                                          "inner join diam as d on d.id=m.id_diam "
+                                          "inner join wire_pack_kind as k on k.id=p.id_pack "
+                                          "inner join wire_pack as t on t.id=p.id_pack_type "
+                                          "order by part desc",this);
+
+    relWirePart = new DbRelation(modelWirePart,0,1,this);
+    relElPart = new DbRelation(modelElPart,0,1,this);
+
+    relPol = new DbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-'), naim from poluch order by short",this),0,1,this);
     relShipType = new DbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1,this);
     relAccType = new DbRelation(new DbRelationalModel("select id, nam from acceptance_type order by nam",this),0,1,this);
 

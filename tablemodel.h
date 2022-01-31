@@ -23,6 +23,9 @@ public:
 private:
     QVector<QVector<QVariant>> p_d;
     QStringList p_header;
+
+signals:
+    void sigUpd();
 };
 
 #endif // TABLEMODEL_H

@@ -21,6 +21,8 @@ public:
     DbRelation *relShipType;
     DbRelation *relAccType;
     DbRelation *relKis;
+    DbRelationalModel *modelElPart;
+    DbRelationalModel *modelWirePart;
 
 public slots:
     void refresh();

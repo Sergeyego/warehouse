@@ -7,10 +7,42 @@
 #include "dialogcods.h"
 #include <QDomDocument>
 #include "models.h"
+#include "tablemodel.h"
 
 namespace Ui {
 class FormShip;
 }
+
+class ModelBalance;
+
+struct shipContInfo {
+    QString tablename;
+    QString namId;
+    QString namIdDoc;
+    QString namKis;
+    QString namIdPart;
+    QString namKvo;
+    QString queryState;
+    QString prefix;
+    ModelBalance *modelBalence;
+    DbRelation *relPart;
+};
+
+class ModelBalance : public TableModel
+{
+    Q_OBJECT
+public:
+    ModelBalance(QObject *parent=0);
+    void refresh(QString kis);
+    void updData(QDate dat);
+    double getStock(QString ide);
+    void clear();
+private:
+    QMultiHash<QString,partInfo> part;
+    QHash<QString,contInfo> cont;
+    QString getPackName(QString id_part_kis);
+    QString getDesc(QString id_part_kis, QString defval=QString());
+};
 
 class ModelShip : public DbTableModel
 {
@@ -19,27 +51,31 @@ public:
     ModelShip(QObject *parent=0);
     void refresh(QDate beg, QDate end, int id_pol=-1);
     bool insertRow(int row, const QModelIndex &parent = QModelIndex());
-
-private:
-
 };
 
-class ModelShipEl : public DbTableModel
+class ModelShipData : public DbTableModel
 {
     Q_OBJECT
 public:
-    ModelShipEl(QObject *parent=0);
+    ModelShipData(shipContInfo c, QObject *parent=0);
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const;
     void refresh(int id_ship);
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
     bool submit();
     void revert();
+    void setFlt(QString kis);
+
 public slots:
     double getStock(QModelIndex index);
     void refreshState();
+    void setPartFlt(int ind);
+
 private:
+    shipContInfo info;
     QMap <int,int> colorState;
     int currentIdShip;
+    int fltind;
+
 signals:
     void sigStock(QString mes);
 };
@@ -48,18 +84,24 @@ class ModelShipWire : public DbTableModel
 {
     Q_OBJECT
 public:
-    ModelShipWire(QObject *parent=0);
+    ModelShipWire(ModelBalance *m, QObject *parent=0);
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const;
     void refresh(int id_ship);
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
     bool submit();
     void revert();
+    void setFlt(QString kis);
+
 public slots:
     double getStock(QModelIndex index);
     void refreshState();
+    void setPartFlt(int ind);
 private:
     QMap <int,int> colorState;
     int currentIdShip;
+    ModelBalance *modelBalence;
+    DbRelation *relPart;
+    int fltind;
 signals:
     void sigStock(QString mes);
 };
@@ -76,8 +118,10 @@ private:
     Ui::FormShip *ui;
     ModelShip *modelShip;
     DbMapper *push;
-    ModelShipEl *modelShipEl;
+    ModelShipData *modelShipEl;
     ModelShipWire *modelShipWire;
+    ModelBalance *modelBalance;
+    QSortFilterProxyModel *proxyModelBalance;
     void loadsettings();
     void savesettings();
     QDomElement newElement(QString nam, QString val,  QDomDocument *doc);
@@ -93,6 +137,7 @@ private slots:
     void edtCods();
     void updPol();
     void updBalance();
+    void updKisBalance(QModelIndex ind);
 };
 
 #endif // FORMSHIP_H
