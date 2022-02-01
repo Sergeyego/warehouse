@@ -8,7 +8,7 @@ Sync1C::Sync1C(QObject *parent): QObject(parent)
 
 void Sync1C::getBalance(QDate dat, QMultiHash<QString, partInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усОстаткиТоваров/Balance(Period=datetime'%1')?$expand=КлючАналитикиУчетаНоменклатуры/*"
+    QString obj=QString("AccumulationRegister_усОстаткиТоваров/Balance(Period=datetime'%1T23:59:59')?$expand=КлючАналитикиУчетаНоменклатуры/*"
                         "&$select=КлючАналитикиУчетаНоменклатуры/Номенклатура/КодКИС,КлючАналитикиУчетаНоменклатуры/Номенклатура/Description,"
                         "КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/КодКис,КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/Description,"
                         "КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/РецептураПлавка,КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/Комментарий,"
@@ -40,7 +40,7 @@ void Sync1C::getBalance(QDate dat, QMultiHash<QString, partInfo> &info)
 
 void Sync1C::getContBalance(QDate dat, QHash<QString, contInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усПоложениеКонтейнеров/Balance(Period=datetime'%1')"
+    QString obj=QString("AccumulationRegister_усПоложениеКонтейнеров/Balance(Period=datetime'%1T23:59:59')"
                         "?$expand=Ячейка,Контейнер&$select=Контейнер_Key,Ячейка,Контейнер/Description,КоличествоBalance,КоличествоПриходBalance,КоличествоРасходBalance").arg(dat.toString("yyyy-MM-dd"));
     QJsonObject o=getSync(obj);
     QJsonArray json=o.value("value").toArray();
@@ -63,7 +63,7 @@ void Sync1C::getContBalance(QDate dat, QHash<QString, contInfo> &info)
 
 void Sync1C::getBalanceAndTurnovers(QDate beg, QDate end, QMultiHash<QString, turnInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усОстаткиТоваров/BalanceAndTurnovers(StartPeriod=datetime'%1', EndPeriod=datetime'%2')"
+    QString obj=QString("AccumulationRegister_усОстаткиТоваров/BalanceAndTurnovers(StartPeriod=datetime'%1T00:00:00', EndPeriod=datetime'%2T23:59:59')"
                         "?$expand=КлючАналитикиУчетаНоменклатуры/*&$select=КоличествоOpeningBalance,КоличествоReceipt,КоличествоExpense,КоличествоClosingBalance,"
                         "Контейнер_Key,КлючАналитикиУчетаНоменклатуры/Номенклатура/КодКИС,"
                         "КлючАналитикиУчетаНоменклатуры/ПартияНоменклатуры/КодКис").arg(beg.toString("yyyy-MM-dd")).arg(end.toString("yyyy-MM-dd"));
@@ -89,7 +89,7 @@ void Sync1C::getBalanceAndTurnovers(QDate beg, QDate end, QMultiHash<QString, tu
 
 void Sync1C::getAcceptanceTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усКонтрольПриемки/Turnovers(StartPeriod=datetime'%1', EndPeriod=datetime'%2')"
+    QString obj=QString("AccumulationRegister_усКонтрольПриемки/Turnovers(StartPeriod=datetime'%1T00:00:00', EndPeriod=datetime'%2T23:59:59')"
                         "?$expand=ОжидаемаяПриемка/ИсточникПоступления,Номенклатура,ПартияНоменклатуры&$select=КоличествоПринятоTurnover,ОжидаемаяПриемка/ИсточникПоступления/Description,"
                         "Номенклатура/КодКИС,Номенклатура/Description,ПартияНоменклатуры/КодКис,ПартияНоменклатуры/Description").arg(beg.toString("yyyy-MM-dd")).arg(end.toString("yyyy-MM-dd"));
     QJsonObject o=getSync(obj);
@@ -112,7 +112,7 @@ void Sync1C::getAcceptanceTurnovers(QDate beg, QDate end, QMultiHash<QString, ac
 
 void Sync1C::getShipTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo> &info)
 {
-    QString obj=QString("AccumulationRegister_усКонтрольОтгрузки/Turnovers(StartPeriod=datetime'%1', EndPeriod=datetime'%2')"
+    QString obj=QString("AccumulationRegister_усКонтрольОтгрузки/Turnovers(StartPeriod=datetime'%1T00:00:00', EndPeriod=datetime'%2T23:59:59')"
                         "?$expand=ЗаказНаОтгрузку/НаправлениеОтгрузки,Номенклатура,ПартияНоменклатуры&$select=КоличествоОтгруженоTurnover,ЗаказНаОтгрузку/НаправлениеОтгрузки/Description,"
                         "Номенклатура/КодКИС,Номенклатура/Description,ПартияНоменклатуры/КодКис,ПартияНоменклатуры/Description").arg(beg.toString("yyyy-MM-dd")).arg(end.toString("yyyy-MM-dd"));
     QJsonObject o=getSync(obj);

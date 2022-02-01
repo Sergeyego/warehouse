@@ -9,6 +9,7 @@
 #include "formpoluch.h"
 #include "formbalance.h"
 #include "formturnovers.h"
+#include "olap/cubewidget.h"
 
 namespace Ui {
 class MainWindow;
@@ -34,6 +35,10 @@ private slots:
     void newFormPoluch();
     void newFormBalance();
     void newFormTurnovers();
+    void newAnShipEl();
+    void newAnShipWire();
+    void newAnAccEl();
+    void newAnAccWire();
 
 private:
     Ui::MainWindow *ui;

@@ -264,41 +264,49 @@
         </layout>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBoxEl">
-         <property name="title">
+        <widget class="QLabel" name="labelSumEl">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
           <string>Электроды</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="DbViewer" name="tableViewEl"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelEl">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBoxWire">
-         <property name="title">
+        <widget class="DbViewer" name="tableViewEl"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelEl">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelSumWire">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
           <string>Проволока</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="DbViewer" name="tableViewWire"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelWire">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="DbViewer" name="tableViewWire"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelWire">
+         <property name="text">
+          <string/>
+         </property>
         </widget>
        </item>
        <item>
@@ -329,6 +337,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
+  <customwidget>
    <class>DbViewer</class>
    <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
@@ -337,11 +350,6 @@
    <class>DateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbviewer.h</header>
-  </customwidget>
-  <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

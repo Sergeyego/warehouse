@@ -60,6 +60,7 @@ private slots:
 signals:
     void currentIndexChanged(int index);
     void lockChanged(bool l);
+    void sigWrite();
 };
 
 #endif // DBMAPPER_H

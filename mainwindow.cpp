@@ -12,6 +12,10 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
     actAction(ui->actionBalance,&MainWindow::newFormBalance);
     actAction(ui->actionTurnovers,&MainWindow::newFormTurnovers);
+    actAction(ui->actionAnShipEl,&MainWindow::newAnShipEl);
+    actAction(ui->actionAnShipWire,&MainWindow::newAnShipWire);
+    actAction(ui->actionAnAccEl,&MainWindow::newAnAccEl);
+    actAction(ui->actionAnAccWire,&MainWindow::newAnAccWire);
 
     loadSettings();
     connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
@@ -100,6 +104,34 @@ void MainWindow::newFormTurnovers()
 {
     if (!exist(sender())){
         addSubWindow(new FormTurnovers(),sender());
+    }
+}
+
+void MainWindow::newAnShipEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new CubeWidget(23),sender());
+    }
+}
+
+void MainWindow::newAnShipWire()
+{
+    if (!exist(sender())){
+        addSubWindow(new CubeWidget(22),sender());
+    }
+}
+
+void MainWindow::newAnAccEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new CubeWidget(19),sender());
+    }
+}
+
+void MainWindow::newAnAccWire()
+{
+    if (!exist(sender())){
+        addSubWindow(new CubeWidget(21),sender());
     }
 }
 

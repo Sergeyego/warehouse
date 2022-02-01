@@ -28,6 +28,7 @@ Models::Models(QObject *parent) :
     relWirePart = new DbRelation(modelWirePart,0,1,this);
     relElPart = new DbRelation(modelElPart,0,1,this);
 
+    relEl = new DbRelation(new DbRelationalModel("select id, marka from elrtr order by marka",this),0,1,this);
     relPol = new DbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-'), naim from poluch order by short",this),0,1,this);
     relShipType = new DbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1,this);
     relAccType = new DbRelation(new DbRelationalModel("select id, nam from acceptance_type order by nam",this),0,1,this);

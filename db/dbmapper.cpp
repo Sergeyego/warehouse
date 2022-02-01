@@ -224,6 +224,9 @@ void DbMapper::slotWrite()
             lock(false);
         }
         mapper->setCurrentIndex(mapper->currentIndex());
+        if (ok){
+            emit sigWrite();
+        }
     }
 }
 

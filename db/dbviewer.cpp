@@ -168,7 +168,7 @@ void DbViewer::contextMenuEvent(QContextMenuEvent *event)
         menu.addAction(updAct);
         menu.addSeparator();
         if (this->selectionModel()){
-            if (this->indexAt(event->pos()).isValid()){
+            if (this->indexAt(event->pos()).isValid() && this->editTriggers()!=QAbstractItemView::NoEditTriggers){
                 menu.addAction(removeAct);
                 menu.addSeparator();
             }

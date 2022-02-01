@@ -39,8 +39,8 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     push->addMapping(ui->comboBoxPol,3);
     push->addMapping(ui->comboBoxType,4);
     push->setDefaultFocus(3);
-    push->addEmptyLock(ui->groupBoxEl);
-    push->addEmptyLock(ui->groupBoxWire);
+    push->addEmptyLock(ui->tableViewEl);
+    push->addEmptyLock(ui->tableViewWire);
     push->addEmptyLock(ui->pushButton1C);
     push->addEmptyLock(ui->pushButtonEdt);
     push->addLock(ui->cmdUpdShip);
@@ -81,7 +81,33 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->tableViewEl->setColumnWidth(3,350);
     ui->tableViewEl->setColumnWidth(4,100);
 
-    modelShipWire = new ModelShipWire(modelBalance, this);
+    shipContInfo wi;
+    wi.tablename="wire_shipment_consist";
+    wi.namId="id";
+    wi.namIdDoc="id_ship";
+    wi.namKis="kis";
+    wi.namIdPart="id_wparti";
+    wi.namKvo="m_netto";
+    wi.modelBalence=modelBalance;
+    wi.prefix="w";
+    wi.relPart = new DbRelation(Models::instance()->modelWirePart,0,1,this);
+    wi.queryState=QString("select wire_shipment_consist.id_wparti, "
+                          "(select case when exists(select id from wire_parti_chem "
+                          "where id_part=(select p.id_m from wire_parti as p where p.id = wire_shipment_consist.id_wparti)) "
+                          "then 1 else 0 end "
+                          "+ "
+                          "case when exists(select id from wire_parti_mech "
+                          "where id_part=(select p.id_m from wire_parti as p where p.id = wire_shipment_consist.id_wparti)) "
+                          "then 2 else 0 end "
+                          "+ "
+                          "case when exists(select cod from td_keys_wire "
+                          "where id_prov=(select m.id_provol from wire_parti as wp inner join wire_parti_m as m on wp.id_m=m.id where wp.id=wire_shipment_consist.id_wparti) "
+                          "and id_diam=(select m.id_diam from wire_parti as wp inner join wire_parti_m as m on wp.id_m=m.id where wp.id=wire_shipment_consist.id_wparti) "
+                          "and id_spool=(select wp.id_pack from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti) "
+                          "and id_pack=(select wp.id_pack_type from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti)) "
+                          "then 4 else 0 end "
+                          "as r) from wire_shipment_consist where wire_shipment_consist.id_ship = :id ");
+    modelShipWire = new ModelShipData(wi, this);
     ui->tableViewWire->setModel(modelShipWire);
     ui->tableViewWire->setColumnHidden(0,true);
     ui->tableViewWire->setColumnHidden(1,true);
@@ -116,6 +142,9 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(ui->tableViewWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
     connect(modelBalance,SIGNAL(sigUpd()),ui->tableViewBal,SLOT(resizeToContents()));
     connect(ui->pushButtonEdt,SIGNAL(clicked(bool)),this,SLOT(updBalance()));
+    connect(push,SIGNAL(sigWrite()),this,SLOT(updBalance()));
+    connect(modelShipEl, SIGNAL(sigSum(QString)),ui->labelSumEl,SLOT(setText(QString)));
+    connect(modelShipWire, SIGNAL(sigSum(QString)),ui->labelSumWire,SLOT(setText(QString)));
 
     push->last();
 }
@@ -383,156 +412,17 @@ bool ModelShip::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelShipWire::ModelShipWire(ModelBalance *m, QObject *parent) : DbTableModel("wire_shipment_consist", parent)
-{
-    modelBalence = m;
-    fltind=1;
-    relPart = new DbRelation(Models::instance()->modelWirePart,0,1,this);
-    relPart->proxyModel()->setFilterKeyColumn(2);
-    setFlt("");
-    addColumn("id",tr("id"));
-    addColumn("id_ship", tr("id_sert"));
-    addColumn("kis",tr("Номенклатура"),Models::instance()->relKis);
-    addColumn("id_wparti",tr("Партия"),relPart);
-    addColumn("m_netto",tr("Масса, кг"));
-    setSort("wire_shipment_consist.id");
-    currentIdShip=-1;
-    setDecimals(3,3);
-    connect(this,SIGNAL(sigUpd()),this,SLOT(refreshState()));
-    connect(this,SIGNAL(sigRefresh()),this,SLOT(refreshState()));
-}
-
-QVariant ModelShipWire::data(const QModelIndex &index, int role) const
-{
-    if((role == Qt::BackgroundColorRole)) {
-        int area = colorState.value(DbTableModel::data(this->index(index.row(),3),Qt::EditRole).toInt());
-        if(area == 4) return QVariant(QColor(255,170,170)); else
-            if(area == 5) return QVariant(QColor(Qt::yellow)); else
-                if(area == 6) return QVariant(QColor(Qt::gray)); else
-                    if(area == 7) return QVariant(QColor(170,255,170)); else
-                        return QVariant(QColor(255,200,100));
-    } else return DbTableModel::data(index,role);
-}
-
-void ModelShipWire::refresh(int id_ship)
-{
-    currentIdShip=id_ship;
-    setFilter("wire_shipment_consist.id_ship = "+QString::number(id_ship));
-    setDefaultValue(1,id_ship);
-    select();
-}
-
-bool ModelShipWire::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-    bool ok=DbTableModel::setData(index,value,role);
-    if (role==Qt::EditRole) {
-        if (index.column()==2){
-            QString kis=value.toString();
-            modelBalence->refresh(kis);
-            setFlt(kis);
-        } else if (index.column()==3){
-            emit sigStock(tr("Остаток на день отгрузки: ")+QString::number(getStock(index))+tr(" кг"));
-        }
-    }
-    return ok;
-}
-
-bool ModelShipWire::submit()
-{
-    bool ok = false;
-    if (this->isEdt()){
-        double kvo=this->data(this->index(currentEdtRow(),4),Qt::EditRole).toDouble();
-        double m=getStock(this->index(currentEdtRow(),3));
-        if (kvo>=0 && m>=kvo){
-            ok=DbTableModel::submit();
-        } else {
-            QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на день отгрузки числится ")+
-                                  QLocale().toString(m,'f',2)+tr(" кг проволоки этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Cancel);
-        }
-    } else {
-        return DbTableModel::submit();
-    }
-    if (ok) emit sigStock("");
-    return ok;
-}
-
-void ModelShipWire::revert()
-{
-    emit sigStock("");
-    return DbTableModel::revert();
-}
-
-void ModelShipWire::setFlt(QString kis)
-{
-    int year=QDate::currentDate().year();
-    QString pattern;
-    QString fkis = !kis.isEmpty() ? kis+"-" : "";
-    if (fltind==0){
-        pattern=fkis+QString::number(year);
-    } else if (fltind==1){
-        pattern=fkis+QString::number(year-1)+"|"+fkis+QString::number(year);
-    } else {
-        pattern=kis;
-    }
-    relPart->proxyModel()->setFilterRegExp(pattern);
-}
-
-
-double ModelShipWire::getStock(QModelIndex index)
-{
-    int id_part = this->data(this->index(index.row(),3),Qt::EditRole).toInt();
-    return modelBalence->getStock("w:"+QString::number(id_part));
-}
-
-void ModelShipWire::refreshState()
-{
-    QSqlQuery query;
-    query.setForwardOnly(true);
-    query.prepare("select wire_shipment_consist.id_wparti, "
-                  "(select case when exists(select id from wire_parti_chem "
-                  "where id_part=(select p.id_m from wire_parti as p where p.id = wire_shipment_consist.id_wparti)) "
-                  "then 1 else 0 end "
-                  "+ "
-                  "case when exists(select id from wire_parti_mech "
-                  "where id_part=(select p.id_m from wire_parti as p where p.id = wire_shipment_consist.id_wparti)) "
-                  "then 2 else 0 end "
-                  "+ "
-                  "case when exists(select cod from td_keys_wire "
-                  "where id_prov=(select m.id_provol from wire_parti as wp inner join wire_parti_m as m on wp.id_m=m.id where wp.id=wire_shipment_consist.id_wparti) "
-                  "and id_diam=(select m.id_diam from wire_parti as wp inner join wire_parti_m as m on wp.id_m=m.id where wp.id=wire_shipment_consist.id_wparti) "
-                  "and id_spool=(select wp.id_pack from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti) "
-                  "and id_pack=(select wp.id_pack_type from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti)) "
-                  "then 4 else 0 end "
-                  "as r) from wire_shipment_consist where wire_shipment_consist.id_ship = :id ");
-    query.bindValue(":id",currentIdShip);
-    if (query.exec()){
-        colorState.clear();
-        while (query.next()){
-            colorState[query.value(0).toInt()]=query.value(1).toInt();
-        }
-        emit dataChanged(this->index(0,0),this->index(this->rowCount()-1,this->columnCount()-1));
-    } else {
-        QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Ok);
-    }
-}
-
-void ModelShipWire::setPartFlt(int ind)
-{
-    fltind=ind;
-    setFlt("");
-}
-
 ModelBalance::ModelBalance(QObject *parent) : TableModel(parent)
 {
     QStringList head;
-    head<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон";
+    head<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рец./плавка"<<"Коммент."<<"Кол-во, кг"<<"План прих., кг"<<"План расх., кг"<<"Зона"<<"Ячейка"<<"Поддон";
     setHeader(head);
 }
 
 void ModelBalance::updData(QDate dat)
 {
-    Models::instance()->sync1C->getBalance(dat.addDays(1),part);
-    Models::instance()->sync1C->getContBalance(dat.addDays(1),cont);
+    Models::instance()->sync1C->getBalance(dat,part);
+    Models::instance()->sync1C->getContBalance(dat,cont);
 }
 
 double ModelBalance::getStock(QString ide)
@@ -624,9 +514,11 @@ ModelShipData::ModelShipData(shipContInfo c, QObject *parent) : DbTableModel(c.t
     addColumn(info.namKvo,tr("Масса, кг"));
     setSort(info.tablename+"."+info.namId);
     currentIdShip=-1;
-    setDecimals(4,3);
+    setDecimals(4,2);
     connect(this,SIGNAL(sigUpd()),this,SLOT(refreshState()));
     connect(this,SIGNAL(sigRefresh()),this,SLOT(refreshState()));
+    connect(this,SIGNAL(sigUpd()),this,SLOT(calcSum()));
+    connect(this,SIGNAL(sigRefresh()),this,SLOT(calcSum()));
 }
 
 QVariant ModelShipData::data(const QModelIndex &index, int role) const
@@ -731,4 +623,16 @@ void ModelShipData::setPartFlt(int ind)
 {
     fltind=ind;
     setFlt("");
+}
+
+void ModelShipData::calcSum()
+{
+    double sum=0;
+    QString title = info.prefix==("e")? "Электроды" : "Проволока";
+    for (int i=0; i<rowCount(); i++){
+        sum+=data(index(i,4),Qt::EditRole).toDouble();
+    }
+    QString s;
+    s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг")) : title;
+    emit sigSum(s);
 }

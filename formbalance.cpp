@@ -105,8 +105,8 @@ QVariant BalanceModel::data(const QModelIndex &index, int role) const
 void BalanceModel::refresh(QDate dat, bool bypart)
 {
     byp=bypart;
-    Models::instance()->sync1C->getBalance(dat.addDays(1),part);
-    Models::instance()->sync1C->getContBalance(dat.addDays(1),cont);
+    Models::instance()->sync1C->getBalance(dat,part);
+    Models::instance()->sync1C->getContBalance(dat,cont);
     QVector<QVector<QVariant>> tmpd;
     if (byp){
         QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();

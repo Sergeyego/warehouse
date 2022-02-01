@@ -76,34 +76,12 @@ private:
     int currentIdShip;
     int fltind;
 
+private slots:
+    void calcSum();
+
 signals:
     void sigStock(QString mes);
-};
-
-class ModelShipWire : public DbTableModel
-{
-    Q_OBJECT
-public:
-    ModelShipWire(ModelBalance *m, QObject *parent=0);
-    QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const;
-    void refresh(int id_ship);
-    bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
-    bool submit();
-    void revert();
-    void setFlt(QString kis);
-
-public slots:
-    double getStock(QModelIndex index);
-    void refreshState();
-    void setPartFlt(int ind);
-private:
-    QMap <int,int> colorState;
-    int currentIdShip;
-    ModelBalance *modelBalence;
-    DbRelation *relPart;
-    int fltind;
-signals:
-    void sigStock(QString mes);
+    void sigSum(QString s);
 };
 
 class FormShip : public QWidget
@@ -119,7 +97,7 @@ private:
     ModelShip *modelShip;
     DbMapper *push;
     ModelShipData *modelShipEl;
-    ModelShipWire *modelShipWire;
+    ModelShipData *modelShipWire;
     ModelBalance *modelBalance;
     QSortFilterProxyModel *proxyModelBalance;
     void loadsettings();

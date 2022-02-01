@@ -46,9 +46,9 @@ TurnoversModel::TurnoversModel(QObject *parent) : TableModel(parent)
 
 void TurnoversModel::refresh(QDate beg, QDate end)
 {
-    Models::instance()->sync1C->getAcceptanceTurnovers(beg,end.addDays(1),acc);
-    Models::instance()->sync1C->getShipTurnovers(beg,end.addDays(1),ship);
-    Models::instance()->sync1C->getBalanceAndTurnovers(beg,end.addDays(1),bal);
+    Models::instance()->sync1C->getAcceptanceTurnovers(beg,end,acc);
+    Models::instance()->sync1C->getShipTurnovers(beg,end,ship);
+    Models::instance()->sync1C->getBalanceAndTurnovers(beg,end,bal);
     recalc();
 }
 

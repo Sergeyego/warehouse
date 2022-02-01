@@ -26,6 +26,12 @@ public:
     ModelAcceptanceData(QString table, DbRelation *relPart, QObject *parent = 0);
     void refresh(int id_acc);
     bool insertRow(int row, const QModelIndex &parent);
+
+private slots:
+    void caclSum();
+
+signals:
+    void sigSum(QString s);
 };
 
 class FormAcceptance : public QWidget

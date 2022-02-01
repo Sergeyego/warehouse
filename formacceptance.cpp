@@ -75,6 +75,9 @@ FormAcceptance::FormAcceptance(QWidget *parent) :
     connect(ui->radioButtonWire,SIGNAL(clicked(bool)),this,SLOT(setCurrentWidget()));
     connect(ui->radioButtonEl,SIGNAL(clicked(bool)),this,SLOT(setCurrentWidget()));
 
+    connect(modelAcceeptanceData,SIGNAL(sigSum(QString)),ui->labelEl,SLOT(setText(QString)));
+    connect(modelAcceeptanceDataWire,SIGNAL(sigSum(QString)),ui->labelWire,SLOT(setText(QString)));
+
     updAcc();
 }
 
@@ -160,6 +163,9 @@ ModelAcceptanceData::ModelAcceptanceData(QString table, DbRelation *relPart, QOb
     addColumn("kvo",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
     setSort(name()+".id");
+
+    connect(this,SIGNAL(sigUpd()),this,SLOT(caclSum()));
+    connect(this,SIGNAL(sigRefresh()),this,SLOT(caclSum()));
 }
 
 void ModelAcceptanceData::refresh(int id_acc)
@@ -177,4 +183,16 @@ bool ModelAcceptanceData::insertRow(int row, const QModelIndex &parent)
         setDefaultValue(4,old_num+1);
     }
     return DbTableModel::insertRow(row,parent);
+}
+
+void ModelAcceptanceData::caclSum()
+{
+    double sum=0;
+    QString title = "";
+    for (int i=0; i<rowCount(); i++){
+        sum+=data(index(i,3),Qt::EditRole).toDouble();
+    }
+    QString s;
+    s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг")) : title;
+    emit sigSum(s);
 }

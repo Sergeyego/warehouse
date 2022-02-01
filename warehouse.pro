@@ -39,9 +39,14 @@ SOURCES += \
     dialogcods.cpp \
     formpoluch.cpp \
     formbalance.cpp \
-    tableview.cpp \
     tablemodel.cpp \
-    formturnovers.cpp
+    formturnovers.cpp \
+    olap/axiswidget.cpp \
+    olap/cubewidget.cpp \
+    olap/cubic.cpp \
+    olap/olapmodel.cpp \
+    olap/tableview.cpp \
+    olap/dialogolapflt.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -57,9 +62,14 @@ HEADERS += \
     dialogcods.h \
     formpoluch.h \
     formbalance.h \
-    tableview.h \
     tablemodel.h \
-    formturnovers.h
+    formturnovers.h \
+    olap/axiswidget.h \
+    olap/cubewidget.h \
+    olap/cubic.h \
+    olap/olapmodel.h \
+    olap/tableview.h \
+    olap/dialogolapflt.h
 
 FORMS += \
         mainwindow.ui \
@@ -69,7 +79,10 @@ FORMS += \
     dialogcods.ui \
     formpoluch.ui \
     formbalance.ui \
-    formturnovers.ui
+    formturnovers.ui \
+    olap/axiswidget.ui \
+    olap/cubewidget.ui \
+    olap/dialogolapflt.ui
 
 RC_FILE = ico.rc
 

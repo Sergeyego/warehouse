@@ -128,7 +128,7 @@
   <customwidget>
    <class>TableView</class>
    <extends>QTableView</extends>
-   <header>tableview.h</header>
+   <header>olap/tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
