@@ -46,7 +46,8 @@ SOURCES += \
     olap/cubic.cpp \
     olap/olapmodel.cpp \
     olap/tableview.cpp \
-    olap/dialogolapflt.cpp
+    olap/dialogolapflt.cpp \
+    olap/formfilter.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -69,7 +70,8 @@ HEADERS += \
     olap/cubic.h \
     olap/olapmodel.h \
     olap/tableview.h \
-    olap/dialogolapflt.h
+    olap/dialogolapflt.h \
+    olap/formfilter.h
 
 FORMS += \
         mainwindow.ui \
@@ -82,7 +84,8 @@ FORMS += \
     formturnovers.ui \
     olap/axiswidget.ui \
     olap/cubewidget.ui \
-    olap/dialogolapflt.ui
+    olap/dialogolapflt.ui \
+    olap/formfilter.ui
 
 RC_FILE = ico.rc
 

@@ -4,6 +4,7 @@
 #include <QDialog>
 #include "olapmodel.h"
 #include <QListWidget>
+#include "formfilter.h"
 
 namespace Ui {
 class DialogOlapFlt;
@@ -20,6 +21,12 @@ public:
 private:
     Ui::DialogOlapFlt *ui;
     ProxyDataModel *proxyModel;
+
+public slots:
+    void accept();
+
+private slots:
+    void enChangedSlot(bool c);
 };
 
 #endif // DIALOGOLAPFLT_H

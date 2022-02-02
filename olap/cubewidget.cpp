@@ -140,7 +140,6 @@ void CubeWidget::updQuery()
     } else {
         QMessageBox::critical(this,tr("Ошибка"),qu.lastError().text(),QMessageBox::Ok);
     }
-
 }
 
 void CubeWidget::saveXls()
@@ -184,5 +183,7 @@ void CubeWidget::upd()
 void CubeWidget::cfgFlt()
 {
     DialogOlapFlt d(proxyModel);
-    d.exec();
+    if (d.exec()==QDialog::Accepted){
+        upd();
+    }
 }

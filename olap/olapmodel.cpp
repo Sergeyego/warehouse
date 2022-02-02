@@ -137,9 +137,6 @@ void OlapModel::setTypeMin(bool b)
 ProxyDataModel::ProxyDataModel(QObject *parent) : QSortFilterProxyModel(parent)
 {
     en=false;
-    QStringList list;
-    list<<"МР-3";
-    selection.insert(1,list);
 }
 
 bool ProxyDataModel::filterAcceptsRow(int source_row, const QModelIndex &/*source_parent*/) const
@@ -175,8 +172,10 @@ QStringList ProxyDataModel::getSourceVal(int column)
 
 void ProxyDataModel::setSelectVal(int column, QStringList vals)
 {
+    beginResetModel();
     selection.remove(column);
     selection.insert(column,vals);
+    endResetModel();
 }
 
 void ProxyDataModel::setFilterEnabled(bool b)
