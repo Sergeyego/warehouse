@@ -7,7 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    actAction(ui->actionAcceptance,&MainWindow::newFormAcceptance);
+    actAction(ui->actionAcceptanceWire,&MainWindow::newFormAcceptanceWire);
+    actAction(ui->actionAcceptanceEl,&MainWindow::newFormAcceptanceEl);
     actAction(ui->actionShip,&MainWindow::newFormShip);
     actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
     actAction(ui->actionBalance,&MainWindow::newFormBalance);
@@ -72,10 +73,17 @@ void MainWindow::closeTab(int index)
     ui->tabWidget->widget(index)->close();
 }
 
-void MainWindow::newFormAcceptance()
+void MainWindow::newFormAcceptanceWire()
 {
     if (!exist(sender())){
-        addSubWindow(new FormAcceptance(),sender());
+        addSubWindow(new FormAcceptanceWire(),sender());
+    }
+}
+
+void MainWindow::newFormAcceptanceEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormAcceptanceEl(),sender());
     }
 }
 

@@ -32,6 +32,7 @@ Models::Models(QObject *parent) :
     relPol = new DbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-'), naim from poluch order by short",this),0,1,this);
     relShipType = new DbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1,this);
     relAccType = new DbRelation(new DbRelationalModel("select id, nam from acceptance_type order by nam",this),0,1,this);
+    relAccTypeEl = new DbRelation(new DbRelationalModel("select id, nam from prod_nakl_tip where en=true order by nam",this),0,1,this);
 
     relKis = new DbRelation(new DbRelationalModel("(select distinct ee.id_el||':'||ee.id_diam as kis, e.marka ||' ф '|| d.sdim as mark, 'e' as typ, e.id_u as id_u "
                                                   "from ean_el ee "

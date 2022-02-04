@@ -20,6 +20,7 @@ public:
     DbRelation *relPol;
     DbRelation *relShipType;
     DbRelation *relAccType;
+    DbRelation *relAccTypeEl;
     DbRelation *relKis;
     DbRelationalModel *modelElPart;
     DbRelationalModel *modelWirePart;

@@ -43,7 +43,8 @@
     <property name="title">
      <string>Отправить на склад</string>
     </property>
-    <addaction name="actionAcceptance"/>
+    <addaction name="actionAcceptanceWire"/>
+    <addaction name="actionAcceptanceEl"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -79,9 +80,9 @@
    <addaction name="menu_4"/>
    <addaction name="menu_5"/>
   </widget>
-  <action name="actionAcceptance">
+  <action name="actionAcceptanceWire">
    <property name="text">
-    <string>Отправление на склад</string>
+    <string>Отправить на склад проволоку</string>
    </property>
   </action>
   <action name="actionShip">
@@ -122,6 +123,11 @@
   <action name="actionAnAccWire">
    <property name="text">
     <string>Анализ поступления проволоки</string>
+   </property>
+  </action>
+  <action name="actionAcceptanceEl">
+   <property name="text">
+    <string>Отправить на склад электроды</string>
    </property>
   </action>
  </widget>

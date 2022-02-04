@@ -169,7 +169,7 @@
          <item>
           <widget class="QLabel" name="label_8">
            <property name="text">
-            <string>Тип отгрузки</string>
+            <string>Тип</string>
            </property>
           </widget>
          </item>
@@ -337,11 +337,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
-  </customwidget>
-  <customwidget>
    <class>DbViewer</class>
    <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
@@ -350,6 +345,11 @@
    <class>DateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

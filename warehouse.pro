@@ -32,7 +32,6 @@ SOURCES += \
     db/dbmapper.cpp \
     db/dbtablemodel.cpp \
     db/dbviewer.cpp \
-    formacceptance.cpp \
     sync1c.cpp \
     models.cpp \
     formship.cpp \
@@ -47,7 +46,9 @@ SOURCES += \
     olap/olapmodel.cpp \
     olap/tableview.cpp \
     olap/dialogolapflt.cpp \
-    olap/formfilter.cpp
+    olap/formfilter.cpp \
+    formacceptanceel.cpp \
+    formacceptancewire.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -56,7 +57,6 @@ HEADERS += \
     db/dbmapper.h \
     db/dbtablemodel.h \
     db/dbviewer.h \
-    formacceptance.h \
     sync1c.h \
     models.h \
     formship.h \
@@ -71,12 +71,13 @@ HEADERS += \
     olap/olapmodel.h \
     olap/tableview.h \
     olap/dialogolapflt.h \
-    olap/formfilter.h
+    olap/formfilter.h \
+    formacceptanceel.h \
+    formacceptancewire.h
 
 FORMS += \
         mainwindow.ui \
     db/dblogin.ui \
-    formacceptance.ui \
     formship.ui \
     dialogcods.ui \
     formpoluch.ui \
@@ -85,7 +86,9 @@ FORMS += \
     olap/axiswidget.ui \
     olap/cubewidget.ui \
     olap/dialogolapflt.ui \
-    olap/formfilter.ui
+    olap/formfilter.ui \
+    formacceptanceel.ui \
+    formacceptancewire.ui
 
 RC_FILE = ico.rc
 

@@ -4,7 +4,8 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QSettings>
-#include "formacceptance.h"
+#include "formacceptancewire.h"
+#include "formacceptanceel.h"
 #include "formship.h"
 #include "formpoluch.h"
 #include "formbalance.h"
@@ -30,7 +31,8 @@ public:
 
 private slots:
     void closeTab(int index);
-    void newFormAcceptance();
+    void newFormAcceptanceWire();
+    void newFormAcceptanceEl();
     void newFormShip();
     void newFormPoluch();
     void newFormBalance();
