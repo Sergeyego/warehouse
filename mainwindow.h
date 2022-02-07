@@ -11,6 +11,7 @@
 #include "formbalance.h"
 #include "formturnovers.h"
 #include "olap/cubewidget.h"
+#include "formaccnaklel.h"
 
 namespace Ui {
 class MainWindow;
@@ -41,6 +42,7 @@ private slots:
     void newAnShipWire();
     void newAnAccEl();
     void newAnAccWire();
+    void newFormAccNaklEl();
 
 private:
     Ui::MainWindow *ui;

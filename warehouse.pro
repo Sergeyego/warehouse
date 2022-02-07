@@ -48,7 +48,10 @@ SOURCES += \
     olap/dialogolapflt.cpp \
     olap/formfilter.cpp \
     formacceptanceel.cpp \
-    formacceptancewire.cpp
+    formacceptancewire.cpp \
+    formaccnaklel.cpp \
+    modelro.cpp \
+    formaccnaklwire.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -73,7 +76,10 @@ HEADERS += \
     olap/dialogolapflt.h \
     olap/formfilter.h \
     formacceptanceel.h \
-    formacceptancewire.h
+    formacceptancewire.h \
+    formaccnaklel.h \
+    modelro.h \
+    formaccnaklwire.h
 
 FORMS += \
         mainwindow.ui \
@@ -88,7 +94,9 @@ FORMS += \
     olap/dialogolapflt.ui \
     olap/formfilter.ui \
     formacceptanceel.ui \
-    formacceptancewire.ui
+    formacceptancewire.ui \
+    formaccnaklel.ui \
+    formaccnaklwire.ui
 
 RC_FILE = ico.rc
 
