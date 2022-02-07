@@ -47,6 +47,8 @@ private:
     ModelAcceptanceWire *modelAcceptanceWire;
     ModelAcceptanceWireData *modelAcceptanceWireData;
     DbMapper *mapper;
+    void loadsettings();
+    void savesettings();
 
 private slots:
     void updAcc();

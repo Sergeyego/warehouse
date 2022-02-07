@@ -166,7 +166,7 @@ QStringList ProxyDataModel::getSourceVal(int column)
             l.push_back(dt);
         }
     }
-    qSort(l);
+    std::sort(l.begin(),l.end());
     return l;
 }
 

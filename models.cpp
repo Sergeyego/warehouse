@@ -25,37 +25,36 @@ Models::Models(QObject *parent) :
                                           "inner join wire_pack as t on t.id=p.id_pack_type "
                                           "order by part desc",this);
 
-    relWirePart = new DbRelation(modelWirePart,0,1,this);
-    relElPart = new DbRelation(modelElPart,0,1,this);
+    relWirePart = newDbRelation(modelWirePart,0,1);
+    relElPart = newDbRelation(modelElPart,0,1);
 
-    relEl = new DbRelation(new DbRelationalModel("select id, marka from elrtr order by marka",this),0,1,this);
-    relPol = new DbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-'), naim from poluch order by short",this),0,1,this);
-    relShipType = new DbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1,this);
-    relAccType = new DbRelation(new DbRelationalModel("select id, nam from acceptance_type order by nam",this),0,1,this);
-    relAccTypeEl = new DbRelation(new DbRelationalModel("select id, nam from prod_nakl_tip where en=true order by nam",this),0,1,this);
+    relEl = newDbRelation(new DbRelationalModel("select id, marka from elrtr order by marka",this),0,1);
+    relPol = newDbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-'), naim from poluch order by short",this),0,1);
+    relShipType = newDbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1);
+    relAccTypeEl = newDbRelation(new DbRelationalModel("select id, nam from prod_nakl_tip where en=true order by nam",this),0,1);
+    relAccTypeWire = newDbRelation(new DbRelationalModel("select id, nam from wire_way_bill_type where en=true order by nam",this),0,1);
 
-    relKis = new DbRelation(new DbRelationalModel("(select distinct ee.id_el||':'||ee.id_diam as kis, e.marka ||' ф '|| d.sdim as mark, 'e' as typ, e.id_u as id_u "
-                                                  "from ean_el ee "
-                                                  "inner join elrtr e on e.id = ee.id_el "
-                                                  "inner  join diam d on d.id = ee.id_diam) "
-                                                  "union "
-                                                  "(select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short, 'w', 1 "
-                                                  "from wire_ean we "
-                                                  "inner join provol p on p.id=we.id_prov "
-                                                  "inner  join diam d on d.id = we.id_diam "
-                                                  "inner join wire_pack_kind wpk on wpk.id = we.id_spool) "
-                                                  "order by typ, id_u, mark"),0,1,this);
-
-    rels.push_back(relWirePart);
-    rels.push_back(relElPart);
-    rels.push_back(relEl);
-    rels.push_back(relPol);
-    rels.push_back(relShipType);
-    rels.push_back(relAccType);
-    rels.push_back(relKis);
+    relKis = newDbRelation(new DbRelationalModel("(select distinct ee.id_el||':'||ee.id_diam as kis, e.marka ||' ф '|| d.sdim as mark, 'e' as typ, e.id_u as id_u "
+                                                 "from ean_el ee "
+                                                 "inner join elrtr e on e.id = ee.id_el "
+                                                 "inner  join diam d on d.id = ee.id_diam) "
+                                                 "union "
+                                                 "(select distinct we.id_prov ||':'||we.id_diam ||':'||we.id_spool, p.nam ||' ф '|| d.sdim||' '||wpk.short, 'w', 1 "
+                                                 "from wire_ean we "
+                                                 "inner join provol p on p.id=we.id_prov "
+                                                 "inner  join diam d on d.id = we.id_diam "
+                                                 "inner join wire_pack_kind wpk on wpk.id = we.id_spool) "
+                                                 "order by typ, id_u, mark"),0,1);
     relElPart->proxyModel()->setFilterKeyColumn(2);
     relWirePart->proxyModel()->setFilterKeyColumn(2);
     setFilter(1);
+}
+
+DbRelation *Models::newDbRelation(QAbstractItemModel *queryModel, int key, int disp)
+{
+    DbRelation *r = new DbRelation(queryModel,key,disp,this);
+    rels.push_back(r);
+    return r;
 }
 
 Models *Models::instance()

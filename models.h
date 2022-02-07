@@ -19,8 +19,8 @@ public:
     DbRelation *relEl;
     DbRelation *relPol;
     DbRelation *relShipType;
-    DbRelation *relAccType;
     DbRelation *relAccTypeEl;
+    DbRelation *relAccTypeWire;
     DbRelation *relKis;
     DbRelationalModel *modelElPart;
     DbRelationalModel *modelWirePart;
@@ -38,6 +38,7 @@ protected:
 private:
     static Models* models_instance;
     QVector<DbRelation*> rels;
+    DbRelation *newDbRelation(QAbstractItemModel *queryModel, int key, int disp);
 };
 
 #endif // MODELS_H

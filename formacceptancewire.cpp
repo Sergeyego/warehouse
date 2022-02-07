@@ -6,6 +6,8 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui(new Ui::FormAcceptanceWire)
 {
     ui->setupUi(this);
+    loadsettings();
+
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
@@ -53,7 +55,20 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
 
 FormAcceptanceWire::~FormAcceptanceWire()
 {
+    savesettings();
     delete ui;
+}
+
+void FormAcceptanceWire::loadsettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    ui->splitter->restoreState(settings.value("accwire_splitter_width").toByteArray());
+}
+
+void FormAcceptanceWire::savesettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    settings.setValue("accwire_splitter_width",ui->splitter->saveState());
 }
 
 void FormAcceptanceWire::updAcc()
@@ -78,19 +93,20 @@ void FormAcceptanceWire::setPartFilter()
     Models::instance()->setFilter(ui->comboBoxPart->currentIndex());
 }
 
-ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("table",parent)
+ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)
 {
     addColumn("id","id");
     addColumn("num",tr("Номер"));
     addColumn("dat",tr("Дата"));
-    addColumn("id_type",tr("Тип"),Models::instance()->relAccType);
-    setDefaultValue(3,1);
+    addColumn("id_type",tr("Тип"),Models::instance()->relAccTypeWire);
+    setSuffix("inner join wire_way_bill_type on wire_way_bill_type.id = wire_whs_waybill.id_type");
+    setDefaultValue(3,3);
     setSort(name()+".num, "+name()+".dat");
 }
 
 void ModelAcceptanceWire::refresh(QDate beg, QDate end)
 {
-    QString filter=name()+".dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
+    QString filter=name()+".dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"' and wire_way_bill_type.en = true";
     setFilter(filter);
     select();
 }
@@ -106,14 +122,15 @@ bool ModelAcceptanceWire::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel("table",parent)
+ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel("wire_warehouse",parent)
 {
     addColumn("id","id");
-    addColumn("id_acceptance","id_acceptance");
-    addColumn("id_part",tr("Партия"),Models::instance()->relWirePart);
-    addColumn("kvo",tr("Масса, кг"));
+    addColumn("id_waybill","id_waybill");
+    addColumn("id_wparti",tr("Партия"),Models::instance()->relWirePart);
+    addColumn("m_netto",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
     setSort(name()+".id");
+    setDecimals(3,2);
 
     connect(this,SIGNAL(sigUpd()),this,SLOT(caclSum()));
     connect(this,SIGNAL(sigRefresh()),this,SLOT(caclSum()));
@@ -121,7 +138,7 @@ ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel
 
 void ModelAcceptanceWireData::refresh(int id_acc)
 {
-    setFilter(name()+".id_acceptance = "+QString::number(id_acc));
+    setFilter(name()+".id_waybill = "+QString::number(id_acc));
     setDefaultValue(1,id_acc);
     setDefaultValue(4,1);
     select();
