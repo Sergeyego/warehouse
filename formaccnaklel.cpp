@@ -118,7 +118,7 @@ void FormAccNaklEl::printNakl()
     QTcpSocket tcpSocket;
     tcpSocket.connectToHost("127.0.0.1", 5555);
     if (tcpSocket.waitForConnected()) {
-        tcpSocket.write((QString("%1:%2:%3:%4").arg(1).arg(4).arg(dat.toString("dd.MM.yyyy")).arg(id_type)).toLocal8Bit().data());
+        tcpSocket.write((QString("%1:%2:%3:%4").arg(0).arg(4).arg(dat.toString("dd.MM.yyyy")).arg(id_type)).toLocal8Bit().data());
         tcpSocket.waitForBytesWritten();
         tcpSocket.disconnectFromHost();
     } else {

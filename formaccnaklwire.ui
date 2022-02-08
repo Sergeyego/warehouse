@@ -24,7 +24,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QDateEdit" name="dateEdit"/>
+      <widget class="DateEdit" name="dateEditBeg"/>
      </item>
      <item>
       <widget class="QLabel" name="label_2">
@@ -34,7 +34,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QDateEdit" name="dateEdit_2"/>
+      <widget class="DateEdit" name="dateEditEnd"/>
      </item>
      <item>
       <widget class="QLabel" name="label_3">
@@ -44,10 +44,10 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QComboBox" name="comboBoxType"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="pushButtonUpd">
        <property name="text">
         <string>Обновить</string>
        </property>
@@ -67,7 +67,23 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QLabel" name="labelSum">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Итого</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonNakl">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Накладная</string>
        </property>
@@ -86,12 +102,31 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QTableView" name="tableView"/>
-     <widget class="QTableView" name="tableView_2"/>
+     <widget class="TableView" name="tableViewNakl">
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+     </widget>
+     <widget class="TableView" name="tableViewCont"/>
     </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DateEdit</class>
+   <extends>QDateEdit</extends>
+   <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
