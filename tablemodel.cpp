@@ -29,6 +29,27 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+bool TableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (index.isValid() && role==Qt::EditRole){
+        p_d[index.row()][index.column()]=value;
+        emit dataChanged(index,index);
+        return true;
+    }
+    return false;
+}
+
+bool TableModel::removeRow(int row, const QModelIndex &/*parent*/)
+{
+    if (row>=0 && row<rowCount()){
+        beginRemoveRows(QModelIndex(),row,row);
+        p_d.remove(row);
+        endRemoveRows();
+        return true;
+    }
+    return false;
+}
+
 int TableModel::rowCount(const QModelIndex &/*parent*/) const
 {
     return p_d.size();

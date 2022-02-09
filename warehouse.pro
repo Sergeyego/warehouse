@@ -51,7 +51,15 @@ SOURCES += \
     formacceptancewire.cpp \
     formaccnaklel.cpp \
     modelro.cpp \
-    formaccnaklwire.cpp
+    formaccnaklwire.cpp \
+    dialogcfgprint.cpp \
+    modelprint.cpp \
+    formlabelsel.cpp \
+    formdatael.cpp \
+    labelbase.cpp \
+    dialogprintlabel.cpp \
+    labelsel.cpp \
+    tprinter.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -79,7 +87,15 @@ HEADERS += \
     formacceptancewire.h \
     formaccnaklel.h \
     modelro.h \
-    formaccnaklwire.h
+    formaccnaklwire.h \
+    dialogcfgprint.h \
+    modelprint.h \
+    formlabelsel.h \
+    formdatael.h \
+    labelbase.h \
+    dialogprintlabel.h \
+    labelsel.h \
+    tprinter.h
 
 FORMS += \
         mainwindow.ui \
@@ -96,7 +112,11 @@ FORMS += \
     formacceptanceel.ui \
     formacceptancewire.ui \
     formaccnaklel.ui \
-    formaccnaklwire.ui
+    formaccnaklwire.ui \
+    dialogcfgprint.ui \
+    formlabelsel.ui \
+    formdatael.ui \
+    dialogprintlabel.ui
 
 RC_FILE = ico.rc
 

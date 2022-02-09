@@ -5,6 +5,7 @@
 #include <QAbstractTableModel>
 #include <QLocale>
 #include <QDate>
+#include <QDebug>
 
 class TableModel : public QAbstractTableModel
 {
@@ -13,6 +14,8 @@ class TableModel : public QAbstractTableModel
 public:    
     TableModel(QObject *parent=nullptr);
     QVariant data(const QModelIndex &index, int role) const;
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    bool removeRow(int row, const QModelIndex &parent);
     int rowCount(const QModelIndex &parent=QModelIndex()) const;
     int columnCount(const QModelIndex &parent=QModelIndex()) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
@@ -20,7 +23,7 @@ public:
     void setHeader(const QStringList &hdata);
     void clear();
 
-private:
+protected:
     QVector<QVector<QVariant>> p_d;
     QStringList p_header;
 

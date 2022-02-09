@@ -43,8 +43,8 @@
     <property name="title">
      <string>Отправить на склад</string>
     </property>
-    <addaction name="actionAcceptanceWire"/>
     <addaction name="actionAcceptanceEl"/>
+    <addaction name="actionAcceptanceWire"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -81,12 +81,29 @@
     <addaction name="actionAccNaklEl"/>
     <addaction name="actionAccNaklWire"/>
    </widget>
+   <widget class="QMenu" name="menu_7">
+    <property name="title">
+     <string>Маркировка</string>
+    </property>
+    <addaction name="actionLblEl"/>
+    <addaction name="actionLblWire"/>
+   </widget>
+   <widget class="QMenu" name="menu_8">
+    <property name="title">
+     <string>Сервис</string>
+    </property>
+    <addaction name="actionCfgPrint"/>
+    <addaction name="actionAllRefresh"/>
+    <addaction name="actionCfgUser"/>
+   </widget>
+   <addaction name="menu_7"/>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_6"/>
    <addaction name="menu_3"/>
    <addaction name="menu_4"/>
    <addaction name="menu_5"/>
+   <addaction name="menu_8"/>
   </widget>
   <action name="actionAcceptanceWire">
    <property name="text">
@@ -146,6 +163,31 @@
   <action name="actionAccNaklWire">
    <property name="text">
     <string>Накладные передач на склад проволоки</string>
+   </property>
+  </action>
+  <action name="actionLblEl">
+   <property name="text">
+    <string>Печать этикеток для электродов</string>
+   </property>
+  </action>
+  <action name="actionLblWire">
+   <property name="text">
+    <string>Печать этикеток для проволоки</string>
+   </property>
+  </action>
+  <action name="actionCfgPrint">
+   <property name="text">
+    <string>Настройка принтеров этикеток</string>
+   </property>
+  </action>
+  <action name="actionAllRefresh">
+   <property name="text">
+    <string>Обновить все данные</string>
+   </property>
+  </action>
+  <action name="actionCfgUser">
+   <property name="text">
+    <string>Настройка пользователей</string>
    </property>
   </action>
  </widget>

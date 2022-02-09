@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    actAction(ui->actionLblEl,&MainWindow::newFormLabelsEl);
     actAction(ui->actionAcceptanceWire,&MainWindow::newFormAcceptanceWire);
     actAction(ui->actionAcceptanceEl,&MainWindow::newFormAcceptanceEl);
     actAction(ui->actionShip,&MainWindow::newFormShip);
@@ -19,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionAnAccWire,&MainWindow::newAnAccWire);
     actAction(ui->actionAccNaklEl,&MainWindow::newFormAccNaklEl);
     actAction(ui->actionAccNaklWire,&MainWindow::newFormAccNaklWire);
+
+    connect(ui->actionCfgPrint,SIGNAL(triggered(bool)),this,SLOT(cfgPrint()));
+    connect(ui->actionAllRefresh,SIGNAL(triggered(bool)),Models::instance(),SLOT(refresh()));
 
     loadSettings();
     connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
@@ -157,6 +161,19 @@ void MainWindow::newFormAccNaklWire()
     if (!exist(sender())){
         addSubWindow(new FormAccNaklWire(),sender());
     }
+}
+
+void MainWindow::newFormLabelsEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormLabelsEl(),sender());
+    }
+}
+
+void MainWindow::cfgPrint()
+{
+    DialogCfgPrint d;
+    d.exec();
 }
 
 void MainWindow::loadSettings()

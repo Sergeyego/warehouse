@@ -13,6 +13,8 @@
 #include "olap/cubewidget.h"
 #include "formaccnaklel.h"
 #include "formaccnaklwire.h"
+#include "dialogcfgprint.h"
+#include "formlabelsel.h"
 
 namespace Ui {
 class MainWindow;
@@ -45,6 +47,8 @@ private slots:
     void newAnAccWire();
     void newFormAccNaklEl();
     void newFormAccNaklWire();
+    void newFormLabelsEl();
+    void cfgPrint();
 
 private:
     Ui::MainWindow *ui;

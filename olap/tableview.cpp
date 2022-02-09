@@ -5,6 +5,22 @@ TableView::TableView(QWidget *parent) : QTableView(parent)
     verticalHeader()->setDefaultSectionSize(verticalHeader()->fontMetrics().height()*1.5);
     //verticalHeader()->setFixedWidth(verticalHeader()->fontMetrics().height()*1.2);
     verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    removeAct = new QAction(QString::fromUtf8("Удалить"),this);
+
+    connect(removeAct,SIGNAL(triggered()),this,SLOT(remove()));
+}
+
+void TableView::contextMenuEvent(QContextMenuEvent *event)
+{
+    if (this->selectionModel()){
+        QMenu menu(this);
+        QModelIndex index=this->indexAt(event->pos());
+        if (index.isValid() && this->editTriggers()!=QAbstractItemView::NoEditTriggers && (model()->flags(index) & Qt::ItemIsEditable)){
+            menu.addAction(removeAct);
+            menu.addSeparator();
+        }
+        menu.exec(event->globalPos());
+    }
 }
 
 void TableView::resizeToContents()
@@ -155,6 +171,25 @@ void TableView::save(QString fnam, int dec, bool fitToHeight, Qt::ScreenOrientat
             QFile file(filename);
             QFileInfo info(file);
             settings.setValue("savePath",info.path());
+        }
+    }
+}
+
+void TableView::remove()
+{
+    if (model()){
+        QModelIndex ind=this->currentIndex();
+        QString dat;
+        for(int i=0; i<model()->columnCount(); i++) {
+            if (!dat.isEmpty()){
+                dat+=", ";
+            }
+            dat+=model()->data(model()->index(ind.row(),i),Qt::DisplayRole).toString();
+        }
+        int n=QMessageBox::question(NULL,QString::fromUtf8("Подтвердите удаление"),
+                                    QString::fromUtf8("Подтветждаете удаление ")+dat+QString::fromUtf8("?"),QMessageBox::Yes| QMessageBox::No);
+        if (n==QMessageBox::Yes){
+            emit sigRemove(ind.row());
         }
     }
 }
