@@ -15,7 +15,20 @@ DialogPrintLabel::DialogPrintLabel(LabelBase *l, QWidget *parent) :
     ui->doubleSpinBoxHeidth->setValue(label->getHeight());
     ui->doubleSpinBoxGap->setValue(label->getGap());
 
+    for (int i=0; i<modelPrint->rowCount(); i++){
+        QString pnam=modelPrint->data(modelPrint->index(i,0),Qt::EditRole).toString();
+        if (pnam==label->getPrinterName()){
+            ui->comboBoxPrint->setCurrentIndex(i);
+            break;
+        }
+    }
+    changedPrinter();
+
     connect(this,SIGNAL(accepted()),this,SLOT(print()));
+    connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(savePrinter()));
+    connect(ui->pushButtonCal,SIGNAL(clicked(bool)),this,SLOT(calibrate()));
+    connect(ui->comboBoxPrint,SIGNAL(currentIndexChanged(int)),this,SLOT(changedPrinter()));
+    connect(ui->pushButtonCode,SIGNAL(clicked(bool)),this,SLOT(showCmd()));
 
 }
 
@@ -34,11 +47,38 @@ int DialogPrintLabel::currentDpi()
     return modelPrint->data(modelPrint->index(ui->comboBoxPrint->currentIndex(),2),Qt::EditRole).toInt();
 }
 
+QString DialogPrintLabel::currentCmd()
+{
+    return label->getCod()+label->print(ui->spinBox->value())+label->cut(ui->checkBoxCut->isChecked());
+}
+
 void DialogPrintLabel::print()
 {
-    label->setDpi(currentDpi());
-    QByteArray data;
-    data.append(label->getCod());
-    data.append(label->print(ui->spinBox->value()));
+    QByteArray data=currentCmd().toUtf8();
     TPrinter::printData(currentUrl(),data);
+}
+
+void DialogPrintLabel::savePrinter()
+{
+    label->setPrinterName(ui->comboBoxPrint->currentText());
+    ui->pushButtonSave->setEnabled(false);
+}
+
+void DialogPrintLabel::changedPrinter()
+{
+    ui->pushButtonSave->setEnabled(label->getPrinterName()!=ui->comboBoxPrint->currentText());
+    label->setDpi(currentDpi());
+}
+
+void DialogPrintLabel::calibrate()
+{
+    QByteArray data=label->calibrate().toUtf8();
+    TPrinter::printData(currentUrl(),data);
+}
+
+void DialogPrintLabel::showCmd()
+{
+    QString cmd=currentCmd();
+    DialogCmd d(cmd,currentUrl());
+    d.exec();
 }

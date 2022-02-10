@@ -109,9 +109,7 @@ void TPrinter::printDataIpp(QUrl url, const QByteArray &data)
     }
 
     bool ok=(reply->error()==QNetworkReply::NoError);
-    if (ok){
-        qDebug()<<"ok!"<<" "<<reply->readAll();
-    } else {
+    if (!ok){
         qDebug()<<"fail!"<<" "<<reply->readAll();
         QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString(),QMessageBox::Ok);
     }
@@ -120,6 +118,17 @@ void TPrinter::printDataIpp(QUrl url, const QByteArray &data)
 
 void TPrinter::printData(QUrl url, const QByteArray &data)
 {
-    qDebug()<<url.fragment();
-    //printDataIpp(url,data);
+    QString scheme=url.scheme();
+    if (!url.host().isEmpty() && url.isValid()){
+        if (scheme == "http" || scheme == "ipp"){
+            url.setScheme("http");
+            printDataIpp(url,data);
+        } else if (scheme == "socket"){
+            printDataTcp(url.host(),url.port(9100),data);
+        } else {
+            QMessageBox::critical(nullptr,tr("Ошибка"),tr("Неподдерживаемый протокол: ")+scheme,QMessageBox::Ok);
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),tr("Неправильный url адрес принтера"),QMessageBox::Ok);
+    }
 }

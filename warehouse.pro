@@ -59,7 +59,11 @@ SOURCES += \
     labelbase.cpp \
     dialogprintlabel.cpp \
     labelsel.cpp \
-    tprinter.cpp
+    tprinter.cpp \
+    dialogcmd.cpp \
+    formlabelswire.cpp \
+    formdatawire.cpp \
+    labelswire.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -95,7 +99,11 @@ HEADERS += \
     labelbase.h \
     dialogprintlabel.h \
     labelsel.h \
-    tprinter.h
+    tprinter.h \
+    dialogcmd.h \
+    formlabelswire.h \
+    formdatawire.h \
+    labelswire.h
 
 FORMS += \
         mainwindow.ui \
@@ -116,7 +124,10 @@ FORMS += \
     dialogcfgprint.ui \
     formlabelsel.ui \
     formdatael.ui \
-    dialogprintlabel.ui
+    dialogprintlabel.ui \
+    dialogcmd.ui \
+    formlabelswire.ui \
+    formdatawire.ui
 
 RC_FILE = ico.rc
 

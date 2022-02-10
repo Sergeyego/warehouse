@@ -3,6 +3,12 @@
 LabelBase::LabelBase(QString nam, double w, double h, double g, QObject *parent) : QObject(parent), name(nam), width(w), height(h), gap(g)
 {
     dpi=200;
+    loadSettings();
+}
+
+LabelBase::~LabelBase()
+{
+    saveSettings();
 }
 
 QString LabelBase::getName()
@@ -42,6 +48,29 @@ QString LabelBase::getCod()
     return cod;
 }
 
+QString LabelBase::getPrinterName()
+{
+    return printerName;
+}
+
+void LabelBase::setPrinterName(QString n)
+{
+    printerName=n;
+    saveSettings();
+}
+
+void LabelBase::loadSettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    printerName=settings.value(name+"_printerName").toString();
+}
+
+void LabelBase::saveSettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    settings.setValue(name+"_printerName",printerName);
+}
+
 int LabelBase::getDots(double mm)
 {
     return dpi*mm/25;
@@ -71,6 +100,17 @@ QString LabelBase::qrCode(double x, double y, QString t, int cellWidth)
     return QString ("QRCODE %1,%2,M,%3,A,0,M2, \"%4\"\n").arg(getDots(x)).arg(getDots(y)).arg(cellWidth).arg(normalize(t));
 }
 
+QString LabelBase::otkStamp(double x, double y, QString num)
+{
+    QString cod;
+    if (!num.isEmpty()){
+        cod.push_back(QString("CIRCLE %1,%2,%3,%4\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(11)).arg(getDots(0.5)));
+        cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",0,12,12,\"ОТК\"\n").arg(getDots(x+2.0)).arg(getDots(y+2.0)));
+        cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",0,12,12,\"%3\"\n").arg(getDots(x+3.5)).arg(getDots(y+6.0)).arg(num));
+    }
+    return cod;
+}
+
 QString LabelBase::logo(double x, double y)
 {
     return QString("PUTBMP %1,%2, \"logo.BMP\",1,100\n").arg(getDots(x)).arg(getDots(y));
@@ -90,13 +130,21 @@ void LabelBase::printLabel()
 {
     DialogPrintLabel d(this);
     d.exec();
-    //QString c=getCod();
-    //printer->printDecode(c);
 }
 
-void LabelBase::calibrate()
+QString LabelBase::calibrate()
 {
     QString cmd;
     cmd+=QString("SIZE %1 mm, %2 mm\n").arg(width).arg(height);
     cmd+=QString("AUTODETECT %1, %2\n").arg(getDots(height)).arg(getDots(gap));
+    return cmd;
+}
+
+QString LabelBase::cut(bool en)
+{
+    QString cmd;
+    if (en){
+        cmd+=QString("CUT\n");
+    }
+    return cmd;
 }

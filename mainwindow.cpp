@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     actAction(ui->actionLblEl,&MainWindow::newFormLabelsEl);
+    actAction(ui->actionLblWire,&MainWindow::newFormLabelsWire);
     actAction(ui->actionAcceptanceWire,&MainWindow::newFormAcceptanceWire);
     actAction(ui->actionAcceptanceEl,&MainWindow::newFormAcceptanceEl);
     actAction(ui->actionShip,&MainWindow::newFormShip);
@@ -167,6 +168,13 @@ void MainWindow::newFormLabelsEl()
 {
     if (!exist(sender())){
         addSubWindow(new FormLabelsEl(),sender());
+    }
+}
+
+void MainWindow::newFormLabelsWire()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormLabelsWire(),sender());
     }
 }
 

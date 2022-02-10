@@ -5,6 +5,7 @@
 #include "labelbase.h"
 #include "modelprint.h"
 #include "tprinter.h"
+#include "dialogcmd.h"
 
 namespace Ui {
 class DialogPrintLabel;
@@ -26,9 +27,14 @@ private:
     ModelPrint *modelPrint;
     QUrl currentUrl();
     int currentDpi();
+    QString currentCmd();
 
 private slots:
     void print();
+    void savePrinter();
+    void changedPrinter();
+    void calibrate();
+    void showCmd();
 };
 
 #endif // DIALOGPRINTLABEL_H
