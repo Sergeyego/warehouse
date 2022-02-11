@@ -20,11 +20,13 @@ class DialogPrintLabel : public QDialog
 public:
     explicit DialogPrintLabel(LabelBase *l, QWidget *parent = 0);
     ~DialogPrintLabel();
+    void setPrintCmdMode(bool b);
 
 private:
     Ui::DialogPrintLabel *ui;
     LabelBase *label;
     ModelPrint *modelPrint;
+    bool printCmdMode;
     QUrl currentUrl();
     int currentDpi();
     QString currentCmd();

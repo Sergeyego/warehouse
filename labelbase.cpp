@@ -3,6 +3,7 @@
 LabelBase::LabelBase(QString nam, double w, double h, double g, QObject *parent) : QObject(parent), name(nam), width(w), height(h), gap(g)
 {
     dpi=200;
+    printCmdMode=false;
     loadSettings();
 }
 
@@ -71,6 +72,11 @@ void LabelBase::saveSettings()
     settings.setValue(name+"_printerName",printerName);
 }
 
+void LabelBase::setPrintCmdMode(bool b)
+{
+    printCmdMode=b;
+}
+
 int LabelBase::getDots(double mm)
 {
     return dpi*mm/25;
@@ -100,6 +106,11 @@ QString LabelBase::qrCode(double x, double y, QString t, int cellWidth)
     return QString ("QRCODE %1,%2,M,%3,A,0,M2, \"%4\"\n").arg(getDots(x)).arg(getDots(y)).arg(cellWidth).arg(normalize(t));
 }
 
+QString LabelBase::dataMatrix(double x, double y, double size, double sizeCell, QString data)
+{
+    return QString ("DMATRIX %1,%2,%3,%4,x%5, \"%6\"\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(size)).arg(getDots(size)).arg(getDots(sizeCell)).arg(normalize(data));
+}
+
 QString LabelBase::otkStamp(double x, double y, QString num)
 {
     QString cod;
@@ -109,6 +120,11 @@ QString LabelBase::otkStamp(double x, double y, QString num)
         cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",0,12,12,\"%3\"\n").arg(getDots(x+3.5)).arg(getDots(y+6.0)).arg(num));
     }
     return cod;
+}
+
+QString LabelBase::cls()
+{
+    return QString("CLS\n");
 }
 
 QString LabelBase::logo(double x, double y)
@@ -129,6 +145,7 @@ QString LabelBase::block(double x, double y, double w, double h, QString t, int 
 void LabelBase::printLabel()
 {
     DialogPrintLabel d(this);
+    d.setPrintCmdMode(printCmdMode);
     d.exec();
 }
 

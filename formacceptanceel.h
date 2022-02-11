@@ -2,8 +2,10 @@
 #define FORMACCEPTANCEEL_H
 
 #include <QWidget>
+#include <QInputDialog>
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
+#include "labelbase.h"
 
 namespace Ui {
 class FormAcceptanceEl;
@@ -33,6 +35,21 @@ signals:
     void sigSum(QString s);
 };
 
+class LabelElPal : public LabelBase
+{
+public:
+    LabelElPal(int id_acc, int cont=-1, QObject *parent=0);
+protected:
+    virtual QString getCod();
+private:
+    struct accInfo {
+        QString nameNom;
+        QString namePart;
+        double kvo;
+    };
+    QMultiMap<QString,accInfo> hash;
+};
+
 class FormAcceptanceEl : public QWidget
 {
     Q_OBJECT
@@ -46,6 +63,8 @@ private:
     ModelAcceptanceEl *modelAcceptanceEl;
     ModelAcceptanceElData *modelAcceptanceElData;
     DbMapper *mapper;
+    QAction *actionPrintLblAll;
+    QAction *actionPrintLblOne;
     void loadsettings();
     void savesettings();
 
@@ -54,6 +73,8 @@ private slots:
     void updAccData(int index);
     void setPartFilter();
     void sync();
+    void printPalAll();
+    void printPalOne();
 };
 
 #endif // FORMACCEPTANCEEL_H

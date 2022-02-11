@@ -7,6 +7,8 @@ DialogPrintLabel::DialogPrintLabel(LabelBase *l, QWidget *parent) :
 {
     ui->setupUi(this);
 
+    printCmdMode=false;
+
     modelPrint = new ModelPrint(this);
     ui->comboBoxPrint->setModel(modelPrint);
     ui->comboBoxPrint->setModelColumn(0);
@@ -37,6 +39,12 @@ DialogPrintLabel::~DialogPrintLabel()
     delete ui;
 }
 
+void DialogPrintLabel::setPrintCmdMode(bool b)
+{
+    printCmdMode = b;
+    ui->spinBox->setDisabled(b);
+}
+
 QUrl DialogPrintLabel::currentUrl()
 {
     return QUrl(modelPrint->data(modelPrint->index(ui->comboBoxPrint->currentIndex(),1),Qt::EditRole).toString());
@@ -49,7 +57,8 @@ int DialogPrintLabel::currentDpi()
 
 QString DialogPrintLabel::currentCmd()
 {
-    return label->getCod()+label->print(ui->spinBox->value())+label->cut(ui->checkBoxCut->isChecked());
+    QString sprint = printCmdMode ? "" : label->print(ui->spinBox->value());
+    return label->getCod()+sprint+label->cut(ui->checkBoxCut->isChecked());
 }
 
 void DialogPrintLabel::print()

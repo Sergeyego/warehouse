@@ -154,6 +154,22 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QToolButton" name="toolButtonPal">
+           <property name="text">
+            <string>Этикетки на поддоны</string>
+           </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextUnderIcon</enum>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::NoArrow</enum>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

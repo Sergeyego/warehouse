@@ -2,9 +2,11 @@
 #define FORMACCEPTANCEWIRE_H
 
 #include <QWidget>
+#include <QInputDialog>
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
 #include "models.h"
+#include "labelbase.h"
 
 namespace Ui {
 class FormAcceptanceWire;
@@ -34,6 +36,21 @@ signals:
     void sigSum(QString s);
 };
 
+class LabelWirePal : public LabelBase
+{
+public:
+    LabelWirePal(int id_acc, int cont=-1, QObject *parent=0);
+protected:
+    virtual QString getCod();
+private:
+    struct accInfo {
+        QString nameNom;
+        QString namePart;
+        double kvo;
+    };
+    QMultiMap<QString,accInfo> hash;
+};
+
 class FormAcceptanceWire : public QWidget
 {
     Q_OBJECT
@@ -47,6 +64,8 @@ private:
     ModelAcceptanceWire *modelAcceptanceWire;
     ModelAcceptanceWireData *modelAcceptanceWireData;
     DbMapper *mapper;
+    QAction *actionPrintLblAll;
+    QAction *actionPrintLblOne;
     void loadsettings();
     void savesettings();
 
@@ -55,6 +74,8 @@ private slots:
     void updAccData(int index);
     void sync();
     void setPartFilter();
+    void printPalAll();
+    void printPalOne();
 };
 
 #endif // FORMACCEPTANCEWIRE_H
