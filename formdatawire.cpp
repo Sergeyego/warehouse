@@ -171,14 +171,22 @@ QString FormDataWire::eanGr()
     return ean;
 }
 
-QString FormDataWire::qrCode()
+QString FormDataWire::barCode()
 {
-    QString t;
-    t+="c="+ui->lineEditEanEd->text()+"\n";
-    t+="p="+ui->lineEditPart->text()+"-"+QString::number(ui->dateEdit->date().year())+"\n";
-    t+="m="+ui->lineEditKvo->text()+"\n";
-    t+=site;
-    return t;
+    QString ean;
+    if (!ui->lineEditEanGr->text().isEmpty()){
+        ean=ui->lineEditEanGr->text().left(12);
+    } else if (!ui->lineEditEanEd->text().isEmpty()){
+        ean=ui->lineEditEanEd->text().left(12);
+    }
+    ean.resize(13,' ');
+    QString part=ui->lineEditPart->text();
+    part.resize(4,' ');
+    QString id='w'+ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),0),Qt::EditRole).toString();
+    id.resize(8,'_');
+    QString year=QString::number(ui->dateEdit->date().year());
+    year.resize(4,' ');
+    return ean+id+part+'-'+year;
 }
 
 QString FormDataWire::codeProd()

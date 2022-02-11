@@ -26,7 +26,7 @@ public:
     QString masGr();
     QString eanEd();
     QString eanGr();
-    QString qrCode();
+    QString barCode();
 
 private:
     Ui::FormDataEl *ui;

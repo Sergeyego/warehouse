@@ -93,12 +93,17 @@ QString FormDataEl::eanGr()
     return ui->lineEditEanGr->text().left(12);
 }
 
-QString FormDataEl::qrCode()
+QString FormDataEl::barCode()
 {
-    QString t;
-    t+=ui->lineEditEanEd->text();
-    t+=ui->lineEditPart->text()+"-"+QString::number(ui->dateEditPart->date().year());
-    return t;
+    QString ean=ui->lineEditEanGr->text();
+    ean.resize(13,' ');
+    QString part=ui->lineEditPart->text();
+    part.resize(4,' ');
+    QString id='e'+ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),0),Qt::EditRole).toString();
+    id.resize(8,'_');
+    QString year=QString::number(ui->dateEditPart->date().year());
+    year.resize(4,' ');
+    return ean+id+part+'-'+year;
 }
 
 

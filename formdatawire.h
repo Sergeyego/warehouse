@@ -29,7 +29,7 @@ public:
     QString mas();
     QString eanEd();
     QString eanGr();
-    QString qrCode();
+    QString barCode();
     QString codeProd();
     QString otkNum();
     QString otkNam();
