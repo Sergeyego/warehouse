@@ -94,151 +94,230 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidget_2">
+     <widget class="QWidget" name="">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="4" column="0" colspan="2">
-          <widget class="QLabel" name="label_11">
-           <property name="text">
-            <string>Упаковка групповая</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2" colspan="3">
+         <item row="3" column="1" colspan="2">
           <widget class="QLineEdit" name="lineEditPackEd">
            <property name="readOnly">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="6" column="2" colspan="3">
-          <widget class="QLineEdit" name="lineEditKvoGr">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="2" colspan="3">
-          <widget class="QDateEdit" name="dateEditPart">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="4">
-          <widget class="QPushButton" name="pushButtonGen">
-           <property name="text">
-            <string>Сгенерировать</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2" colspan="3">
-          <widget class="QLineEdit" name="lineEditPackGr">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Партия</string>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="2">
-          <widget class="QLineEdit" name="lineEditEanEd">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="2" colspan="3">
+         <item row="5" column="1" colspan="2">
           <widget class="QLineEdit" name="lineEditKvoEd">
            <property name="readOnly">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="1" column="0" colspan="2">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Диаметр</string>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="3">
-          <widget class="QLineEdit" name="lineEditEanGr">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="0" colspan="2">
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Штрихкод</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2" colspan="3">
-          <widget class="QLineEdit" name="lineEditMark">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0" colspan="2">
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Упаковка</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0" colspan="2">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>Масса пачки нетто, кг</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2" colspan="3">
-          <widget class="QLineEdit" name="lineEditDiam">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="0" colspan="2">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>Дата партии</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="0" colspan="2">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>Масса гофрокороба, кг</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Марка</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2" colspan="3">
+         <item row="2" column="1" colspan="2">
           <widget class="QLineEdit" name="lineEditPart">
            <property name="readOnly">
             <bool>true</bool>
            </property>
           </widget>
          </item>
+         <item row="6" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEditKvoGr">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Диаметр</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Партия</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QLineEdit" name="lineEditEanEd">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="3">
+          <widget class="QPushButton" name="pushButtonGen">
+           <property name="text">
+            <string>Сгенерировать</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Марка</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Упаковка</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>Упаковка групповая</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Масса пачки нетто, кг</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Масса гофрокороба, кг</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Дата партии</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QDateEdit" name="dateEditPart">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Штрихкод</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="2">
+          <widget class="QLineEdit" name="lineEditEanGr">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEditDiam">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEditMark">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEditPackGr">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="4">
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Данные упаковочного листа</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Дата упаковки</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>Упаковщик</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QComboBox" name="comboBox">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="lineEditMasPal"/>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>Количество мест</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="DateEdit" name="dateEdit"/>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLineEdit" name="lineEditKvoPack"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Масса нетто на поддоне, кг</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
         <spacer name="verticalSpacer">
@@ -259,6 +338,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DateEdit</class>
+   <extends>QDateEdit</extends>
+   <header>db/dbviewer.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
