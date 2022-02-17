@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql network xml
+QT       += core gui sql network xml printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -63,7 +63,10 @@ SOURCES += \
     dialogcmd.cpp \
     formlabelswire.cpp \
     formdatawire.cpp \
-    labelswire.cpp
+    labelswire.cpp \
+    doublelineedit.cpp \
+    dialogprintpacklist.cpp \
+    qr/qrencode.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -103,7 +106,10 @@ HEADERS += \
     dialogcmd.h \
     formlabelswire.h \
     formdatawire.h \
-    labelswire.h
+    labelswire.h \
+    doublelineedit.h \
+    dialogprintpacklist.h \
+    qr/qrencode.h
 
 FORMS += \
         mainwindow.ui \
@@ -127,7 +133,8 @@ FORMS += \
     dialogprintlabel.ui \
     dialogcmd.ui \
     formlabelswire.ui \
-    formdatawire.ui
+    formdatawire.ui \
+    dialogprintpacklist.ui
 
 RC_FILE = ico.rc
 

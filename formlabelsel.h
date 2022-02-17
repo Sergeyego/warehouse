@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "formdatael.h"
 #include "labelsel.h"
+#include <dialogprintpacklist.h>
 
 namespace Ui {
 class FormLabelsEl;
@@ -22,6 +23,9 @@ private:
     FormDataEl *data;
     LabelE5040 *labelE5040;
     LabelG5040 *labelG5040;
+
+private slots:
+    void printPackList();
 };
 
 #endif // FORMLABELSEL_H

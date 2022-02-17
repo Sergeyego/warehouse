@@ -6,6 +6,8 @@
 #include <QDataWidgetMapper>
 #include <QCompleter>
 #include <QComboBox>
+#include <QSettings>
+#include <math.h>
 
 namespace Ui {
 class FormDataWire;
@@ -26,10 +28,12 @@ public:
     QString datePart();
     QString datePack();
     QString spool();
-    QString mas();
+    QString masEd();
+    QString masGroup();
     QString eanEd();
     QString eanGr();
     QString barCode();
+    QString barCodePack();
     QString codeProd();
     QString otkNum();
     QString otkNam();
@@ -38,6 +42,7 @@ public:
     QString upkNum();
     QString adr();
     QString kvoSpool();
+    QString masPal();
     QString master();
 
 private:
@@ -55,12 +60,16 @@ private:
     QString strAdr;
     QString site;
     QString getNum(QComboBox *c);
+    void loadSettings();
+    void saveSettings();
+    QVariant currentData(int row);
 
 private slots:
     void refreshData(QModelIndex index);
     void genEan();
     void setOrigPart();
     void refreshDocType();
+    void setKvoPack();
 
 public slots:
     void updPart();

@@ -15,9 +15,17 @@ FormLabelsEl::FormLabelsEl(QWidget *parent) :
 
     connect(ui->pushButtonEd5040,SIGNAL(clicked(bool)),labelE5040,SLOT(printLabel()));
     connect(ui->pushButtonGr5040,SIGNAL(clicked(bool)),labelG5040,SLOT(printLabel()));
+
+    connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(printPackList()));
 }
 
 FormLabelsEl::~FormLabelsEl()
 {
     delete ui;
+}
+
+void FormLabelsEl::printPackList()
+{
+    DialogPrintPackList d(data);
+    d.exec();
 }

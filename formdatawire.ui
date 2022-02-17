@@ -94,7 +94,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QGridLayout" name="gridLayout">
@@ -150,12 +150,12 @@
          <item row="5" column="0">
           <widget class="QLabel" name="label_8">
            <property name="text">
-            <string>Масса носителя нетто, кг</string>
+            <string>Масса катушки нетто, кг</string>
            </property>
           </widget>
          </item>
          <item row="5" column="1">
-          <widget class="QLineEdit" name="lineEditKvo"/>
+          <widget class="DoubleLineEdit" name="lineEditKvo"/>
          </item>
          <item row="6" column="0">
           <widget class="QLabel" name="label_17">
@@ -285,9 +285,6 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="1" colspan="2">
-          <widget class="QLineEdit" name="lineEdit"/>
-         </item>
          <item row="4" column="1" colspan="2">
           <widget class="QLineEdit" name="lineEditSpool">
            <property name="readOnly">
@@ -322,6 +319,9 @@
             <bool>true</bool>
            </property>
           </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="DoubleLineEdit" name="lineEditKvoGr"/>
          </item>
         </layout>
        </item>
@@ -390,7 +390,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="lineEdit_2"/>
+           <widget class="DoubleLineEdit" name="lineEditKvoPal"/>
           </item>
          </layout>
         </widget>
@@ -401,6 +401,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DoubleLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>doublelineedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

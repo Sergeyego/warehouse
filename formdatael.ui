@@ -94,7 +94,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QGridLayout" name="gridLayout">
@@ -274,14 +274,14 @@
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QComboBox" name="comboBox">
+           <widget class="QComboBox" name="comboBoxPack">
             <property name="editable">
              <bool>true</bool>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="lineEditMasPal"/>
+           <widget class="DoubleLineEdit" name="lineEditMasPal"/>
           </item>
           <item row="0" column="2">
            <widget class="QLabel" name="label_13">
@@ -291,7 +291,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="DateEdit" name="dateEdit"/>
+           <widget class="DateEdit" name="dateEditPack"/>
           </item>
           <item row="0" column="3">
            <widget class="QLineEdit" name="lineEditKvoPack"/>
@@ -343,6 +343,11 @@
    <class>DateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DoubleLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>doublelineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

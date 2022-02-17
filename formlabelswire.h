@@ -24,6 +24,7 @@ private:
     LabelG95110 *labelG95110;
     LabelE4570 *labelE4570;
     LabelG100100 *labelG100100;
+    LabelG100100Pal *labelG100100Pal;
 };
 
 #endif // FORMLABELSWIRE_H

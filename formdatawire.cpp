@@ -6,6 +6,7 @@ FormDataWire::FormDataWire(QWidget *parent) :
     ui(new Ui::FormDataWire)
 {
     ui->setupUi(this);
+    loadSettings();
 
     ui->pushButtonUpd->setIcon(this->style()->standardIcon(QStyle::SP_BrowserReload));
 
@@ -53,18 +54,21 @@ FormDataWire::FormDataWire(QWidget *parent) :
     mapper->addMapping(ui->plainTextEdit,9);
     mapper->addMapping(ui->lineEditEanEd,10);
     mapper->addMapping(ui->lineEditEanGr,11);
+    mapper->addMapping(ui->lineEditKvoGr,12);
 
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),mapper,SLOT(setCurrentModelIndex(QModelIndex)));
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshData(QModelIndex)));
     connect(ui->comboBoxOPart->lineEdit(),SIGNAL(editingFinished()),this,SLOT(setOrigPart()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updPart()));
     connect(ui->pushButtonGen,SIGNAL(clicked(bool)),this,SLOT(genEan()));
+    connect(ui->lineEditKvoPal,SIGNAL(textChanged(QString)),this,SLOT(setKvoPack()));
 
     updPart();
 }
 
 FormDataWire::~FormDataWire()
 {
+    saveSettings();
     delete ui;
 }
 
@@ -150,7 +154,12 @@ QString FormDataWire::spool()
     return ui->lineEditSpool->text();
 }
 
-QString FormDataWire::mas()
+QString FormDataWire::masGroup()
+{
+    return (!ui->lineEditEanGr->text().isEmpty()) ? ui->lineEditKvoGr->text() : ui->lineEditKvo->text();
+}
+
+QString FormDataWire::masEd()
 {
     return ui->lineEditKvo->text();
 }
@@ -182,11 +191,22 @@ QString FormDataWire::barCode()
     ean.resize(13,' ');
     QString part=ui->lineEditPart->text();
     part.resize(4,' ');
-    QString id='w'+ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),0),Qt::EditRole).toString();
+    QString id='w'+currentData(0).toString();
     id.resize(8,'_');
     QString year=QString::number(ui->dateEdit->date().year());
     year.resize(4,' ');
     return ean+id+part+'-'+year;
+}
+
+QString FormDataWire::barCodePack()
+{
+    QString base=barCode();
+    double kvoM=ui->lineEditKvoPal->text().toDouble();
+    int kvoP = ui->lineEditKvoSpool->text().toInt();
+    int ikvoM=kvoM*100;
+    base+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
+    base+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+    return base;
 }
 
 QString FormDataWire::codeProd()
@@ -245,6 +265,11 @@ QString FormDataWire::kvoSpool()
     return ui->lineEditKvoSpool->text();
 }
 
+QString FormDataWire::masPal()
+{
+    return ui->lineEditKvoPal->text();
+}
+
 QString FormDataWire::master()
 {
     return ui->comboBoxMaster->currentText();
@@ -253,7 +278,7 @@ QString FormDataWire::master()
 bool FormDataWire::selectPart()
 {
     QSqlQuery query;
-    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group "
+    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group, wp.mas_group "
                   "from wire_parti as p "
                   "inner join wire_parti_m as m on p.id_m=m.id "
                   "inner join provol as w on m.id_provol=w.id "
@@ -291,6 +316,23 @@ QString FormDataWire::getNum(QComboBox *c)
         n=c->model()->data(c->model()->index(c->currentIndex(),2),Qt::EditRole).toInt();
     }
     return QString("%1").arg((n),2,'d',0,QChar('0'));
+}
+
+void FormDataWire::loadSettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    ui->splitter->restoreState(settings.value("datawire_splitter_width").toByteArray());
+}
+
+void FormDataWire::saveSettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    settings.setValue("datawire_splitter_width",ui->splitter->saveState());
+}
+
+QVariant FormDataWire::currentData(int row)
+{
+    return mapper->model()->data(mapper->model()->index(mapper->currentIndex(),row),Qt::EditRole);
 }
 
 void FormDataWire::refreshData(QModelIndex index)
@@ -331,6 +373,8 @@ void FormDataWire::refreshData(QModelIndex index)
             break;
         }
     }
+    ui->lineEditKvoGr->setEnabled(!ui->lineEditEanGr->text().isEmpty());
+    setKvoPack();
 }
 
 void FormDataWire::genEan()
@@ -375,6 +419,22 @@ void FormDataWire::refreshDocType()
     } else {
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
+}
+
+void FormDataWire::setKvoPack()
+{
+    double ost=0;
+    double kvo=ui->lineEditKvoPal->text().toDouble();
+    double ed=currentData(8).toDouble();
+    if (ed!=0){
+        ui->lineEditKvoSpool->setText(QString::number(kvo/ed));
+        double b;
+        ost=std::modf(kvo/ed, &b);
+    }
+    QPalette pal=ui->lineEditKvoSpool->palette();
+    QColor col = (ost==0 && kvo>0) ? QColor(0,0,0) : QColor(255,0,0);
+    pal.setColor(QPalette::Text,col);
+    ui->lineEditKvoSpool->setPalette(pal);
 }
 
 void FormDataWire::updPart()
