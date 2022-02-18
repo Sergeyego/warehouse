@@ -4,6 +4,7 @@ LabelBase::LabelBase(QString nam, double w, double h, double g, QObject *parent)
 {
     dpi=200;
     printCmdMode=false;
+    cutMode=true;
     loadSettings();
 }
 
@@ -77,6 +78,11 @@ void LabelBase::setPrintCmdMode(bool b)
     printCmdMode=b;
 }
 
+void LabelBase::setCut(bool b)
+{
+    cutMode=b;
+}
+
 int LabelBase::getDots(double mm)
 {
     return dpi*mm/25;
@@ -146,6 +152,7 @@ void LabelBase::printLabel()
 {
     DialogPrintLabel d(this);
     d.setPrintCmdMode(printCmdMode);
+    d.setCut(cutMode);
     d.exec();
 }
 

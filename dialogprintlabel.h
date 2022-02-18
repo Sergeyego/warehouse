@@ -21,6 +21,7 @@ public:
     explicit DialogPrintLabel(LabelBase *l, QWidget *parent = 0);
     ~DialogPrintLabel();
     void setPrintCmdMode(bool b);
+    void setCut(bool b);
 
 private:
     Ui::DialogPrintLabel *ui;

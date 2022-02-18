@@ -184,9 +184,9 @@ QString FormDataWire::barCode()
 {
     QString ean;
     if (!ui->lineEditEanGr->text().isEmpty()){
-        ean=ui->lineEditEanGr->text().left(12);
+        ean=ui->lineEditEanGr->text();
     } else if (!ui->lineEditEanEd->text().isEmpty()){
-        ean=ui->lineEditEanEd->text().left(12);
+        ean=ui->lineEditEanEd->text();
     }
     ean.resize(13,' ');
     QString part=ui->lineEditPart->text();

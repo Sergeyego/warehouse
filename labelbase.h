@@ -26,6 +26,7 @@ public:
     void loadSettings();
     void saveSettings();
     void setPrintCmdMode(bool b);
+    void setCut(bool b);
 
 private:
     double width;
@@ -35,6 +36,7 @@ private:
     QString name;
     QString printerName;
     bool printCmdMode;
+    bool cutMode;
 
 protected:
     int getDots(double mm);

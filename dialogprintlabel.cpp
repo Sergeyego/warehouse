@@ -45,6 +45,11 @@ void DialogPrintLabel::setPrintCmdMode(bool b)
     ui->spinBox->setDisabled(b);
 }
 
+void DialogPrintLabel::setCut(bool b)
+{
+    ui->checkBoxCut->setChecked(b);
+}
+
 QUrl DialogPrintLabel::currentUrl()
 {
     return QUrl(modelPrint->data(modelPrint->index(ui->comboBoxPrint->currentIndex(),1),Qt::EditRole).toString());

@@ -2,7 +2,7 @@
 
 LabelE801016::LabelE801016(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
-
+    setCut(false);
 }
 
 QString LabelE801016::getCod()
@@ -25,7 +25,7 @@ QString LabelE801016::getCod()
 
 LabelG95110::LabelG95110(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
-
+    setCut(false);
 }
 
 QString LabelG95110::getCod()
@@ -43,7 +43,8 @@ QString LabelG95110::getCod()
     cod.push_back(text(45,62.5,QString::fromUtf8("Дата изг. - ")+data->datePart(),12));
     cod.push_back(text(45,67.5,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),12));
     cod.push_back(text(45,72.5,QString::fromUtf8("Упаковщик № ")+data->upkNum(),12));
-    cod.push_back(block(6.25,82.5,86.25,18,data->getSert(),10));
+    cod.push_back(block(6.25,82.5,67,18,data->getSert(),10));
+    cod.push_back(dataMatrix(75,82.5,15,0.85,data->barCode()));
     cod.push_back(block(6.25,100.5,86.25,7,data->adr(),10));
     cod.push_back(ean13(50,13.75,data->eanGr(),12.5,0.375));
     cod.push_back(otkStamp(60,37,data->otkNum()));
@@ -92,7 +93,8 @@ QString LabelG100100::getCod()
     cod.push_back(text(45,55,QString::fromUtf8("Дата изг. - ")+data->datePart(),12));
     cod.push_back(text(45,60,QString::fromUtf8("Масса нетто, кг - ")+data->masGroup(),12));
     cod.push_back(text(45,65,QString::fromUtf8("Упаковщик № ")+data->upkNum(),12));
-    cod.push_back(block(6.25,75,86.25,15,data->getSert(),10));
+    cod.push_back(block(6.25,75,74,15,data->getSert(),10));
+    cod.push_back(dataMatrix(80,75,15,0.85,data->barCode()));
     cod.push_back(block(6.25,90,86.25,7,data->adr(),10));
     cod.push_back(ean13(50,6.25,data->eanGr(),12.5,0.375));
     cod.push_back(otkStamp(60,29.5,data->otkNum()));
