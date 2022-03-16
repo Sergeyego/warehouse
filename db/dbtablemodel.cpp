@@ -318,7 +318,7 @@ bool DbTableModel::insertDb()
             query.bindValue(":"+modelData->column(i)->name,tmpRow.at(i));
         }
     }
-    //qDebug()<</*query.executedQuery();*/qu;
+    //qDebug()<<query.executedQuery();
     bool ok=query.exec();
     if (!ok) {
         QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Cancel);

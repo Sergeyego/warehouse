@@ -28,6 +28,8 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     for (int i=0; i<5; i++){
         ui->tableViewAccData->setColumnHidden(i,true);
     }
+    ui->tableViewAccData->setColumnHidden(8,true);
+
     ui->tableViewAccData->setColumnWidth(5,350);
     ui->tableViewAccData->setColumnWidth(6,100);
     ui->tableViewAccData->setColumnWidth(7,80);
@@ -161,11 +163,25 @@ ModelAcceptanceElData::ModelAcceptanceElData(QObject *parent) : DbTableModel("pr
     addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
     addColumn("kvo",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
+    addColumn("chk",tr("check"));
     setDecimals(6,2);
+    setDefaultValue(8,false);
     this->setSort("prod.id");
 
     connect(this,SIGNAL(sigUpd()),this,SLOT(caclSum()));
     connect(this,SIGNAL(sigRefresh()),this,SLOT(caclSum()));
+}
+
+QVariant ModelAcceptanceElData::data(const QModelIndex &index, int role) const
+{
+    if (role==Qt::BackgroundColorRole){
+        if (DbTableModel::data(this->index(index.row(),8),Qt::EditRole).toBool()){
+            return QColor(170,255,170);
+        } else {
+            return QVariant();
+        }
+    }
+    return DbTableModel::data(index,role);
 }
 
 void ModelAcceptanceElData::refresh(int id_acc)

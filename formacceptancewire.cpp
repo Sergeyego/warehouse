@@ -36,6 +36,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->tableViewAccData->setColumnWidth(2,400);
     ui->tableViewAccData->setColumnWidth(3,80);
     ui->tableViewAccData->setColumnWidth(4,100);
+    ui->tableViewAccData->setColumnHidden(5,true);
 
     mapper = new DbMapper(ui->tableViewAcc,this);
     ui->horizontalLayoutMapper->insertWidget(0,mapper);
@@ -156,11 +157,25 @@ ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel
     addColumn("id_wparti",tr("Партия"),Models::instance()->relWirePart);
     addColumn("m_netto",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
+    addColumn("chk",tr("check"));
+    setDefaultValue(5,false);
     setSort(name()+".id");
     setDecimals(3,2);
 
     connect(this,SIGNAL(sigUpd()),this,SLOT(caclSum()));
     connect(this,SIGNAL(sigRefresh()),this,SLOT(caclSum()));
+}
+
+QVariant ModelAcceptanceWireData::data(const QModelIndex &index, int role) const
+{
+    if (role==Qt::BackgroundColorRole){
+        if (DbTableModel::data(this->index(index.row(),5),Qt::EditRole).toBool()){
+            return QColor(170,255,170);
+        } else {
+            return QVariant();
+        }
+    }
+    return DbTableModel::data(index,role);
 }
 
 void ModelAcceptanceWireData::refresh(int id_acc)

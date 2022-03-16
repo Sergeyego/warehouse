@@ -26,6 +26,7 @@ class ModelAcceptanceWireData: public DbTableModel
     Q_OBJECT
 public:
     ModelAcceptanceWireData(QObject *parent = 0);
+    QVariant data(const QModelIndex &index, int role) const;
     void refresh(int id_acc);
     bool insertRow(int row, const QModelIndex &parent);
 
