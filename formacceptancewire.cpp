@@ -267,7 +267,7 @@ QString LabelWirePal::getCod()
             str+=a.nameNom+"\n п."+a.namePart+" - "+QLocale().toString(a.kvo,'f',1)+" кг";
             n++;
         }
-        lbl+=block(2.5,42,40,25,str,10);
+        lbl+=block(2.5,44,40,23,str,10);
         lbl+=print(1);
         if (first){
             first=false;
