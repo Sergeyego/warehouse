@@ -427,7 +427,7 @@ void FormDataWire::setKvoPack()
     double kvo=ui->lineEditKvoPal->text().toDouble();
     double ed=currentData(8).toDouble();
     if (ed!=0){
-        ui->lineEditKvoSpool->setText(QString::number(kvo/ed));
+        ui->lineEditKvoSpool->setText(QString::number(round(kvo/ed)));
         double b;
         ost=std::modf(kvo/ed, &b);
     }
