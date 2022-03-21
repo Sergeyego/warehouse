@@ -66,7 +66,8 @@ SOURCES += \
     labelswire.cpp \
     doublelineedit.cpp \
     dialogprintpacklist.cpp \
-    qr/qrencode.cpp
+    qr/qrencode.cpp \
+    formcells.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -109,7 +110,8 @@ HEADERS += \
     labelswire.h \
     doublelineedit.h \
     dialogprintpacklist.h \
-    qr/qrencode.h
+    qr/qrencode.h \
+    formcells.h
 
 FORMS += \
         mainwindow.ui \
@@ -134,7 +136,8 @@ FORMS += \
     dialogcmd.ui \
     formlabelswire.ui \
     formdatawire.ui \
-    dialogprintpacklist.ui
+    dialogprintpacklist.ui \
+    formcells.ui
 
 RC_FILE = ico.rc
 

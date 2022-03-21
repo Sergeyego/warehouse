@@ -95,6 +95,7 @@
     <addaction name="actionCfgPrint"/>
     <addaction name="actionAllRefresh"/>
     <addaction name="actionCfgUser"/>
+    <addaction name="actionCells"/>
    </widget>
    <addaction name="menu_7"/>
    <addaction name="menu"/>
@@ -188,6 +189,11 @@
   <action name="actionCfgUser">
    <property name="text">
     <string>Настройка пользователей</string>
+   </property>
+  </action>
+  <action name="actionCells">
+   <property name="text">
+    <string>Печать этикеток ячеек</string>
    </property>
   </action>
  </widget>

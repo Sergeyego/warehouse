@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionAnAccWire,&MainWindow::newAnAccWire);
     actAction(ui->actionAccNaklEl,&MainWindow::newFormAccNaklEl);
     actAction(ui->actionAccNaklWire,&MainWindow::newFormAccNaklWire);
+    actAction(ui->actionCells,&MainWindow::newFormCells);
 
     connect(ui->actionCfgPrint,SIGNAL(triggered(bool)),this,SLOT(cfgPrint()));
     connect(ui->actionAllRefresh,SIGNAL(triggered(bool)),Models::instance(),SLOT(refresh()));
@@ -175,6 +176,13 @@ void MainWindow::newFormLabelsWire()
 {
     if (!exist(sender())){
         addSubWindow(new FormLabelsWire(),sender());
+    }
+}
+
+void MainWindow::newFormCells()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormCells(),sender());
     }
 }
 

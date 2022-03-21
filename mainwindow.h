@@ -16,6 +16,7 @@
 #include "dialogcfgprint.h"
 #include "formlabelsel.h"
 #include "formlabelswire.h"
+#include "formcells.h"
 
 namespace Ui {
 class MainWindow;
@@ -50,6 +51,7 @@ private slots:
     void newFormAccNaklWire();
     void newFormLabelsEl();
     void newFormLabelsWire();
+    void newFormCells();
     void cfgPrint();
 
 private:
