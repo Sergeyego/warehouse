@@ -251,6 +251,7 @@ LabelElPal::LabelElPal(int id_acc, int cont, QObject *parent) : LabelBase("Эт�
             info.kvo=query.value(3).toDouble();
             hash.insert(cnam,info);
         }
+        setCutKvo(hash.uniqueKeys().size());
     } else {
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }

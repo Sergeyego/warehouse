@@ -63,7 +63,7 @@ int DialogPrintLabel::currentDpi()
 QString DialogPrintLabel::currentCmd()
 {
     QString sprint = printCmdMode ? "" : label->print(ui->spinBox->value());
-    return label->getCod()+sprint+label->cut(ui->checkBoxCut->isChecked());
+    return label->cut(ui->checkBoxCut->isChecked())+label->getCod()+sprint;
 }
 
 void DialogPrintLabel::print()

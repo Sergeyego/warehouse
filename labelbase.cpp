@@ -5,6 +5,7 @@ LabelBase::LabelBase(QString nam, double w, double h, double g, QObject *parent)
     dpi=200;
     printCmdMode=false;
     cutMode=true;
+    cutKvo=0;
     loadSettings();
 }
 
@@ -81,6 +82,11 @@ void LabelBase::setPrintCmdMode(bool b)
 void LabelBase::setCut(bool b)
 {
     cutMode=b;
+}
+
+void LabelBase::setCutKvo(int kvo)
+{
+    cutKvo=kvo;
 }
 
 int LabelBase::getDots(double mm)
@@ -167,8 +173,12 @@ QString LabelBase::calibrate()
 QString LabelBase::cut(bool en)
 {
     QString cmd;
-    if (en){
-        cmd+=QString("CUT\n");
+    if (en && !printCmdMode){
+        cmd+=QString("SET CUTTER BATCH\n");
+    } else if (en && printCmdMode && cutKvo>0){
+        cmd+=QString("SET CUTTER %1\n").arg(cutKvo);
+    } else {
+        cmd+=QString("SET CUTTER OFF\n");
     }
     return cmd;
 }
