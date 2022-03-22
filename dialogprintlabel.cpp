@@ -86,7 +86,8 @@ void DialogPrintLabel::changedPrinter()
 
 void DialogPrintLabel::calibrate()
 {
-    QByteArray data=label->calibrate().toUtf8();
+    QString d = label->cut(false)+label->calibrate();
+    QByteArray data=d.toUtf8();
     TPrinter::printData(currentUrl(),data);
 }
 

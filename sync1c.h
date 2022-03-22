@@ -73,17 +73,6 @@ struct accInfo
     QString name;
 };
 
-struct cellInfo
-{
-    QString name;
-    QString barcode;
-    QString state;
-    QString zone;
-    QString rack;
-    QString pos;
-    QString stage;
-};
-
     class Sync1C: public QObject
     {
         Q_OBJECT
@@ -94,7 +83,8 @@ struct cellInfo
         void getBalanceAndTurnovers(QDate beg, QDate end, QMultiHash<QString, turnInfo> &info);
         void getAcceptanceTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo> &info);
         void getShipTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo> &info);
-        void getCells(QVector<cellInfo> &info);
+        void getCells(QVector<QVector<QVariant>> &info);
+        void getConts(QVector<QVector<QVariant>> &info);
 
     public slots:
         void syncCatalogEl();

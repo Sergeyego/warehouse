@@ -86,6 +86,11 @@ void TableModel::setHeader(const QStringList &hdata)
     endResetModel();
 }
 
+QStringList TableModel::getHeader()
+{
+    return p_header;
+}
+
 void TableModel::clear()
 {
     if (rowCount()){

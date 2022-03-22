@@ -133,7 +133,7 @@ void Sync1C::getShipTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo>
     }
 }
 
-void Sync1C::getCells(QVector<cellInfo> &info)
+void Sync1C::getCells(QVector<QVector<QVariant>> &info)
 {
     QString obj=QString("Catalog_усЯчейки?$expand=Зона&$select=Code,Стеллаж,Ярус,Позиция,СтатусЯчейки,Штрихкод,Зона/Description&$orderby=Code asc");
     QJsonObject o=getSync(obj);
@@ -141,14 +141,32 @@ void Sync1C::getCells(QVector<cellInfo> &info)
     info.clear();
     for (QJsonValue v : json){
         QJsonObject cell=v.toObject();
-        cellInfo inf;
-        inf.name=cell.value("Code").toString();
-        inf.rack=cell.value("Стеллаж").toString();
-        inf.stage=cell.value("Ярус").toString();
-        inf.pos=cell.value("Позиция").toString();
-        inf.state=cell.value("СтатусЯчейки").toString();
-        inf.barcode=cell.value("Штрихкод").toString();
-        inf.zone=cell.value("Зона").toObject().value("Description").toString();
+        QVector<QVariant> inf;
+        inf.push_back(cell.value("Code").toString());
+        inf.push_back(cell.value("Штрихкод").toString());
+        inf.push_back(cell.value("Зона").toObject().value("Description").toString());
+        inf.push_back(cell.value("Стеллаж").toString());
+        inf.push_back(cell.value("Позиция").toString());
+        inf.push_back(cell.value("Ярус").toString());
+        inf.push_back(cell.value("СтатусЯчейки").toString());
+        info.push_back(inf);
+    }
+}
+
+void Sync1C::getConts(QVector<QVector<QVariant> > &info)
+{
+    QString obj=QString("Catalog_усКонтейнеры?$select=Description,Штрихкод,Состояние,Проконтролирован,Упакован&$orderby=Description asc");
+    QJsonObject o=getSync(obj);
+    QJsonArray json=o.value("value").toArray();
+    info.clear();
+    for (QJsonValue v : json){
+        QJsonObject cell=v.toObject();
+        QVector<QVariant> inf;
+        inf.push_back(cell.value("Description").toString());
+        inf.push_back(cell.value("Штрихкод").toString());
+        inf.push_back(cell.value("Состояние").toString());
+        inf.push_back(cell.value("Проконтролирован").toBool());
+        inf.push_back(cell.value("Упакован").toBool());
         info.push_back(inf);
     }
 }

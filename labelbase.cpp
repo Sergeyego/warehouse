@@ -108,6 +108,11 @@ QString LabelBase::ean13(double x, double y, QString ean, double h, double s, in
     return c;
 }
 
+QString LabelBase::ean128(double x, double y, QString ean, double h, double s, int rotation)
+{
+    return QString("BARCODE %1,%2,\"EAN128\",%3,2,%7,%4,%5,\"%6\"\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(h)).arg(getDots(s)).arg(getDots(s)).arg(ean).arg(rotation);
+}
+
 QString LabelBase::print(int count)
 {
     return QString("PRINT %1\n").arg(count);

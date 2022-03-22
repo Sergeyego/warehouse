@@ -193,7 +193,7 @@
   </action>
   <action name="actionCells">
    <property name="text">
-    <string>Печать этикеток ячеек</string>
+    <string>Печать этикеток ячеек, контейнеров</string>
    </property>
   </action>
  </widget>
