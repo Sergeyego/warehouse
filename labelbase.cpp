@@ -45,7 +45,11 @@ QString LabelBase::getCod()
     cod.push_back("DIRECTION 1,0\n");
     cod.push_back("CLS\n");
     cod.push_back(QString("SIZE %1 mm,%2 mm\n").arg(width).arg(height));
-    cod.push_back(QString("GAP %1 mm,0 mm\n").arg(gap));
+    if (cutMode){
+        cod.push_back(QString("GAP %1 mm,0 mm\n").arg(gap));
+    } else {
+        cod.push_back(QString("BLINE %1 mm,0 mm\n").arg(gap));
+    }
     cod.push_back("CODEPAGE UTF-8\n");
     cod.push_back(QString("DENSITY %1\n").arg(12));
     return cod;
