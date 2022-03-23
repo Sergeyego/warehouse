@@ -44,6 +44,13 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButtonPackListA5">
+       <property name="text">
+        <string>Упаковочный лист А5</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButton80_1016">
        <property name="text">
         <string>Этикетка 80*101,6 (пластик)</string>

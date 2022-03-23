@@ -40,7 +40,7 @@ signals:
 class LabelWirePal : public LabelBase
 {
 public:
-    LabelWirePal(int id_acc, int cont=-1, QObject *parent=0);
+    LabelWirePal(int id_acc, int cont, double w, double h, double g, QObject *parent=0);
 protected:
     virtual QString getCod();
 private:
@@ -69,6 +69,7 @@ private:
     QAction *actionPrintLblOne;
     void loadsettings();
     void savesettings();
+    void printPal(int id_acc, int cont);
 
 private slots:
     void updAcc();

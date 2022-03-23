@@ -209,6 +209,16 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Тип этикетки</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboBoxLblType"/>
+         </item>
         </layout>
        </item>
       </layout>

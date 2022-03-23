@@ -20,9 +20,18 @@ FormLabelsWire::FormLabelsWire(QWidget *parent) :
     connect(ui->pushButton45_70,SIGNAL(clicked(bool)),labelE4570,SLOT(printLabel()));
     connect(ui->pushButton100_100,SIGNAL(clicked(bool)),labelG100100,SLOT(printLabel()));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),labelG100100Pal,SLOT(printLabel()));
+
+    connect(ui->pushButtonPackListA5,SIGNAL(clicked(bool)),this,SLOT(printPackListA5()));
 }
 
 FormLabelsWire::~FormLabelsWire()
 {
     delete ui;
+}
+
+void FormLabelsWire::printPackListA5()
+{
+    PackWireDoc doc(data);
+    DialogPrintPackList d(&doc);
+    d.exec();
 }

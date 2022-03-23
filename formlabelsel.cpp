@@ -26,6 +26,7 @@ FormLabelsEl::~FormLabelsEl()
 
 void FormLabelsEl::printPackList()
 {
-    DialogPrintPackList d(data);
+    PackElDoc doc(data);
+    DialogPrintPackList d(&doc);
     d.exec();
 }

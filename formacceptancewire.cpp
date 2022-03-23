@@ -6,6 +6,9 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui(new Ui::FormAcceptanceWire)
 {
     ui->setupUi(this);
+    ui->comboBoxLblType->addItem(tr("Этикетка 45*70"));
+    ui->comboBoxLblType->addItem(tr("Этикетка 50*40"));
+
     loadsettings();
 
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
@@ -69,12 +72,30 @@ void FormAcceptanceWire::loadsettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     ui->splitter->restoreState(settings.value("accwire_splitter_width").toByteArray());
+    ui->comboBoxLblType->setCurrentIndex(settings.value("wire_cont_lbl_type",0).toInt());
 }
 
 void FormAcceptanceWire::savesettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     settings.setValue("accwire_splitter_width",ui->splitter->saveState());
+    settings.setValue("wire_cont_lbl_type",ui->comboBoxLblType->currentIndex());
+}
+
+void FormAcceptanceWire::printPal(int id_acc, int cont)
+{
+    double w,h,g;
+    if (ui->comboBoxLblType->currentIndex()==0){
+        w=45;
+        h=70;
+        g=2;
+    } else {
+        w=50;
+        h=40;
+        g=2.5;
+    }
+    LabelWirePal l(id_acc,cont,w,h,g);
+    l.printLabel();
 }
 
 void FormAcceptanceWire::updAcc()
@@ -103,8 +124,7 @@ void FormAcceptanceWire::printPalAll()
 {
     if (!modelAcceptanceWireData->isEmpty()){
         int id_acc=mapper->modelData(mapper->currentIndex(),0).toInt();
-        LabelWirePal l(id_acc);
-        l.printLabel();
+        printPal(id_acc,-1);
     }
 }
 
@@ -115,8 +135,7 @@ void FormAcceptanceWire::printPalOne()
         bool ok=false;
         int n=QInputDialog::getInt(this,tr("Ввод номера поддона"),tr("Введите номер поддона"),1,1,100,1,&ok);
         if (ok){
-            LabelWirePal l(id_acc,n);
-            l.printLabel();
+            printPal(id_acc,n);
         }
     }
 }
@@ -207,7 +226,7 @@ void ModelAcceptanceWireData::caclSum()
     emit sigSum(s);
 }
 
-LabelWirePal::LabelWirePal(int id_acc, int cont, QObject *parent) : LabelBase("Этикетка_45*70_пров_поддон",45,70,2,parent)
+LabelWirePal::LabelWirePal(int id_acc, int cont, double w, double h, double g, QObject *parent) : LabelBase("Этикетка_пров_поддон",w,h,g,parent)
 {
     setPrintCmdMode(true);
     QSqlQuery query;
@@ -245,15 +264,14 @@ LabelWirePal::LabelWirePal(int id_acc, int cont, QObject *parent) : LabelBase("�
 QString LabelWirePal::getCod()
 {
     QString lbl=LabelBase::getCod();
-    lbl+=logo(2,2);
     QStringList pals=hash.uniqueKeys();
     bool first=true;
     for (QString pal : pals){
         if (!first){
             lbl+=cls();
+        } else {
+            first=false;
         }
-        lbl+=text(5,22,pal,11);
-        lbl+=dataMatrix(16,27,15,0.85,pal);
         QList<accInfo> list = hash.values(pal);
         QString str;
         int n=1;
@@ -268,11 +286,17 @@ QString LabelWirePal::getCod()
             str+=a.nameNom+"\n п."+a.namePart+" - "+QLocale().toString(a.kvo,'f',1)+" кг";
             n++;
         }
-        lbl+=block(2.5,44,40,23,str,10);
-        lbl+=print(1);
-        if (first){
-            first=false;
+        if (getHeight()>69){
+            lbl+=logo(2,2);
+            lbl+=text(5,22,pal,11);
+            lbl+=dataMatrix(16,27,15,0.85,pal);
+            lbl+=block(2.5,44,40,23,str,10);
+        } else {
+            lbl+=text(9,3,pal,11);
+            lbl+=dataMatrix(17,9,15,0.85,pal);
+            lbl+=block(2.5,25,45,14,str,10);
         }
+        lbl+=print(1);
     }
     return lbl;
 }

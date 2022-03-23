@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "formdatawire.h"
 #include "labelswire.h"
+#include "dialogprintpacklist.h"
 
 namespace Ui {
 class FormLabelsWire;
@@ -25,6 +26,9 @@ private:
     LabelE4570 *labelE4570;
     LabelG100100 *labelG100100;
     LabelG100100Pal *labelG100100Pal;
+
+private slots:
+    void printPackListA5();
 };
 
 #endif // FORMLABELSWIRE_H
