@@ -205,12 +205,8 @@ PackWireDoc::PackWireDoc(FormDataWire *data, QObject *parent) : QTextDocument(pa
     cursor.insertText(QString("Мастер   "),textNormalFormat);
     cursor.insertText(data->master()+"\n",textTitleFormat);
 
-    cursor.insertText(QString("ОТК   "),textNormalFormat);
-    cursor.insertText(data->otkNam()+"\n",textTitleFormat);
-
     cursor.insertText(QString("Дата упаковки   "),textNormalFormat);
     cursor.insertText(data->datePack(),textTitleFormat);
-    //cursor.insertText(QString("\n"),textNormalFormat);
 
     cursor.insertBlock(formatCenter);
 

@@ -120,8 +120,7 @@ QString LabelG100100Pal::getCod()
     cod.push_back(text(6.25,61,QString::fromUtf8("Количество кассет - ")+data->kvoSpool(),14));
     cod.push_back(text(6.25,67,QString::fromUtf8("Масса нетто, кг - ")+data->masPal(),14));
     cod.push_back(text(6.25,73,QString::fromUtf8("Мастер - ")+data->master(),14));
-    cod.push_back(text(6.25,79,QString::fromUtf8("ОТК - ")+data->otkNam(),14));
-    cod.push_back(text(6.25,85,QString::fromUtf8("Дата упаковки - ")+data->datePack(),14));
-    cod.push_back(text(6.25,92,QString::fromUtf8("НЕ БРОСАТЬ!"),16));
+    cod.push_back(text(6.25,79,QString::fromUtf8("Дата упаковки - ")+data->datePack(),14));
+    cod.push_back(text(6.25,90,QString::fromUtf8("НЕ БРОСАТЬ!"),16));
     return cod;
 }
