@@ -1046,7 +1046,12 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
         bool ok = deleteDocStr("Document_усСтрокаОжидаемойПриемки",docKey);
         while (query.next() && ok){
             double masEd=query.value(5).toDouble();
-            int kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
+            int kvo=0;
+            if (query.value(8).toInt()>0){
+                kvo=query.value(8).toInt();
+            } else {
+                kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
+            }
             QString nomKey=catalogKeys.value(query.value(1).toString(),emptyKey);
             obj.insert("Number",QString::number(i));
             obj.insert("Date",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
@@ -1178,7 +1183,7 @@ int Sync1C::syncOpDocEl(int id_doc)
                                "where pn.id = %1").arg(id_doc);
     QString queryCont = QString("select 'e:'||p2.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
                                 "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, p2.kvo, "
-                                "pnt.prefix ||date_part('year',pn.dat) ||'-'||pn.num ||'-'||p2.numcont as numcont "
+                                "pnt.prefix ||date_part('year',pn.dat) ||'-'||pn.num ||'-'||p2.numcont as numcont, p2.shtuk "
                                 "from prod p2 "
                                 "inner join prod_nakl pn on pn.id = p2.id_nakl "
                                 "inner join prod_nakl_tip pnt on pnt.id = pn.id_ist "
@@ -1199,7 +1204,7 @@ int Sync1C::syncOpDocWire(int id_doc)
                                 "wpm.n_s, wpm.dat, "
                                 "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
                                 "wp.mas_ed, ww.m_netto, "
-                                "wwbt.prefix ||date_part('year',www.dat) ||'-'||www.num ||'-'||ww.numcont as numcont "
+                                "wwbt.prefix ||date_part('year',www.dat) ||'-'||www.num ||'-'||ww.numcont as numcont, ww.pack_kvo "
                                 "from wire_warehouse ww "
                                 "inner join wire_whs_waybill www on www.id = ww.id_waybill "
                                 "inner join wire_way_bill_type wwbt on wwbt.id = www.id_type "

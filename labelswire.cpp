@@ -60,16 +60,27 @@ QString LabelE4570::getCod()
 {
     QString cod=LabelBase::getCod();
     cod.push_back(logo(2,2));
+    cod.push_back(ean13(5,20.5,data->eanEd(),9,0.375,0));
     cod.push_back(text(2.5,35,QString::fromUtf8("Марка - ")+data->marka(),10));
     cod.push_back(text(2.5,39,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),10));
     cod.push_back(text(2.5,43,QString::fromUtf8("Плавка - ")+data->plavka(),10));
     cod.push_back(text(2.5,47,QString::fromUtf8("Партия - ")+data->part(),10));
-    cod.push_back(text(2.5,51,QString::fromUtf8("Тип носителя - ")+data->spool(),10));
-    cod.push_back(text(2.5,55,QString::fromUtf8("Код продукции - ")+data->codeProd(),10));
-    cod.push_back(text(2.5,59,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
-    cod.push_back(text(2.5,63,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
-    cod.push_back(ean13(5,20.5,data->eanEd(),9,0.375,0));
-    cod.push_back(otkStamp(33,40,data->otkNum()));
+
+    QRegExp reg("^L-(\\d+)$");
+
+    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+        cod.push_back(text(2.5,51,QString::fromUtf8("Тип носителя - ")+data->spool(),10));
+        cod.push_back(text(2.5,55,QString::fromUtf8("Код продукции - ")+data->codeProd(),10));
+        cod.push_back(text(2.5,59,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
+        cod.push_back(text(2.5,63,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
+        cod.push_back(otkStamp(33,40,data->otkNum()));
+    } else { //длинномер
+        cod.push_back(text(2.5,51,QString::fromUtf8("Длина, мм - ")+reg.cap(1),10));
+        cod.push_back(text(2.5,55,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
+        cod.push_back(text(2.5,59,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
+        cod.push_back(block(2.5,63,40,5,data->gost(),10));
+        cod.push_back(dataMatrix(31,43,12,0.7,data->barCode()));
+    }
     return cod;
 }
 
@@ -116,10 +127,20 @@ QString LabelG100100Pal::getCod()
     cod.push_back(text(6.25,37,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),14));
     cod.push_back(text(6.25,43,QString::fromUtf8("Плавка - ")+data->plavka(),14));
     cod.push_back(text(6.25,49,QString::fromUtf8("Партия - ")+data->part()+QString::fromUtf8(" Дата выпуска - ")+data->datePart(),14));
-    cod.push_back(text(6.25,55,QString::fromUtf8("Тип носителя - ")+data->spool(),14));
-    cod.push_back(text(6.25,61,QString::fromUtf8("Количество кассет - ")+data->kvoSpool(),14));
-    cod.push_back(text(6.25,67,QString::fromUtf8("Масса нетто, кг - ")+data->masPal(),14));
-    cod.push_back(text(6.25,73,QString::fromUtf8("Мастер - ")+data->master(),14));
+
+    QRegExp reg("^L-(\\d+)$");
+
+    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+        cod.push_back(text(6.25,55,QString::fromUtf8("Тип носителя - ")+data->spool(),14));
+        cod.push_back(text(6.25,61,QString::fromUtf8("Количество кассет - ")+data->kvoSpool(),14));
+        cod.push_back(text(6.25,67,QString::fromUtf8("Масса нетто, кг - ")+data->masPal(),14));
+        cod.push_back(text(6.25,73,QString::fromUtf8("Мастер - ")+data->master(),14));
+    } else { //длинномер
+        cod.push_back(text(6.25,55,QString::fromUtf8("Длина, мм - ")+reg.cap(1),14));
+        cod.push_back(text(6.25,61,QString::fromUtf8("Количество мест - ")+data->kvoSpool(),14));
+        cod.push_back(text(6.25,67,QString::fromUtf8("Масса нетто, кг - ")+data->masPal(),14));
+        cod.push_back(text(6.25,73,QString::fromUtf8("Упаковщик ___________________"),14));
+    }
     cod.push_back(text(6.25,79,QString::fromUtf8("Дата упаковки - ")+data->datePack(),14));
     cod.push_back(text(6.25,90,QString::fromUtf8("НЕ БРОСАТЬ!"),16));
     return cod;

@@ -193,17 +193,32 @@ PackWireDoc::PackWireDoc(FormDataWire *data, QObject *parent) : QTextDocument(pa
     cursor.insertText(QString("Партия   "),textNormalFormat);
     cursor.insertText(data->part()+"   ",textTitleFormat);
 
-    cursor.insertText(QString("Тип носителя   "),textNormalFormat);
-    cursor.insertText(data->spool()+"\n",textTitleFormat);
+    QRegExp reg("^L-(\\d+)$");
 
-    cursor.insertText(QString("Количество кассет   "),textNormalFormat);
-    cursor.insertText(data->kvoSpool(),textTitleFormat);
-    cursor.insertText(QString("   Масса нетто "),textNormalFormat);
-    cursor.insertText(data->masPal(),textTitleFormat);
-    cursor.insertText(QString(" кг\n"),textNormalFormat);
+    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+        cursor.insertText(QString("Тип носителя   "),textNormalFormat);
+        cursor.insertText(data->spool()+"\n",textTitleFormat);
 
-    cursor.insertText(QString("Мастер   "),textNormalFormat);
-    cursor.insertText(data->master()+"\n",textTitleFormat);
+        cursor.insertText(QString("Количество кассет   "),textNormalFormat);
+        cursor.insertText(data->kvoSpool(),textTitleFormat);
+        cursor.insertText(QString("   Масса нетто "),textNormalFormat);
+        cursor.insertText(data->masPal(),textTitleFormat);
+        cursor.insertText(QString(" кг\n"),textNormalFormat);
+
+        cursor.insertText(QString("Мастер   "),textNormalFormat);
+        cursor.insertText(data->master()+"\n",textTitleFormat);
+    } else { //длинномер
+        cursor.insertText(QString("Длина, мм   "),textNormalFormat);
+        cursor.insertText(reg.cap(1)+"\n",textTitleFormat);
+
+        cursor.insertText(QString("Количество мест   "),textNormalFormat);
+        cursor.insertText(data->kvoSpool(),textTitleFormat);
+        cursor.insertText(QString("   Масса нетто "),textNormalFormat);
+        cursor.insertText(data->masPal(),textTitleFormat);
+        cursor.insertText(QString(" кг\n"),textNormalFormat);
+
+        cursor.insertText(QString("Упаковщик  _______________________\n"),textNormalFormat);
+    }
 
     cursor.insertText(QString("Дата упаковки   "),textNormalFormat);
     cursor.insertText(data->datePack(),textTitleFormat);
