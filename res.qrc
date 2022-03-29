@@ -2,5 +2,13 @@
     <qresource prefix="/">
         <file>images/simb_labl.png</file>
         <file>images/icon.ico</file>
+        <file>fonts/DroidSans-Bold.ttf</file>
+        <file>fonts/DroidSans.ttf</file>
+        <file>fonts/DroidSansFallback.ttf</file>
+        <file>fonts/DroidSansMono.ttf</file>
+        <file>fonts/DroidSerif-Bold.ttf</file>
+        <file>fonts/DroidSerif-BoldItalic.ttf</file>
+        <file>fonts/DroidSerif-Italic.ttf</file>
+        <file>fonts/DroidSerif-Regular.ttf</file>
     </qresource>
 </RCC>

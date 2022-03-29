@@ -7,6 +7,7 @@
 #include "db/dbmapper.h"
 #include "models.h"
 #include "labelbase.h"
+#include "dialogprintpacklist.h"
 
 namespace Ui {
 class FormAcceptanceWire;
@@ -29,6 +30,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     void refresh(int id_acc);
     bool insertRow(int row, const QModelIndex &parent);
+    Qt::ItemFlags flags(const QModelIndex &index) const;
 
 private slots:
     void caclSum();
@@ -78,6 +80,7 @@ private slots:
     void setPartFilter();
     void printPalAll();
     void printPalOne();
+    void printNakl();
 };
 
 #endif // FORMACCEPTANCEWIRE_H

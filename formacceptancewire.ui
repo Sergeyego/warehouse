@@ -170,6 +170,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonNakl">
+           <property name="text">
+            <string>Накладная 1С</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

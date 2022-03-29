@@ -31,8 +31,8 @@ Models::Models(QObject *parent) :
     relEl = newDbRelation(new DbRelationalModel("select id, marka from elrtr order by marka",this),0,1);
     relPol = newDbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-'), naim from poluch order by short",this),0,1);
     relShipType = newDbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1);
-    relAccTypeEl = newDbRelation(new DbRelationalModel("select id, nam from prod_nakl_tip where en=true order by nam",this),0,1);
-    relAccTypeWire = newDbRelation(new DbRelationalModel("select id, nam from wire_way_bill_type where en=true order by nam",this),0,1);
+    relAccTypeEl = newDbRelation(new DbRelationalModel("select id, nam, prefix from prod_nakl_tip where en=true order by nam",this),0,1);
+    relAccTypeWire = newDbRelation(new DbRelationalModel("select id, nam, prefix from wire_way_bill_type where en=true order by nam",this),0,1);
 
     relKis = newDbRelation(new DbRelationalModel("(select distinct ee.id_el||':'||ee.id_diam as kis, e.marka ||' ф '|| d.sdim as mark, 'e' as typ, e.id_u as id_u "
                                                  "from ean_el ee "

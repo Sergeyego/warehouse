@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Отправление на склад и отргузка продукции</string>
+   <string>Маркировка, отправление на склад и отргузка продукции</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -94,7 +94,6 @@
     </property>
     <addaction name="actionCfgPrint"/>
     <addaction name="actionAllRefresh"/>
-    <addaction name="actionCfgUser"/>
     <addaction name="actionCells"/>
    </widget>
    <addaction name="menu_7"/>
@@ -184,11 +183,6 @@
   <action name="actionAllRefresh">
    <property name="text">
     <string>Обновить все данные</string>
-   </property>
-  </action>
-  <action name="actionCfgUser">
-   <property name="text">
-    <string>Настройка пользователей</string>
    </property>
   </action>
   <action name="actionCells">

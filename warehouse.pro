@@ -68,7 +68,8 @@ SOURCES += \
     dialogprintpacklist.cpp \
     qr/qrencode.cpp \
     formcells.cpp \
-    dialoglblsize.cpp
+    dialoglblsize.cpp \
+    code128/code128.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -113,7 +114,8 @@ HEADERS += \
     dialogprintpacklist.h \
     qr/qrencode.h \
     formcells.h \
-    dialoglblsize.h
+    dialoglblsize.h \
+    code128/code128.h
 
 FORMS += \
         mainwindow.ui \

@@ -6,6 +6,7 @@
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
 #include "labelbase.h"
+#include "dialogprintpacklist.h"
 
 namespace Ui {
 class FormAcceptanceEl;
@@ -28,6 +29,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     void refresh(int id_acc);
     bool insertRow(int row, const QModelIndex &parent);
+    Qt::ItemFlags flags(const QModelIndex &index) const;
 
 private slots:
     void caclSum();
@@ -76,6 +78,7 @@ private slots:
     void sync();
     void printPalAll();
     void printPalOne();
+    void printNakl();
 };
 
 #endif // FORMACCEPTANCEEL_H

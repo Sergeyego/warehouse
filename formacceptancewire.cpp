@@ -39,7 +39,8 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->tableViewAccData->setColumnWidth(2,400);
     ui->tableViewAccData->setColumnWidth(3,80);
     ui->tableViewAccData->setColumnWidth(4,100);
-    ui->tableViewAccData->setColumnHidden(5,true);
+    ui->tableViewAccData->setColumnWidth(5,130);
+    ui->tableViewAccData->setColumnHidden(6,true);
 
     mapper = new DbMapper(ui->tableViewAcc,this);
     ui->horizontalLayoutMapper->insertWidget(0,mapper);
@@ -48,6 +49,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     mapper->addMapping(ui->comboBoxType,3);
     mapper->addEmptyLock(ui->tableViewAccData);
     mapper->addEmptyLock(ui->toolButtonPal);
+    mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
     connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
@@ -58,6 +60,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     connect(modelAcceptanceWireData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
+    connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
 
     updAcc();
 }
@@ -140,6 +143,20 @@ void FormAcceptanceWire::printPalOne()
     }
 }
 
+void FormAcceptanceWire::printNakl()
+{
+    QString id_ist=modelAcceptanceWire->data(modelAcceptanceWire->index(mapper->currentIndex(),3),Qt::EditRole).toString();
+    QString year=QString::number(modelAcceptanceWire->data(modelAcceptanceWire->index(mapper->currentIndex(),2),Qt::EditRole).toDate().year());
+    QString num=modelAcceptanceWire->data(modelAcceptanceWire->index(mapper->currentIndex(),1),Qt::EditRole).toString();
+    QString kis=modelAcceptanceWire->relation(3)->data(id_ist,2).toString()+year+"-"+num;
+
+    PackNaklDoc doc(kis);
+    DialogPrintPackList d(&doc);
+    d.setWindowTitle("Накладная "+kis);
+    d.setSingle(false);
+    d.exec();
+}
+
 ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)
 {
     addColumn("id","id");
@@ -176,8 +193,9 @@ ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel
     addColumn("id_wparti",tr("Партия"),Models::instance()->relWirePart);
     addColumn("m_netto",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
+    addColumn("barcodecont",tr("Штрихкод поддона"));
     addColumn("chk",tr("check"));
-    setDefaultValue(5,false);
+    setDefaultValue(6,false);
     setSort(name()+".id");
     setDecimals(3,2);
 
@@ -188,7 +206,7 @@ ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel
 QVariant ModelAcceptanceWireData::data(const QModelIndex &index, int role) const
 {
     if (role==Qt::BackgroundColorRole){
-        if (DbTableModel::data(this->index(index.row(),5),Qt::EditRole).toBool()){
+        if (DbTableModel::data(this->index(index.row(),6),Qt::EditRole).toBool()){
             return QColor(170,255,170);
         } else {
             return QVariant();
@@ -214,6 +232,14 @@ bool ModelAcceptanceWireData::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
+Qt::ItemFlags ModelAcceptanceWireData::flags(const QModelIndex &index) const
+{
+    if (index.column()==5 || (index.column()==2 && !this->data(this->index(index.row(),5),Qt::EditRole).toString().isEmpty())){
+        return Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
+    }
+    return DbTableModel::flags(index);
+}
+
 void ModelAcceptanceWireData::caclSum()
 {
     double sum=0;
@@ -235,7 +261,7 @@ LabelWirePal::LabelWirePal(int id_acc, int cont, double w, double h, double g, Q
         filter+=QString(" and ww.numcont = %1").arg(cont);
     }
     query.prepare("select 'EUR-'||wwbt.prefix||date_part('year',www.dat)||'-'||www.num ||'-'||numcont, "
-                  "p.nam ||' ф '||d.sdim ||' '||wpk.short, wpm.n_s||' '||date_part('year',wpm.dat), ww.m_netto "
+                  "p.nam ||' ф '||d.sdim ||' '||wpk.short, wpm.n_s||' '||date_part('year',wpm.dat), ww.m_netto, ww.barcodecont "
                   "from wire_warehouse ww "
                   "inner join wire_whs_waybill www on www.id = ww.id_waybill "
                   "inner join wire_way_bill_type wwbt on wwbt.id = www.id_type "
@@ -248,7 +274,7 @@ LabelWirePal::LabelWirePal(int id_acc, int cont, double w, double h, double g, Q
     query.bindValue(":id_acc",id_acc);
     if (query.exec()){
         while (query.next()){
-            QString cnam=query.value(0).toString();
+            QString cnam=query.value(4).toString().isEmpty() ? query.value(0).toString() : query.value(4).toString();
             accInfo info;
             info.nameNom=query.value(1).toString();
             info.namePart=query.value(2).toString();

@@ -28,11 +28,12 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     for (int i=0; i<5; i++){
         ui->tableViewAccData->setColumnHidden(i,true);
     }
-    ui->tableViewAccData->setColumnHidden(8,true);
+    ui->tableViewAccData->setColumnHidden(9,true);
 
     ui->tableViewAccData->setColumnWidth(5,350);
     ui->tableViewAccData->setColumnWidth(6,100);
     ui->tableViewAccData->setColumnWidth(7,80);
+    ui->tableViewAccData->setColumnWidth(8,130);
 
     modelAcceptanceEl = new ModelAcceptanceEl(this);
     ui->tableViewAcc->setModel(modelAcceptanceEl);
@@ -49,6 +50,7 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     mapper->addEmptyLock(ui->tableViewAccData);
     mapper->addEmptyLock(ui->pushButton1C);
     mapper->addEmptyLock(ui->toolButtonPal);
+    mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
@@ -59,6 +61,7 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     connect(modelAcceptanceElData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
+    connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
 
     updAcc();
 }
@@ -124,6 +127,20 @@ void FormAcceptanceEl::printPalOne()
     }
 }
 
+void FormAcceptanceEl::printNakl()
+{
+    QString id_ist=modelAcceptanceEl->data(modelAcceptanceEl->index(mapper->currentIndex(),3),Qt::EditRole).toString();
+    QString year=QString::number(modelAcceptanceEl->data(modelAcceptanceEl->index(mapper->currentIndex(),2),Qt::EditRole).toDate().year());
+    QString num=modelAcceptanceEl->data(modelAcceptanceEl->index(mapper->currentIndex(),1),Qt::EditRole).toString();
+    QString kis=modelAcceptanceEl->relation(3)->data(id_ist,2).toString()+year+"-"+num;
+
+    PackNaklDoc doc(kis);
+    DialogPrintPackList d(&doc);
+    d.setWindowTitle("Накладная "+kis);
+    d.setSingle(false);
+    d.exec();
+}
+
 ModelAcceptanceEl::ModelAcceptanceEl(QWidget *parent) : DbTableModel("prod_nakl",parent)
 {
     addColumn("id",tr("id"));
@@ -163,9 +180,10 @@ ModelAcceptanceElData::ModelAcceptanceElData(QObject *parent) : DbTableModel("pr
     addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
     addColumn("kvo",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
+    addColumn("barcodecont",tr("Штрихкод поддона"));
     addColumn("chk",tr("check"));
     setDecimals(6,2);
-    setDefaultValue(8,false);
+    setDefaultValue(9,false);
     this->setSort("prod.id");
 
     connect(this,SIGNAL(sigUpd()),this,SLOT(caclSum()));
@@ -175,7 +193,7 @@ ModelAcceptanceElData::ModelAcceptanceElData(QObject *parent) : DbTableModel("pr
 QVariant ModelAcceptanceElData::data(const QModelIndex &index, int role) const
 {
     if (role==Qt::BackgroundColorRole){
-        if (DbTableModel::data(this->index(index.row(),8),Qt::EditRole).toBool()){
+        if (DbTableModel::data(this->index(index.row(),9),Qt::EditRole).toBool()){
             return QColor(170,255,170);
         } else {
             return QVariant();
@@ -214,6 +232,14 @@ bool ModelAcceptanceElData::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
+Qt::ItemFlags ModelAcceptanceElData::flags(const QModelIndex &index) const
+{
+    if (index.column()==8 || (index.column()==5 && !this->data(this->index(index.row(),8),Qt::EditRole).toString().isEmpty())){
+        return Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
+    }
+    return DbTableModel::flags(index);
+}
+
 void ModelAcceptanceElData::caclSum()
 {
     double sum=0;
@@ -235,7 +261,7 @@ LabelElPal::LabelElPal(int id_acc, int cont, QObject *parent) : LabelBase("Эт�
         filter+=QString(" and p.numcont = %1").arg(cont);
     }
     query.prepare("select 'EUR-'||pnt.prefix||date_part('year',p.dat)||'-'||p.docs||'-'||p.numcont, e.marka||' ф'||p2.diam::numeric(2,1), "
-                  "p2.n_s||'-'|| date_part('year',p2.dat_part), p.kvo "
+                  "p2.n_s||'-'|| date_part('year',p2.dat_part), p.kvo, p.barcodecont "
                   "from prod p "
                   "inner join parti p2 on p2.id = p.id_part "
                   "inner join elrtr e on e.id = p2.id_el "
@@ -244,7 +270,7 @@ LabelElPal::LabelElPal(int id_acc, int cont, QObject *parent) : LabelBase("Эт�
     query.bindValue(":id_acc",id_acc);
     if (query.exec()){
         while (query.next()){
-            QString cnam=query.value(0).toString();
+            QString cnam=query.value(4).toString().isEmpty() ? query.value(0).toString() : query.value(4).toString();
             accInfo info;
             info.nameNom=query.value(1).toString();
             info.namePart=query.value(2).toString();

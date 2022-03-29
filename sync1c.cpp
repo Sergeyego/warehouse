@@ -171,6 +171,39 @@ void Sync1C::getConts(QVector<QVector<QVariant> > &info)
     }
 }
 
+void Sync1C::getNakl(QString kis, naklInfo &info, QVector<naklDataInfo> &datainfo)
+{
+    QString objinfo=QString("Document_усОжидаемаяПриемка?$filter=НомерКИС eq '%1'&$expand=Контрагент,Поклажедатель&$select=Ref_Key,Number,Date,Контрагент/Description,Поклажедатель/Description").arg(kis);
+    QString ref_key;
+    QJsonObject oi=getSync(objinfo);
+    QJsonArray json=oi.value("value").toArray();
+    datainfo.clear();
+    if (json.size()){
+        QJsonObject o = json.at(0).toObject();
+        info.number = o.value("Number").toString();
+        info.to = o.value("Контрагент").toObject().value("Description").toString();
+        info.from = o.value("Поклажедатель").toObject().value("Description").toString();
+        info.date = QDateTime::fromString(o.value("Date").toString(),"yyyy-MM-ddThh:mm:ss");
+        ref_key=o.value("Ref_Key").toString();
+
+        QString objdatainfo=QString("Document_усСтрокаОжидаемойПриемки?$filter=Владелец_Key eq guid'%1'"
+                                    "&$expand=Номенклатура,ПартияНоменклатуры&$select=Number,Номенклатура/Description,ПартияНоменклатуры/Description,"
+                                    "ПартияНоменклатуры/РецептураПлавка,НомерКонтейнера,Количество&$orderby=Number asc").arg(ref_key);
+        QJsonObject od=getSync(objdatainfo);
+        QJsonArray jsondata=od.value("value").toArray();
+        for (QJsonValue v : jsondata){
+            naklDataInfo di;
+            QJsonObject od=v.toObject();
+            di.name=od.value("Номенклатура").toObject().value("Description").toString();
+            di.parti=od.value("ПартияНоменклатуры").toObject().value("Description").toString();
+            di.rcp=od.value("ПартияНоменклатуры").toObject().value("РецептураПлавка").toString();
+            di.barcodecont=od.value("НомерКонтейнера").toString();
+            di.kvo=od.value("Количество").toDouble();
+            datainfo.push_back(di);
+        }
+    }
+}
+
 void Sync1C::syncCatalogEl()
 {
     QString info=syncCatalog(true,false);
@@ -461,7 +494,7 @@ QHash<QString, QString> Sync1C::updateKeys(QString obj, QString key, QString val
             hash.insert(hkey,hvalue);
         }
     }
-    qDebug()<<obj<<" keys: "<<hash.size();
+    //qDebug()<<obj<<" keys: "<<hash.size();
     return hash;
 }
 
@@ -905,7 +938,7 @@ bool Sync1C::deleteDocStr(QString obj, QString docKey)
     QJsonObject o=getSync(filter);
     QJsonArray json=o.value("value").toArray();
     for(QJsonValue v: json){
-        qDebug()<<"delete "+obj+":"<<v.toObject().value("Ref_Key").toString();
+        //qDebug()<<"delete "+obj+":"<<v.toObject().value("Ref_Key").toString();
         bool b = deleteSync(obj+QString("(guid'%1')").arg(v.toObject().value("Ref_Key").toString()));
         ok = ok && b;
     }
@@ -1052,6 +1085,7 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
             } else {
                 kvo = masEd!=0 ? query.value(6).toDouble()/masEd : 0;
             }
+            QString numcont=query.value(9).toString().isEmpty()? contPrefix+"-"+query.value(7).toString() : query.value(9).toString();
             QString nomKey=catalogKeys.value(query.value(1).toString(),emptyKey);
             obj.insert("Number",QString::number(i));
             obj.insert("Date",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"));
@@ -1062,7 +1096,7 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
             obj.insert("ТипКонтейнера_Key",constKeys.value(namContType,emptyKey));
-            obj.insert("НомерКонтейнера",contPrefix+"-"+query.value(7).toString());
+            obj.insert("НомерКонтейнера",numcont);
             obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
 
             postSync("Document_усСтрокаОжидаемойПриемки",obj);
@@ -1183,7 +1217,7 @@ int Sync1C::syncOpDocEl(int id_doc)
                                "where pn.id = %1").arg(id_doc);
     QString queryCont = QString("select 'e:'||p2.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
                                 "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group, ep.mass_ed, p2.kvo, "
-                                "pnt.prefix ||date_part('year',pn.dat) ||'-'||pn.num ||'-'||p2.numcont as numcont, p2.shtuk "
+                                "pnt.prefix ||date_part('year',pn.dat) ||'-'||pn.num ||'-'||p2.numcont as numcont, p2.shtuk, p2.barcodecont "
                                 "from prod p2 "
                                 "inner join prod_nakl pn on pn.id = p2.id_nakl "
                                 "inner join prod_nakl_tip pnt on pnt.id = pn.id_ist "
@@ -1204,7 +1238,7 @@ int Sync1C::syncOpDocWire(int id_doc)
                                 "wpm.n_s, wpm.dat, "
                                 "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
                                 "wp.mas_ed, ww.m_netto, "
-                                "wwbt.prefix ||date_part('year',www.dat) ||'-'||www.num ||'-'||ww.numcont as numcont, ww.pack_kvo "
+                                "wwbt.prefix ||date_part('year',www.dat) ||'-'||www.num ||'-'||ww.numcont as numcont, ww.pack_kvo, ww.barcodecont "
                                 "from wire_warehouse ww "
                                 "inner join wire_whs_waybill www on www.id = ww.id_waybill "
                                 "inner join wire_way_bill_type wwbt on wwbt.id = www.id_type "

@@ -73,6 +73,23 @@ struct accInfo
     QString name;
 };
 
+struct naklInfo
+{
+    QString number;
+    QDateTime date;
+    QString from;
+    QString to;
+};
+
+struct naklDataInfo
+{
+    QString name;
+    QString parti;
+    QString rcp;
+    QString barcodecont;
+    double kvo;
+};
+
     class Sync1C: public QObject
     {
         Q_OBJECT
@@ -85,6 +102,7 @@ struct accInfo
         void getShipTurnovers(QDate beg, QDate end, QMultiHash<QString, accInfo> &info);
         void getCells(QVector<QVector<QVariant>> &info);
         void getConts(QVector<QVector<QVariant>> &info);
+        void getNakl(QString kis, naklInfo &info, QVector<naklDataInfo> &datainfo);
 
     public slots:
         void syncCatalogEl();

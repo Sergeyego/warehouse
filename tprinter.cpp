@@ -18,7 +18,7 @@ void TPrinter::printDataTcp(QString host, int port, const QByteArray &data)
             int b= ((size-x)< bsize) ? (size-x) : bsize;
             qint64 y = tcpSocket.write(data.right(size-x),b);
             bool wrok=tcpSocket.waitForBytesWritten();
-            qDebug()<<wrok<<QString::fromUtf8(" Отправлено %1 байт").arg(y);
+            //qDebug()<<wrok<<QString::fromUtf8(" Отправлено %1 байт").arg(y);
             x += y;
         }
         tcpSocket.disconnectFromHost();
@@ -110,7 +110,7 @@ void TPrinter::printDataIpp(QUrl url, const QByteArray &data)
 
     bool ok=(reply->error()==QNetworkReply::NoError);
     if (!ok){
-        qDebug()<<"fail!"<<" "<<reply->readAll();
+        //qDebug()<<"fail!"<<" "<<reply->readAll();
         QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString(),QMessageBox::Ok);
     }
     reply->deleteLater();
