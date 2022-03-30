@@ -354,7 +354,7 @@ QNetworkRequest Sync1C::baseRequest(QString obj)
     request.setRawHeader("Accept-Charset", "UTF-8");
     request.setRawHeader("Content-Type", "application/json");
     request.setRawHeader("User-Agent", "Appszsm");
-    request.setRawHeader("Authorization", "Basic "+authData.toLocal8Bit().toBase64());
+    request.setRawHeader("Authorization", "Basic "+authData.toUtf8().toBase64());
     return request;
 }
 
