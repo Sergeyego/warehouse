@@ -86,7 +86,6 @@ QString LabelE4570::getCod()
 
 LabelG100100::LabelG100100(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
-
 }
 
 QString LabelG100100::getCod()
@@ -114,14 +113,30 @@ QString LabelG100100::getCod()
 
 LabelG100100Pal::LabelG100100Pal(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
-
+    setPrintCmdMode(true);
+    setCutKvo(1);
 }
 
 QString LabelG100100Pal::getCod()
 {
+    QString prefix="W";
+    QString palBarcode="";
+    QSqlQuery query;
+    query.prepare("insert into pallets (datetime, prefix) values (:datetime, :prefix) returning id");
+    query.bindValue(":datetime",QDateTime::currentDateTime());
+    query.bindValue(":prefix",prefix);
+    if (query.exec()){
+        if (query.next()){
+            palBarcode=prefix+QString("%1").arg((query.value(0).toInt()),10-prefix.length(),'d',0,QChar('0'));
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+
     QString cod=LabelBase::getCod();
-    cod.push_back(logo(10,4));
-    cod.push_back(dataMatrix(70,6.25,20,1,data->barCodePack()));
+    cod.push_back(logo(58,4));
+    cod.push_back(ean128(4,4,palBarcode,13));
+    cod.push_back(dataMatrix(70,67,20,1,data->barCodePack()+palBarcode));
     cod.push_back(text(6.25,24,QString::fromUtf8("УПАКОВОЧНЫЙ ЛИСТ"),16));
     cod.push_back(text(6.25,31,QString::fromUtf8("Марка - ")+data->marka(),14));
     cod.push_back(text(6.25,37,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),14));
@@ -143,5 +158,6 @@ QString LabelG100100Pal::getCod()
     }
     cod.push_back(text(6.25,79,QString::fromUtf8("Дата упаковки - ")+data->datePack(),14));
     cod.push_back(text(6.25,90,QString::fromUtf8("НЕ БРОСАТЬ!"),16));
+    cod.push_back(print(1));
     return cod;
 }
