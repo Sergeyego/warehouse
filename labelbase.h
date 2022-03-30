@@ -49,7 +49,7 @@ protected:
     QString ean13(double x, double y, QString ean, double h=9, double s=0.375, int rotation=0);
     QString ean128(double x, double y, QString ean, double h=9, double s=0.375, int rotation=0);
     QString qrCode(double x, double y, QString t, int cellWidth=5);
-    QString dataMatrix(double x, double y, double size, double sizeCell, QString data);
+    QString dataMatrix(double x, double y, double size, double sizeCell, QString data, int rotation=0);
     QString otkStamp(double x, double y, QString num);
     QString cls();
 

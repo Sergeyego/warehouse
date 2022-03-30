@@ -1,7 +1,7 @@
 #include "dialoglblsize.h"
 #include "ui_dialoglblsize.h"
 
-DialogLblSize::DialogLblSize(double w, double h, double g, QWidget *parent) :
+DialogLblSize::DialogLblSize(double w, double h, double g, bool rot, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogLblSize)
 {
@@ -9,6 +9,7 @@ DialogLblSize::DialogLblSize(double w, double h, double g, QWidget *parent) :
     ui->doubleSpinBoxWidth->setValue(w);
     ui->doubleSpinBoxHeight->setValue(h);
     ui->doubleSpinBoxGap->setValue(g);
+    ui->checkBoxRotate->setChecked(rot);
 }
 
 DialogLblSize::~DialogLblSize()
@@ -29,4 +30,9 @@ double DialogLblSize::getHeight()
 double DialogLblSize::getGap()
 {
     return ui->doubleSpinBoxGap->value();
+}
+
+bool DialogLblSize::getRotate()
+{
+    return ui->checkBoxRotate->isChecked();
 }

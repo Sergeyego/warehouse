@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>279</width>
-    <height>156</height>
+    <height>184</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -68,6 +68,13 @@
        </property>
        <property name="maximum">
         <double>100.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QCheckBox" name="checkBoxRotate">
+       <property name="text">
+        <string>Повернуть</string>
        </property>
       </widget>
      </item>

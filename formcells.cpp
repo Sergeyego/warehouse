@@ -40,6 +40,7 @@ void FormCells::loadsettings()
     widthLbl = settings.value("widthLbl",50).toDouble();
     heightLbl = settings.value("heightLbl",40).toDouble();
     gapLbl = settings.value("gapLbl",2.5).toDouble();
+    rotLbl = settings.value("rotLbl",false).toBool();
     ui->radioButtonCont->setChecked(!settings.value("lblIsCell",true).toBool());
     ui->labelLblSize->setText(QString("Этикетка %1 на %2").arg(widthLbl).arg(heightLbl));
 }
@@ -50,6 +51,7 @@ void FormCells::savesettings()
     settings.setValue("widthLbl",widthLbl);
     settings.setValue("heightLbl",heightLbl);
     settings.setValue("gapLbl",gapLbl);
+    settings.setValue("rotLbl",rotLbl);
     settings.setValue("lblIsCell",ui->radioButtonCell->isChecked());
 }
 
@@ -103,18 +105,19 @@ void FormCells::printLbl()
         }
     }
     if (data.size()){
-        LabelCell l(widthLbl,heightLbl,gapLbl,data);
+        LabelCell l(widthLbl,heightLbl,gapLbl,rotLbl,data);
         l.printLabel();
     }
 }
 
 void FormCells::cfgLblSize()
 {
-    DialogLblSize d(widthLbl,heightLbl,gapLbl);
+    DialogLblSize d(widthLbl,heightLbl,gapLbl,rotLbl);
     if (d.exec()==QDialog::Accepted){
         widthLbl=d.getWidth();
         heightLbl=d.getHeight();
         gapLbl=d.getGap();
+        rotLbl=d.getRotate();
         ui->labelLblSize->setText(QString("Этикетка %1 на %2").arg(widthLbl).arg(heightLbl));
     }
 }
@@ -157,7 +160,7 @@ void ModelCell::setModelData(const QVector<QVector<QVariant> > &data, const QStr
     return TableModel::setModelData(data,hdata);
 }
 
-LabelCell::LabelCell(double w, double h, double g, QVector<cellData> &d, QObject *parent) : LabelBase("LblCell",w,h,g,parent), data(d)
+LabelCell::LabelCell(double w, double h, double g, bool rot, QVector<cellData> &d, QObject *parent) : LabelBase("LblCell",w,h,g,parent), data(d)
 {
     dmSizes[3]=10;
     dmSizes[6]=12;
@@ -186,6 +189,7 @@ LabelCell::LabelCell(double w, double h, double g, QVector<cellData> &d, QObject
 
     setPrintCmdMode(true);
     setCutKvo(data.size());
+    rotLbl=rot;
 }
 
 QString LabelCell::getCod()
@@ -193,7 +197,6 @@ QString LabelCell::getCod()
     QString lbl=LabelBase::getCod();
     const double w=getWidth();
     const double h=getHeight();
-    const double dm=(h/2.0)-5;
     bool first=true;
     for (cellData d : data){
         if (first){
@@ -202,8 +205,16 @@ QString LabelCell::getCod()
             lbl+=cls();
         }
         int s=getDmSize(d.barcode.size());
-        lbl+=block(5,5,w-10,(h/2)-10,d.name,getDots(h*0.2));
-        lbl+=dataMatrix((w-dm)/2.0,h/2.0,dm,(dm/s),d.barcode);
+        if (!rotLbl){
+            const double dm=(h/2.0)-5;
+            lbl+=block(5,5,w-10,(h/2.0)-10,d.name,getDots(h*0.2));
+            lbl+=dataMatrix((w-dm)/2.0,h/2.0,dm,(dm/s),d.barcode);
+        } else {
+            const double dm=(w/2.0)-5;
+            lbl+=block(w-5,5,h-10,(w/2.0)-10,d.name,getDots(w*0.2),90);
+            lbl+=dataMatrix(w/2.0,(h/2.0)-(dm/2.0),dm,(dm/s),d.barcode,90);
+        }
+
         lbl+=print(1);
     }
 

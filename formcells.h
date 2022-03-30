@@ -20,11 +20,12 @@ struct cellData {
 class LabelCell : public LabelBase
 {
 public:
-    LabelCell(double w, double h, double g, QVector<cellData> &d, QObject *parent = 0);
+    LabelCell(double w, double h, double g, bool rot, QVector<cellData> &d, QObject *parent = 0);
     QString getCod();
 private:
     QVector<cellData> data;
     QMap<int, int> dmSizes;
+    bool rotLbl;
     int getDmSize(int kvo);
 };
 
@@ -55,6 +56,7 @@ private:
     ModelCell *modelCell;
     QSortFilterProxyModel *proxyModel;
     double widthLbl, heightLbl, gapLbl;
+    bool rotLbl;
     void loadsettings();
     void savesettings();
 

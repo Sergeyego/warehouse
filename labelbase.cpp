@@ -127,9 +127,9 @@ QString LabelBase::qrCode(double x, double y, QString t, int cellWidth)
     return QString ("QRCODE %1,%2,M,%3,A,0,M2, \"%4\"\n").arg(getDots(x)).arg(getDots(y)).arg(cellWidth).arg(normalize(t));
 }
 
-QString LabelBase::dataMatrix(double x, double y, double size, double sizeCell, QString data)
+QString LabelBase::dataMatrix(double x, double y, double size, double sizeCell, QString data, int rotation)
 {
-    return QString ("DMATRIX %1,%2,%3,%4,x%5, \"%6\"\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(size)).arg(getDots(size)).arg(getDots(sizeCell)).arg(normalize(data));
+    return QString ("DMATRIX %1,%2,%3,%4,x%5,r%6, \"%7\"\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(size)).arg(getDots(size)).arg(getDots(sizeCell)).arg(rotation).arg(normalize(data));
 }
 
 QString LabelBase::otkStamp(double x, double y, QString num)
