@@ -145,6 +145,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(push,SIGNAL(sigWrite()),this,SLOT(updBalance()));
     connect(modelShipEl, SIGNAL(sigSum(QString)),ui->labelSumEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigSum(QString)),ui->labelSumWire,SLOT(setText(QString)));
+    connect(ui->pushButtonXml,SIGNAL(clicked(bool)),this,SLOT(goXml()));
 
     push->last();
 }
@@ -198,7 +199,6 @@ void FormShip::sync()
 {
     const int id_ship = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),0),Qt::EditRole).toInt();
     Models::instance()->sync1C->syncShip(id_ship);
-    goXml();
 }
 
 void FormShip::setPartFilter()

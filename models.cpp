@@ -45,6 +45,8 @@ Models::Models(QObject *parent) :
                                                  "inner  join diam d on d.id = we.id_diam "
                                                  "inner join wire_pack_kind wpk on wpk.id = we.id_spool) "
                                                  "order by typ, id_u, mark"),0,1);
+    relKis->proxyModel()->sort(1);
+    relKis->proxyModel()->sort(2);
     relElPart->proxyModel()->setFilterKeyColumn(2);
     relWirePart->proxyModel()->setFilterKeyColumn(2);
     setFilter(1);
