@@ -249,6 +249,7 @@ void Sync1C::updateKeys()
     counterKeys = updateKeys("Catalog_усКонтрагенты","Code","Ref_Key");
     shipTypeKeys = updateKeys("Catalog_усНаправлениеОтгрузки","Description","Ref_Key");
     zoneKeys = updateKeys("Catalog_усЗоны","Ref_Key","Description");
+    zoneValues = updateKeys("Catalog_усЗоны","Description","Ref_Key");
 
     constKeys.clear();
     constKeys.insert(namEl,getKey("Catalog_усНоменклатура",namEl,"Description"));
@@ -260,7 +261,6 @@ void Sync1C::updateKeys()
     constKeys.insert(namStatus,getKey("Catalog_усСтатусыНоменклатуры",namStatus,"Description"));
     constKeys.insert(namContType,getKey("Catalog_усТипыКонтейнеров",namContType,"Description"));
     constKeys.insert(namCodOrg,getKey("Catalog_Организации",namCodOrg,"Code"));
-    constKeys.insert(namZoneOt,getKey("Catalog_усЗоны",namZoneOt,"Description"));
 
     //qDebug()<<constKeys;
 }
@@ -668,7 +668,7 @@ int Sync1C::updateCatalogZoneOt()
             catalogZoneOt.insert(key,zon);
         }
     }
-    qDebug()<<"kvo zoneOt: "<<json.size();
+    //qDebug()<<"kvo zoneOt: "<<json.size();
     return json.size();
 }
 
@@ -896,18 +896,28 @@ int Sync1C::zoneOtSync()
     bool ok=true;
     int n=0;
     QJsonObject obj=tmpCatalog("tmpzoneot.json");
-    QString zoneKey=constKeys.value(namZoneOt);
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
     while (i != catalogKeys.constEnd() && ok) {
-        if (!catalogZoneOt.values(i.value()).contains(zoneKey)){
-            obj.insert("Номенклатура_Key",i.value());
-            obj.insert("ТипЗоны","ОтборМелкий");
-            obj.insert("Зона_Key",zoneKey);
-            ok=postSync("InformationRegister_усЗоныОтбора",obj);
-            if (ok){
-                n++;
-            } else {
-                break;
+        QStringList list;
+        list<<"Буфер";
+        if (i.key().split(":").size()==2){
+            list<<"Хранение электродов"<<"Хранение остатков электродов";
+        } else {
+            list<<"Хранение проволоки"<<"Хранение остатков проволоки";
+        }
+        for (QString z:list){
+            QString zoneKey=zoneValues.value(z);
+            if (!catalogZoneOt.values(i.value()).contains(zoneKey)){
+                qDebug()<<i.key()<<z;
+                obj.insert("Номенклатура_Key",i.value());
+                obj.insert("ТипЗоны","ОтборМелкий");
+                obj.insert("Зона_Key",zoneKey);
+                ok=postSync("InformationRegister_усЗоныОтбора",obj);
+                if (ok){
+                    n++;
+                } else {
+                    break;
+                }
             }
         }
         ++i;

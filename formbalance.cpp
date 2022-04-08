@@ -61,6 +61,12 @@ void FormBalance::refresh()
     balanceModel->refresh(ui->dateEdit->date(),byp);
     ui->tableView->resizeToContents();
     ui->tableViewPart->setHidden(byp);
+    double sum=0;
+    int col = byp? 6 : 1;
+    for (int i=0; i<proxyModel->rowCount();i++){
+        sum+=proxyModel->data(proxyModel->index(i,col),Qt::EditRole).toDouble();
+    }
+    ui->labelSum->setText("Итого: "+QLocale().toString(sum,'f',2)+" кг");
 }
 
 void FormBalance::setFilter()

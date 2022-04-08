@@ -124,7 +124,6 @@ struct naklDataInfo
         const QString namStatus="Кондиция";
         const QString namContType="Европаллета";
         const QString namCodOrg="000000001";
-        const QString namZoneOt="Хранение";
 
         const QString contPrefix="EUR";
 
@@ -138,6 +137,7 @@ struct naklDataInfo
         QHash <QString, QString> counterKeys;
         QHash <QString, QString> shipTypeKeys;
         QHash <QString, QString> zoneKeys;
+        QHash <QString, QString> zoneValues;
         QMultiHash <QString, packVal> catalogPacks;
         QMultiHash <QString, QString> catalogEans;
         QMultiHash <QString, QString> catalogParts;

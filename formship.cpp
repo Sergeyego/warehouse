@@ -558,7 +558,7 @@ bool ModelShipData::setData(const QModelIndex &index, const QVariant &value, int
 
 bool ModelShipData::submit()
 {
-    bool ok = false;
+    /*bool ok = false;
     if (this->isEdt()){
         double kvo=this->data(this->index(currentEdtRow(),4),Qt::EditRole).toDouble();
         double m=getStock(this->index(currentEdtRow(),3));
@@ -570,7 +570,8 @@ bool ModelShipData::submit()
         }
     } else {
         return DbTableModel::submit();
-    }
+    }*/
+    bool ok = DbTableModel::submit();
     if (ok) emit sigStock("");
     return ok;
 }

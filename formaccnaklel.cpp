@@ -88,7 +88,8 @@ void FormAccNaklEl::refreshNaklCont(QModelIndex index)
                       "from prod p "
                       "inner join parti p2 on p2.id = p.id_part "
                       "inner join elrtr e on e.id = p2.id_el "
-                      "where p.dat = :d and p.id_ist = :id_ist "
+                      "inner join prod_nakl pn on pn.id=p.id_nakl "
+                      "where pn.dat = :d and pn.id_ist = :id_ist "
                       "order by p.id");
         query.bindValue(":d",dat);
         query.bindValue(":id_ist",id_type);
