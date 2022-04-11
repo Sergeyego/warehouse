@@ -431,8 +431,9 @@ double ModelBalance::getStock(QString ide)
     QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();
     while (i != part.constEnd()) {
         partInfo pinfo=i.value();
-        if (pinfo.id_part_kis==ide){
-            kvo+=pinfo.kvo;
+        contInfo cnt = cont.value(pinfo.contKey);
+        if (cnt.zone!="Упаковка" && pinfo.id_part_kis==ide){
+            kvo+=(pinfo.kvo);
         }
         ++i;
     }
@@ -484,19 +485,21 @@ void ModelBalance::refresh(QString kis)
     for (partInfo i : list){
         QVector<QVariant> row;
         contInfo cnt = cont.value(i.contKey);
-        row.push_back(i.name);
-        row.push_back(getPackName(i.id_part_kis));
-        row.push_back(i.number);
-        row.push_back(i.ist);
-        row.push_back(i.rcp);
-        row.push_back(getDesc(i.id_part_kis,i.desc));
-        row.push_back(i.kvo);
-        row.push_back(i.prich);
-        row.push_back(i.rasch);
-        row.push_back(cnt.zone);
-        row.push_back(cnt.cell);
-        row.push_back(cnt.name);
-        tmpd.push_back(row);
+        if (cnt.zone!="Упаковка"){
+            row.push_back(i.name);
+            row.push_back(getPackName(i.id_part_kis));
+            row.push_back(i.number);
+            row.push_back(i.ist);
+            row.push_back(i.rcp);
+            row.push_back(getDesc(i.id_part_kis,i.desc));
+            row.push_back(i.kvo);
+            row.push_back(i.prich);
+            row.push_back(i.rasch);
+            row.push_back(cnt.zone);
+            row.push_back(cnt.cell);
+            row.push_back(cnt.name);
+            tmpd.push_back(row);
+        }
     }
     setModelData(tmpd);
 }

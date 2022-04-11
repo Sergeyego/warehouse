@@ -1157,7 +1157,7 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
             obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
-
+            obj.insert("НомерПартии",query.value(2).toString());
             postSync("Document_усСтрокаЗаказаНаОтгрузку",obj);
             i++;
         }
