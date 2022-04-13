@@ -103,6 +103,7 @@ struct naklDataInfo
         void getCells(QVector<QVector<QVariant>> &info);
         void getConts(QVector<QVector<QVariant>> &info);
         void getNakl(QString kis, naklInfo &info, QVector<naklDataInfo> &datainfo);
+        QStringList getZoneOt();
 
     public slots:
         void syncCatalogEl();
@@ -126,6 +127,8 @@ struct naklDataInfo
         const QString namCodOrg="000000001";
 
         const QString contPrefix="EUR";
+        QStringList zoneOtEl;
+        QStringList zoneOtWire;
 
         base1CSettigs base1C;
         QHash <QString, QString> constKeys;

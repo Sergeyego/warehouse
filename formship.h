@@ -64,6 +64,7 @@ public:
     bool submit();
     void revert();
     void setFlt(QString kis);
+    bool insertRow(int row, const QModelIndex &parent);
 
 public slots:
     double getStock(QModelIndex index);

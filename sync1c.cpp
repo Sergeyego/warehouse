@@ -2,6 +2,8 @@
 
 Sync1C::Sync1C(QObject *parent): QObject(parent)
 {
+    zoneOtEl<<"Буфер"<<"Хранение электродов"<<"Хранение остатков электродов";
+    zoneOtWire<<"Буфер"<<"Хранение проволоки"<<"Хранение остатков проволоки";
     updateBaseSettings(1);
     updateKeys();
 }
@@ -202,6 +204,22 @@ void Sync1C::getNakl(QString kis, naklInfo &info, QVector<naklDataInfo> &datainf
             datainfo.push_back(di);
         }
     }
+}
+
+QStringList Sync1C::getZoneOt()
+{
+    QStringList list;
+    for (QString z:zoneOtEl){
+        if (!list.contains(z)){
+            list.push_back(z);
+        }
+    }
+    for (QString z:zoneOtWire){
+        if (!list.contains(z)){
+            list.push_back(z);
+        }
+    }
+    return list;
 }
 
 void Sync1C::syncCatalogEl()
@@ -899,11 +917,10 @@ int Sync1C::zoneOtSync()
     QHash<QString, QString>::const_iterator i = catalogKeys.constBegin();
     while (i != catalogKeys.constEnd() && ok) {
         QStringList list;
-        list<<"Буфер";
         if (i.key().split(":").size()==2){
-            list<<"Хранение электродов"<<"Хранение остатков электродов";
+            list=zoneOtEl;
         } else {
-            list<<"Хранение проволоки"<<"Хранение остатков проволоки";
+            list=zoneOtWire;
         }
         for (QString z:list){
             QString zoneKey=zoneValues.value(z);

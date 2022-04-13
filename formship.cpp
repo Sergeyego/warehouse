@@ -406,7 +406,9 @@ bool ModelShip::insertRow(int row, const QModelIndex &parent)
 {
     select();
     int old_num=0;
-    if (rowCount()>0) old_num=this->data(this->index(rowCount()-1,1),Qt::EditRole).toInt();
+    if (rowCount()>0) {
+        old_num=this->data(this->index(rowCount()-1,1),Qt::EditRole).toInt();
+    }
     setDefaultValue(1,QString("%1").arg((old_num+1),4,'d',0,QChar('0')));
     setDefaultValue(2,QDate::currentDate());
     return DbTableModel::insertRow(row,parent);
@@ -428,11 +430,12 @@ void ModelBalance::updData(QDate dat)
 double ModelBalance::getStock(QString ide)
 {
     double kvo=0;
+    QStringList zoneOt=Models::instance()->sync1C->getZoneOt();
     QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();
     while (i != part.constEnd()) {
         partInfo pinfo=i.value();
         contInfo cnt = cont.value(pinfo.contKey);
-        if (cnt.zone!="Упаковка" && pinfo.id_part_kis==ide){
+        if (zoneOt.contains(cnt.zone) && pinfo.id_part_kis==ide){
             kvo+=(pinfo.kvo);
         }
         ++i;
@@ -482,10 +485,11 @@ void ModelBalance::refresh(QString kis)
 {
     QVector<QVector<QVariant>> tmpd;
     QList<partInfo> list = part.values(kis);
+    QStringList zoneOt=Models::instance()->sync1C->getZoneOt();
     for (partInfo i : list){
         QVector<QVariant> row;
-        contInfo cnt = cont.value(i.contKey);
-        if (cnt.zone!="Упаковка"){
+        contInfo cnt = cont.value(i.contKey);        
+        if (zoneOt.contains(cnt.zone)){
             row.push_back(i.name);
             row.push_back(getPackName(i.id_part_kis));
             row.push_back(i.number);
@@ -541,6 +545,7 @@ void ModelShipData::refresh(int id_ship)
     currentIdShip=id_ship;
     setFilter(info.tablename+"."+info.namIdDoc+" = "+QString::number(id_ship));
     setDefaultValue(1,id_ship);
+    setDefaultValue(2,QString());
     select();
 }
 
@@ -600,10 +605,26 @@ void ModelShipData::setFlt(QString kis)
     info.relPart->proxyModel()->setFilterRegExp(pattern);
 }
 
+bool ModelShipData::insertRow(int row, const QModelIndex &parent)
+{
+    QString oldkis;
+    if (rowCount()>0){
+        oldkis=this->data(this->index(rowCount()-1,2),Qt::EditRole).toString();
+    }
+    setDefaultValue(2,oldkis);
+    return DbTableModel::insertRow(row,parent);
+}
+
 double ModelShipData::getStock(QModelIndex index)
 {
     int id_part = this->data(this->index(index.row(),3),Qt::EditRole).toInt();
-    return info.modelBalence->getStock(info.prefix+":"+QString::number(id_part));
+    double plan=0;
+    for (int i=0; i<rowCount(); i++){
+        if (this->data(this->index(i,3),Qt::EditRole).toInt()==id_part){
+            plan+=this->data(this->index(i,4),Qt::EditRole).toDouble();
+        }
+    }
+    return info.modelBalence->getStock(info.prefix+":"+QString::number(id_part))-plan;
 }
 
 void ModelShipData::refreshState()
