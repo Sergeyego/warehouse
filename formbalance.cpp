@@ -130,6 +130,9 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             row.push_back(pinfo.kvo);
             row.push_back(pinfo.prich);
             row.push_back(pinfo.rasch);
+            //row.push_back(QString::number(pinfo.kvo)+" / "+QString::number(cinfo.kvo));
+            //row.push_back(QString::number(pinfo.prich)+" / "+QString::number(cinfo.prich));
+            //row.push_back(QString::number(pinfo.rasch)+" / "+QString::number(cinfo.rasch));
             row.push_back(cinfo.zone);
             row.push_back(cinfo.cell);
             row.push_back(cinfo.name);

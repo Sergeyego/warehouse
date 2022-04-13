@@ -429,7 +429,7 @@ void FormDataWire::setKvoPack()
     if (ed!=0){
         ui->lineEditKvoSpool->setText(QString::number(round(kvo/ed)));
         double b;
-        ost=std::modf(kvo/ed, &b);
+        ost=modf(kvo/ed, &b);
     }
     QPalette pal=ui->lineEditKvoSpool->palette();
     QColor col = (ost==0 && kvo>0) ? QColor(0,0,0) : QColor(255,0,0);
