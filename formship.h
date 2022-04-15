@@ -70,12 +70,14 @@ public slots:
     double getStock(QModelIndex index);
     void refreshState();
     void setPartFlt(int ind);
+    void setOstControl(bool b);
 
 private:
     shipContInfo info;
     QMap <int,int> colorState;
     int currentIdShip;
     int fltind;
+    bool ostControl;
 
 private slots:
     void calcSum();
@@ -117,6 +119,7 @@ private slots:
     void updPol();
     void updBalance();
     void updKisBalance(QModelIndex ind);
+    void updShipStatistic();
 };
 
 #endif // FORMSHIP_H

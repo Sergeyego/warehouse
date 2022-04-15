@@ -328,6 +328,16 @@
           </spacer>
          </item>
          <item>
+          <widget class="QCheckBox" name="checkBoxOst">
+           <property name="text">
+            <string>Проверять остатки в зонах отбора</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="pushButtonXml">
            <property name="text">
             <string>XML</string>

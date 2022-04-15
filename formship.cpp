@@ -125,6 +125,9 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
         ui->tableViewWire->setMenuEnabled(false);
     }
 
+    connect(ui->checkBoxOst,SIGNAL(clicked(bool)),modelShipEl,SLOT(setOstControl(bool)));
+    connect(ui->checkBoxOst,SIGNAL(clicked(bool)),modelShipWire,SLOT(setOstControl(bool)));
+
     connect(ui->cmdUpdShip,SIGNAL(clicked(bool)),this,SLOT(updPol()));
     connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),this,SLOT(updShip()));
     connect(ui->comboBoxOnly,SIGNAL(currentIndexChanged(int)),this,SLOT(updShip()));
@@ -146,6 +149,9 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(modelShipEl, SIGNAL(sigSum(QString)),ui->labelSumEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigSum(QString)),ui->labelSumWire,SLOT(setText(QString)));
     connect(ui->pushButtonXml,SIGNAL(clicked(bool)),this,SLOT(goXml()));
+
+    connect(modelShipEl,SIGNAL(sigUpd()),this,SLOT(updShipStatistic()));
+    connect(modelShipEl,SIGNAL(sigRefresh()),this,SLOT(updShipStatistic()));
 
     push->last();
 }
@@ -373,6 +379,15 @@ void FormShip::updKisBalance(QModelIndex ind)
     modelBalance->refresh(kis);
 }
 
+void FormShip::updShipStatistic()
+{
+    /*qDebug()<<"state";
+    QVector <QVector<QVariant>> data;
+    for (int i=0; i<modelShipEl->rowCount(); i++){
+
+    }*/
+}
+
 QDomElement FormShip::newElement(QString nam, QString val, QDomDocument *doc)
 {
     QDomElement l = doc->createElement(nam);
@@ -512,6 +527,7 @@ ModelShipData::ModelShipData(shipContInfo c, QObject *parent) : DbTableModel(c.t
 {
     info=c;
     fltind=1;
+    ostControl=true;
     info.relPart->proxyModel()->setFilterKeyColumn(2);
     setFlt("");
     addColumn(info.namId,tr("id"));
@@ -566,21 +582,26 @@ bool ModelShipData::setData(const QModelIndex &index, const QVariant &value, int
 
 bool ModelShipData::submit()
 {
-    /*bool ok = false;
-    if (this->isEdt()){
-        double kvo=this->data(this->index(currentEdtRow(),4),Qt::EditRole).toDouble();
-        double m=getStock(this->index(currentEdtRow(),3));
-        if (kvo>=0 && m>=kvo){
-            ok=DbTableModel::submit();
+    bool ok=false;
+    if (ostControl){
+        if (this->isEdt()){
+            double kvo=this->data(this->index(currentEdtRow(),4),Qt::EditRole).toDouble();
+            double m=getStock(this->index(currentEdtRow(),3));
+            if (kvo>=0 && m>=kvo){
+                ok=DbTableModel::submit();
+            } else {
+                QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на день отгрузки числится ")+
+                                      QLocale().toString(m,'f',2)+tr(" кг номенклатуры этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Cancel);
+            }
         } else {
-            QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на день отгрузки числится ")+
-                                  QLocale().toString(m,'f',2)+tr(" кг номенклатуры этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Cancel);
+            ok=DbTableModel::submit();
         }
     } else {
-        return DbTableModel::submit();
-    }*/
-    bool ok = DbTableModel::submit();
-    if (ok) emit sigStock("");
+        ok=DbTableModel::submit();
+    }
+    if (ok) {
+        emit sigStock("");
+    }
     return ok;
 }
 
@@ -620,7 +641,7 @@ double ModelShipData::getStock(QModelIndex index)
     int id_part = this->data(this->index(index.row(),3),Qt::EditRole).toInt();
     double plan=0;
     for (int i=0; i<rowCount(); i++){
-        if (this->data(this->index(i,3),Qt::EditRole).toInt()==id_part){
+        if (this->data(this->index(i,3),Qt::EditRole).toInt()==id_part && i!=index.row()){
             plan+=this->data(this->index(i,4),Qt::EditRole).toDouble();
         }
     }
@@ -648,6 +669,11 @@ void ModelShipData::setPartFlt(int ind)
 {
     fltind=ind;
     setFlt("");
+}
+
+void ModelShipData::setOstControl(bool b)
+{
+    ostControl=b;
 }
 
 void ModelShipData::calcSum()
