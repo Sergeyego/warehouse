@@ -2,7 +2,7 @@
 
 TableModel::TableModel(QObject *parent): QAbstractTableModel(parent)
 {
-
+    decimal=1;
 }
 
 QVariant TableModel::data(const QModelIndex &index, int role) const
@@ -14,7 +14,7 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
     QVariant::Type type=origData.type();
     if (role==Qt::DisplayRole){
         if (type==QMetaType::Double){
-            return (origData.isNull() || origData==0) ? QString("") : QLocale().toString(origData.toDouble(),'f',1);
+            return (origData.isNull() || origData==0) ? QString("") : QLocale().toString(origData.toDouble(),'f',decimal);
         } else if (type==QMetaType::QDate){
             return (origData.isNull()) ? QString("") : origData.toDate().toString("dd.MM.yy");
         }
@@ -98,4 +98,11 @@ void TableModel::clear()
         p_d.clear();
         endResetModel();
     }
+}
+
+void TableModel::setDecimal(int dec)
+{
+    beginResetModel();
+    decimal=dec;
+    endResetModel();
 }

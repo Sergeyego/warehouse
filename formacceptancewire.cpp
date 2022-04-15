@@ -53,8 +53,9 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     mapper->addLock(ui->pushButtonUpd);
 
     connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
-    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart->model(),SLOT(refresh()));
+    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart,SLOT(refreshModel()));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
+    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),Models::instance()->relWirePart,SLOT(refreshModel()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
     connect(modelAcceptanceWireData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));

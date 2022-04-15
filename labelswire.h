@@ -4,6 +4,7 @@
 #include <QObject>
 #include "labelbase.h"
 #include "formdatawire.h"
+#include "models.h"
 
 class LabelE801016 : public LabelBase
 {

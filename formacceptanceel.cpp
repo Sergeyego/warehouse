@@ -53,10 +53,11 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
+    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),Models::instance()->relElPart,SLOT(refreshModel()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
     connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
-    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart->model(),SLOT(refresh()));
+    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart,SLOT(refreshModel()));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(modelAcceptanceElData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));

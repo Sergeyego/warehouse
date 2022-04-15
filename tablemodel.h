@@ -23,10 +23,12 @@ public:
     void setHeader(const QStringList &hdata);
     QStringList getHeader();
     void clear();
+    void setDecimal(int dec);
 
 protected:
     QVector<QVector<QVariant>> p_d;
     QStringList p_header;
+    int decimal;
 
 signals:
     void sigUpd();

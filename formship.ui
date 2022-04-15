@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_5">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
@@ -107,8 +107,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidget_2">
-      <layout class="QVBoxLayout" name="verticalLayout_4">
+     <widget class="QWidget" name="">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
@@ -277,7 +277,20 @@
         </widget>
        </item>
        <item>
-        <widget class="DbViewer" name="tableViewEl"/>
+        <widget class="QSplitter" name="splitterEl">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="DbViewer" name="tableViewEl"/>
+         <widget class="TableView" name="tableViewElStat">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="labelEl">
@@ -300,7 +313,20 @@
         </widget>
        </item>
        <item>
-        <widget class="DbViewer" name="tableViewWire"/>
+        <widget class="QSplitter" name="splitterWire">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="DbViewer" name="tableViewWire"/>
+         <widget class="TableView" name="tableViewWireStat">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="labelWire">

@@ -17,6 +17,19 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->comboBoxPart->addItem(tr("за всё время"));
     ui->comboBoxPart->setCurrentIndex(1);
 
+    QStringList listStatHeader;
+    listStatHeader<<"Номенклатура"<<"Масса, кг";
+
+    modelElStat = new TableModel(this);
+    modelElStat->setHeader(listStatHeader);
+    modelElStat->setDecimal(2);
+    ui->tableViewElStat->setModel(modelElStat);
+
+    modelWireStat = new TableModel(this);
+    modelWireStat->setHeader(listStatHeader);
+    modelWireStat->setDecimal(2);
+    ui->tableViewWireStat->setModel(modelWireStat);
+
     modelBalance = new ModelBalance(this);
     proxyModelBalance = new QSortFilterProxyModel(this);
     proxyModelBalance->setSourceModel(modelBalance);
@@ -150,8 +163,11 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(modelShipWire, SIGNAL(sigSum(QString)),ui->labelSumWire,SLOT(setText(QString)));
     connect(ui->pushButtonXml,SIGNAL(clicked(bool)),this,SLOT(goXml()));
 
-    connect(modelShipEl,SIGNAL(sigUpd()),this,SLOT(updShipStatistic()));
-    connect(modelShipEl,SIGNAL(sigRefresh()),this,SLOT(updShipStatistic()));
+    connect(modelShipEl,SIGNAL(sigUpd()),this,SLOT(updShipStatisticEl()));
+    connect(modelShipEl,SIGNAL(sigRefresh()),this,SLOT(updShipStatisticEl()));
+
+    connect(modelShipWire,SIGNAL(sigUpd()),this,SLOT(updShipStatisticWire()));
+    connect(modelShipWire,SIGNAL(sigRefresh()),this,SLOT(updShipStatisticWire()));
 
     push->last();
 }
@@ -166,12 +182,16 @@ void FormShip::loadsettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     ui->splitter->restoreState(settings.value("ship_splitter_width").toByteArray());
+    ui->splitterEl->restoreState(settings.value("ship_splitter_el_width").toByteArray());
+    ui->splitterWire->restoreState(settings.value("ship_splitter_wire_width").toByteArray());
 }
 
 void FormShip::savesettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     settings.setValue("ship_splitter_width",ui->splitter->saveState());
+    settings.setValue("ship_splitter_el_width",ui->splitterEl->saveState());
+    settings.setValue("ship_splitter_wire_width",ui->splitterWire->saveState());
 }
 
 void FormShip::updShip()
@@ -379,13 +399,16 @@ void FormShip::updKisBalance(QModelIndex ind)
     modelBalance->refresh(kis);
 }
 
-void FormShip::updShipStatistic()
+void FormShip::updShipStatisticEl()
 {
-    /*qDebug()<<"state";
-    QVector <QVector<QVariant>> data;
-    for (int i=0; i<modelShipEl->rowCount(); i++){
+    calcStat(modelShipEl,modelElStat);
+    ui->tableViewElStat->resizeToContents();
+}
 
-    }*/
+void FormShip::updShipStatisticWire()
+{
+    calcStat(modelShipWire,modelWireStat);
+    ui->tableViewWireStat->resizeToContents();
 }
 
 QDomElement FormShip::newElement(QString nam, QString val, QDomDocument *doc)
@@ -393,6 +416,29 @@ QDomElement FormShip::newElement(QString nam, QString val, QDomDocument *doc)
     QDomElement l = doc->createElement(nam);
     l.appendChild(doc->createTextNode(val));
     return l;
+}
+
+void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
+{
+    QVector <QVector<QVariant>> data;
+    QMultiMap<QString, double> hash;
+    for (int i=0; i<modelShipData->rowCount(); i++){
+        QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString();
+        double kvo=modelShipData->data(modelShipData->index(i,4),Qt::EditRole).toDouble();
+        hash.insert(nom,kvo);
+    }
+    for (QString key : hash.uniqueKeys()){
+        double sum=0;
+        QList<double> vals = hash.values(key);
+        for (double s : vals){
+            sum+=s;
+        }
+        QVector<QVariant> v;
+        v.push_back(key);
+        v.push_back(sum);
+        data.push_back(v);
+    }
+    modelStat->setModelData(data);
 }
 
 ModelShip::ModelShip(QObject *parent) : DbTableModel("sertifikat",parent)
@@ -451,7 +497,7 @@ double ModelBalance::getStock(QString ide)
         partInfo pinfo=i.value();
         contInfo cnt = cont.value(pinfo.contKey);
         if (zoneOt.contains(cnt.zone) && pinfo.id_part_kis==ide){
-            kvo+=(pinfo.kvo);
+            kvo+=(pinfo.kvo-pinfo.rasch);
         }
         ++i;
     }

@@ -66,6 +66,23 @@ Models *Models::instance()
     return models_instance;
 }
 
+QString Models::createPalBarcode(QString prefix)
+{
+    QString palBarcode="";
+    QSqlQuery query;
+    query.prepare("insert into pallets (datetime, prefix) values (:datetime, :prefix) returning id");
+    query.bindValue(":datetime",QDateTime::currentDateTime());
+    query.bindValue(":prefix",prefix);
+    if (query.exec()){
+        if (query.next()){
+            palBarcode=prefix+QString("%1").arg((query.value(0).toInt()),10-prefix.length(),'d',0,QChar('0'));
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+    return palBarcode;
+}
+
 void Models::refresh()
 {
     for (int i=0; i < rels.size(); ++i) {

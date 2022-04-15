@@ -132,19 +132,7 @@ bool Code128Img::createCode128(QImage &image, QString str)
 
 PackElDoc::PackElDoc(FormDataEl *data, QObject *parent) : QTextDocument(parent)
 {
-    QString palBarcode;
-    QString prefix="E";
-    QSqlQuery query;
-    query.prepare("insert into pallets (datetime, prefix) values (:datetime, :prefix) returning id");
-    query.bindValue(":datetime",QDateTime::currentDateTime());
-    query.bindValue(":prefix",prefix);
-    if (query.exec()){
-        if (query.next()){
-            palBarcode=prefix+QString("%1").arg((query.value(0).toInt()),10-prefix.length(),'d',0,QChar('0'));
-        }
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-    }
+    QString palBarcode=Models::instance()->createPalBarcode("E");
 
     QFont titleFont("Droid Sans",15);
     QFont title2Font("Droid Sans",12);
@@ -219,7 +207,7 @@ PackElDoc::PackElDoc(FormDataEl *data, QObject *parent) : QTextDocument(parent)
     cursor.insertBlock(formatCenter);
 
     QImage qr;
-    if (QRImg::createQr(qr,data->barCodePack()+palBarcode)){
+    if (!data->eanGr().isEmpty() && QRImg::createQr(qr,data->barCodePack()+palBarcode)){
         this->addResource(QTextDocument::ImageResource, QUrl("qrcode"),qr);
         QTextImageFormat qrformat;
         qrformat.setName("qrcode");
@@ -230,19 +218,7 @@ PackElDoc::PackElDoc(FormDataEl *data, QObject *parent) : QTextDocument(parent)
 
 PackWireDoc::PackWireDoc(FormDataWire *data, QObject *parent) : QTextDocument(parent)
 {
-    QString palBarcode;
-    QString prefix="W";
-    QSqlQuery query;
-    query.prepare("insert into pallets (datetime, prefix) values (:datetime, :prefix) returning id");
-    query.bindValue(":datetime",QDateTime::currentDateTime());
-    query.bindValue(":prefix",prefix);
-    if (query.exec()){
-        if (query.next()){
-            palBarcode=prefix+QString("%1").arg((query.value(0).toInt()),10-prefix.length(),'d',0,QChar('0'));
-        }
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-    }
+    QString palBarcode=Models::instance()->createPalBarcode("W");
 
     QFont titleFont("Droid Sans",15);
     QFont title2Font("Droid Sans",12);
@@ -331,7 +307,7 @@ PackWireDoc::PackWireDoc(FormDataWire *data, QObject *parent) : QTextDocument(pa
     cursor.insertBlock(formatCenter);
 
     QImage qr;
-    if (QRImg::createQr(qr,data->barCodePack()+palBarcode)){
+    if (!data->eanGr().isEmpty() && QRImg::createQr(qr,data->barCodePack()+palBarcode)){
         this->addResource(QTextDocument::ImageResource, QUrl("qrcode"),qr);
         QTextImageFormat qrformat;
         qrformat.setName("qrcode");

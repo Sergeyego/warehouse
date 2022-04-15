@@ -24,6 +24,7 @@ public:
     DbRelation *relKis;
     DbRelationalModel *modelElPart;
     DbRelationalModel *modelWirePart;
+    QString createPalBarcode(QString prefix);
 
 public slots:
     void refresh();

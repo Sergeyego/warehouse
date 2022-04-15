@@ -102,10 +102,13 @@ private:
     ModelShipData *modelShipEl;
     ModelShipData *modelShipWire;
     ModelBalance *modelBalance;
+    TableModel *modelElStat;
+    TableModel *modelWireStat;
     QSortFilterProxyModel *proxyModelBalance;
     void loadsettings();
     void savesettings();
     QDomElement newElement(QString nam, QString val,  QDomDocument *doc);
+    void calcStat(ModelShipData *modelShipData, TableModel *modelStat);
 
 public slots:
     void setPartFilter();
@@ -119,7 +122,8 @@ private slots:
     void updPol();
     void updBalance();
     void updKisBalance(QModelIndex ind);
-    void updShipStatistic();
+    void updShipStatisticEl();
+    void updShipStatisticWire();
 };
 
 #endif // FORMSHIP_H
