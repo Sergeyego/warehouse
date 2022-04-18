@@ -59,7 +59,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     push->addLock(ui->cmdUpdShip);
     push->addLock(ui->checkBoxOnly);
     push->addLock(ui->comboBoxOnly);
-    push->addLock(ui->cmdEdtCods);
 
     ui->comboBoxOnly->setModel(Models::instance()->relPol->model());
     ui->comboBoxOnly->setModelColumn(Models::instance()->relPol->columnDisplay());
@@ -67,7 +66,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->comboBoxOnly->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
     shipContInfo ei;
-    ei.tablename="otpusk";
+    ei.tablename="ship_plan_el";
     ei.namId="id";
     ei.namIdDoc="id_sert";
     ei.namKis="kis";
@@ -76,16 +75,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ei.modelBalence=modelBalance;
     ei.prefix="e";
     ei.relPart = new DbRelation(Models::instance()->modelElPart,0,1,this);
-    ei.queryState=QString("select otpusk.id_part, "
-                          "(select case when exists (select id_chem from sert_chem where id_part=otpusk.id_part) "
-                          "then 1 else 0 end "
-                          "+ "
-                          "case when exists(select id_mech from sert_mech where id_part=otpusk.id_part) "
-                          "then 2 else 0 end "
-                          "+ "
-                          "case when exists(select cod from td_keys_el where id_el=(select id_el from parti where id=otpusk.id_part) and id_diam=(select id from diam as d where d.diam=(select diam from parti where id=otpusk.id_part)) and id_pack=(select id_pack from parti where id=otpusk.id_part)) "
-                          "then 4 else 0 end "
-                          "as r) from otpusk where otpusk.id_sert = :id ");
     modelShipEl = new ModelShipData(ei,this);
     ui->tableViewEl->setModel(modelShipEl);
     ui->tableViewEl->setColumnHidden(0,true);
@@ -95,7 +84,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->tableViewEl->setColumnWidth(4,100);
 
     shipContInfo wi;
-    wi.tablename="wire_shipment_consist";
+    wi.tablename="ship_plan_wire";
     wi.namId="id";
     wi.namIdDoc="id_ship";
     wi.namKis="kis";
@@ -104,22 +93,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     wi.modelBalence=modelBalance;
     wi.prefix="w";
     wi.relPart = new DbRelation(Models::instance()->modelWirePart,0,1,this);
-    wi.queryState=QString("select wire_shipment_consist.id_wparti, "
-                          "(select case when exists(select id from wire_parti_chem "
-                          "where id_part=(select p.id_m from wire_parti as p where p.id = wire_shipment_consist.id_wparti)) "
-                          "then 1 else 0 end "
-                          "+ "
-                          "case when exists(select id from wire_parti_mech "
-                          "where id_part=(select p.id_m from wire_parti as p where p.id = wire_shipment_consist.id_wparti)) "
-                          "then 2 else 0 end "
-                          "+ "
-                          "case when exists(select cod from td_keys_wire "
-                          "where id_prov=(select m.id_provol from wire_parti as wp inner join wire_parti_m as m on wp.id_m=m.id where wp.id=wire_shipment_consist.id_wparti) "
-                          "and id_diam=(select m.id_diam from wire_parti as wp inner join wire_parti_m as m on wp.id_m=m.id where wp.id=wire_shipment_consist.id_wparti) "
-                          "and id_spool=(select wp.id_pack from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti) "
-                          "and id_pack=(select wp.id_pack_type from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti)) "
-                          "then 4 else 0 end "
-                          "as r) from wire_shipment_consist where wire_shipment_consist.id_ship = :id ");
     modelShipWire = new ModelShipData(wi, this);
     ui->tableViewWire->setModel(modelShipWire);
     ui->tableViewWire->setColumnHidden(0,true);
@@ -132,7 +105,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
         ui->tableViewEl->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->tableViewWire->setEditTriggers(QAbstractItemView::NoEditTriggers);
         push->setEnabled(false);
-        ui->cmdEdtCods->setEnabled(false);
         ui->tableViewShip->setMenuEnabled(false);
         ui->tableViewEl->setMenuEnabled(false);
         ui->tableViewWire->setMenuEnabled(false);
@@ -153,7 +125,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(modelShipEl, SIGNAL(sigStock(QString)),ui->labelEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigStock(QString)),ui->labelWire,SLOT(setText(QString)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
-    connect(ui->cmdEdtCods,SIGNAL(clicked(bool)),this,SLOT(edtCods()));
     connect(ui->tableViewEl->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
     connect(ui->tableViewWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
     connect(modelBalance,SIGNAL(sigUpd()),ui->tableViewBal,SLOT(resizeToContents()));
@@ -161,7 +132,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(push,SIGNAL(sigWrite()),this,SLOT(updBalance()));
     connect(modelShipEl, SIGNAL(sigSum(QString)),ui->labelSumEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigSum(QString)),ui->labelSumWire,SLOT(setText(QString)));
-    connect(ui->pushButtonXml,SIGNAL(clicked(bool)),this,SLOT(goXml()));
 
     connect(modelShipEl,SIGNAL(sigUpd()),this,SLOT(updShipStatisticEl()));
     connect(modelShipEl,SIGNAL(sigRefresh()),this,SLOT(updShipStatisticEl()));
@@ -233,140 +203,6 @@ void FormShip::setPartFilter()
     Models::instance()->setFilter(index);
     modelShipEl->setPartFlt(index);
     modelShipWire->setPartFlt(index);
-}
-
-void FormShip::goXml()
-{
-    QSqlQuery query;
-    const int id_ship = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),0),Qt::EditRole).toInt();
-    const QString num = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),1),Qt::EditRole).toString();
-    const QDate date = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),2),Qt::EditRole).toDate();
-    const int id_pol = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),3),Qt::EditRole).toInt();
-    int i=1;
-    QString namPol, codPol, inn;
-#if defined(Q_OS_WIN)
-    QDir dir("C:/rotex");
-#else
-    QDir dir(QDir::homePath()+"/xml");
-#endif
-    if (!dir.exists()) dir.mkdir(dir.path());
-    QFile file(dir.path()+"/srtf_"+num+"_"+date.toString("ddMMyyyy")+".xml");
-
-    query.clear();
-    query.prepare("Select naim, ch_id, substring(innkpp from '\\m\\d*') from poluch where id = :id_pol");
-    query.bindValue(":id_pol",id_pol);
-    if (query.exec()){
-        while (query.next()){
-            namPol=query.value(0).toString();
-            codPol=query.value(1).toString();
-            inn=query.value(2).toString();
-        }
-    } else {
-        QMessageBox::critical(this,"Error",query.lastError().text(),QMessageBox::Cancel);
-    }
-
-    QDomDocument doc;
-    doc.appendChild(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"utf-8\""));
-    QDomElement root = doc.createElement(QString::fromUtf8("root"));
-    doc.appendChild(root);
-    QDomElement rec = doc.createElement(QString::fromUtf8("РеквизитыШапки"));
-    rec.appendChild(newElement(QString::fromUtf8("КодОпер"),QString::fromUtf8("РеализацияТоваровУслуг"),&doc));
-    rec.appendChild(newElement(QString::fromUtf8("НомерДок"),num,&doc));
-    rec.appendChild(newElement(QString::fromUtf8("ДатаДок"),date.toString("dd.MM.yyyy"),&doc));
-    root.appendChild(rec);
-    QDomElement podr = doc.createElement(QString::fromUtf8("Подразделение"));
-    podr.appendChild(newElement(QString::fromUtf8("Код"),QString::fromUtf8("00010002"),&doc));
-    podr.appendChild(newElement(QString::fromUtf8("Наименование"),QString::fromUtf8("Судиславль"),&doc));
-    rec.appendChild(podr);
-    QDomElement contr = doc.createElement(QString::fromUtf8("Контрагент"));
-    contr.appendChild(newElement(QString::fromUtf8("Код"),codPol,&doc));
-    contr.appendChild(newElement(QString::fromUtf8("Наименование"),namPol,&doc));
-    contr.appendChild(newElement(QString::fromUtf8("ИНН"),inn,&doc));
-    contr.appendChild(newElement(QString::fromUtf8("ВидДоговора"),QString::fromUtf8("СПокупателем"),&doc));
-    contr.appendChild(newElement(QString::fromUtf8("КодДоговора"),QString::fromUtf8("00001"),&doc));
-    contr.appendChild(newElement(QString::fromUtf8("НаименованиеДоговора"),QString::fromUtf8("Основной договор"),&doc));
-    rec.appendChild(contr);
-    QDomElement tov = doc.createElement(QString::fromUtf8("ТЧТовары"));
-    root.appendChild(tov);
-
-    query.clear();
-    query.prepare("select e.marka||"+tr("' д-'")+"||d.sdim, sum(o.massa), ke.cod "
-                                                 "from otpusk o "
-                                                 "inner join parti p on o.id_part=p.id "
-                                                 "inner join elrtr e on p.id_el=e.id "
-                                                 "inner join diam d on d.diam=p.diam "
-                                                 "left outer join td_keys_el as ke on ke.id_el=p.id_el and ke.id_diam=d.id and ke.id_pack=p.id_pack "
-                                                 "where o.id_sert= :id_sert "
-                                                 "group by e.marka, d.sdim, ke.cod "
-                                                 "order by e.marka, d.sdim");
-    query.bindValue(":id_sert", id_ship);
-    if (query.exec()){
-        while (query.next()) {
-            QDomElement stroka = doc.createElement(QString::fromUtf8("СтрокаТЧ"));
-            stroka.appendChild(newElement(QString::fromUtf8("НомерСтроки"),QString::number(i),&doc));
-            QDomElement nomen = doc.createElement(QString::fromUtf8("Номенклатура"));
-            nomen.appendChild(newElement(QString::fromUtf8("Код"),query.value(2).toString(),&doc));
-            nomen.appendChild(newElement(QString::fromUtf8("Наименование"),query.value(0).toString(),&doc));
-            stroka.appendChild(nomen);
-            QDomElement edizm = doc.createElement(QString::fromUtf8("ЕдИзм"));
-            edizm.appendChild(newElement(QString::fromUtf8("Код"),QString::fromUtf8("168"),&doc));
-            edizm.appendChild(newElement(QString::fromUtf8("Наименование"),QString::fromUtf8("тн."),&doc));
-            stroka.appendChild(edizm);
-            stroka.appendChild(newElement(QString::fromUtf8("Количество"),QString::number(query.value(1).toDouble()/1000.0,10,5),&doc));
-            tov.appendChild(stroka);
-            i++;
-        }
-    } else {
-        QMessageBox::critical(this,"Error",query.lastError().text(),QMessageBox::Cancel);
-    }
-
-    query.clear();
-    query.prepare("select pr.nam||"+tr("' д-'")+"||d.sdim||' '||k.nam, sum(w.m_netto), kw.cod "
-                                               "from wire_shipment_consist as w "
-                                               "inner join wire_parti as p on p.id=w.id_wparti "
-                                               "inner join wire_parti_m as m on p.id_m=m.id "
-                                               "inner join provol as pr on pr.id=m.id_provol "
-                                               "inner join diam as d on d.id=m.id_diam "
-                                               "inner join wire_pack_kind as k on p.id_pack=k.id "
-                                               "left outer join td_keys_wire as kw on kw.id_prov=m.id_provol and kw.id_diam=m.id_diam and kw.id_spool=p.id_pack and kw.id_pack=p.id_pack_type "
-                                               "where w.id_ship= :id_ship "
-                                               "group by pr.nam, d.sdim, k.nam, kw.cod "
-                                               "order by pr.nam, d.sdim, k.nam");
-    query.bindValue(":id_ship", id_ship);
-    if (query.exec()){
-        while (query.next()) {
-            QDomElement stroka = doc.createElement(QString::fromUtf8("СтрокаТЧ"));
-            stroka.appendChild(newElement(QString::fromUtf8("НомерСтроки"),QString::number(i),&doc));
-            QDomElement nomen = doc.createElement(QString::fromUtf8("Номенклатура"));
-            nomen.appendChild(newElement(QString::fromUtf8("Код"),query.value(2).toString(),&doc));
-            nomen.appendChild(newElement(QString::fromUtf8("Наименование"),query.value(0).toString(),&doc));
-            stroka.appendChild(nomen);
-            QDomElement edizm = doc.createElement(QString::fromUtf8("ЕдИзм"));
-            edizm.appendChild(newElement(QString::fromUtf8("Код"),QString::fromUtf8("168"),&doc));
-            edizm.appendChild(newElement(QString::fromUtf8("Наименование"),QString::fromUtf8("тн."),&doc));
-            stroka.appendChild(edizm);
-            stroka.appendChild(newElement(QString::fromUtf8("Количество"),QString::number(query.value(1).toDouble()/1000.0,10,5),&doc));
-            tov.appendChild(stroka);
-            i++;
-        }
-    } else {
-        QMessageBox::critical(this,"Error",query.lastError().text(),QMessageBox::Cancel);
-    }
-
-    if ( file.open( QIODevice::WriteOnly ) ) {
-        QTextStream stream( &file );
-        stream.setCodec(QTextCodec::codecForName("UTF-8"));
-        doc.save(stream,1);
-        file.close();
-    }
-}
-
-void FormShip::edtCods()
-{
-    DialogCods d;
-    d.exec();
-    modelShipEl->refreshState();
-    modelShipWire->refreshState();
 }
 
 void FormShip::updPol()
@@ -441,23 +277,23 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
     modelStat->setModelData(data);
 }
 
-ModelShip::ModelShip(QObject *parent) : DbTableModel("sertifikat",parent)
+ModelShip::ModelShip(QObject *parent) : DbTableModel("ship_plan",parent)
 {
     addColumn("id",tr("id"));
     addColumn("nom_s",tr("Номер"));
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
     addColumn("id_type",tr("Тип отгрузки"),Models::instance()->relShipType);
-    setSort("sertifikat.dat_vid, sertifikat.nom_s");
+    setSort("ship_plan.dat_vid, ship_plan.nom_s");
     setDefaultValue(4,1);
 }
 
 void ModelShip::refresh(QDate beg, QDate end, int id_pol)
 {
-    QString filter="sertifikat.dat_vid between '"+beg.toString("yyyy-MM-dd")+"' and '"
+    QString filter="ship_plan.dat_vid between '"+beg.toString("yyyy-MM-dd")+"' and '"
             +end.toString("yyyy-MM-dd")+"'";
     if (id_pol!=-1){
-        filter+=" and sertifikat.id_pol = "+QString::number(id_pol);
+        filter+=" and ship_plan.id_pol = "+QString::number(id_pol);
     }
     this->setFilter(filter);
     this->select();
@@ -584,23 +420,10 @@ ModelShipData::ModelShipData(shipContInfo c, QObject *parent) : DbTableModel(c.t
     setSort(info.tablename+"."+info.namId);
     currentIdShip=-1;
     setDecimals(4,2);
-    connect(this,SIGNAL(sigUpd()),this,SLOT(refreshState()));
-    connect(this,SIGNAL(sigRefresh()),this,SLOT(refreshState()));
     connect(this,SIGNAL(sigUpd()),this,SLOT(calcSum()));
     connect(this,SIGNAL(sigRefresh()),this,SLOT(calcSum()));
 }
 
-QVariant ModelShipData::data(const QModelIndex &index, int role) const
-{
-    if ((role == Qt::BackgroundColorRole)) {
-        int area = colorState.value(DbTableModel::data(this->index(index.row(),3),Qt::EditRole).toInt());
-        if (area == 4) return QVariant(QColor(255,170,170)); else
-            if (area == 5) return QVariant(QColor(Qt::yellow)); else
-                if (area == 6) return QVariant(QColor(Qt::gray)); else
-                    if (area == 7) return QVariant(QColor(170,255,170)); else
-                        return QVariant(QColor(255,200,100));
-    } else return DbTableModel::data(index,role);
-}
 
 void ModelShipData::refresh(int id_ship)
 {
@@ -694,22 +517,6 @@ double ModelShipData::getStock(QModelIndex index)
     return info.modelBalence->getStock(info.prefix+":"+QString::number(id_part))-plan;
 }
 
-void ModelShipData::refreshState()
-{
-    QSqlQuery query;
-    query.setForwardOnly(true);
-    query.prepare(info.queryState);
-    query.bindValue(":id",currentIdShip);
-    if (query.exec()){
-        colorState.clear();
-        while (query.next()){
-            colorState[query.value(0).toInt()]=query.value(1).toInt();
-        }
-        emit dataChanged(this->index(0,0),this->index(this->rowCount()-1,this->columnCount()-1));
-    } else {
-        QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Ok);
-    }
-}
 
 void ModelShipData::setPartFlt(int ind)
 {

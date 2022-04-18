@@ -35,6 +35,7 @@ FormBalance::FormBalance(QWidget *parent) :
     connect(ui->radioButtonMark,SIGNAL(clicked(bool)),this,SLOT(refresh()));
     connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(save()));
     connect(ui->tableView->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updPart(QModelIndex)));
+    connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(createPackList()));
 }
 
 FormBalance::~FormBalance()
@@ -59,6 +60,9 @@ void FormBalance::refresh()
 {
     bool byp = ui->radioButtonPart->isChecked();
     balanceModel->refresh(ui->dateEdit->date(),byp);
+    if (byp){
+        ui->tableView->setColumnHidden(12,true);
+    }
     ui->tableView->resizeToContents();
     ui->tableViewPart->setHidden(byp);
     double sum=0;
@@ -67,6 +71,9 @@ void FormBalance::refresh()
         sum+=proxyModel->data(proxyModel->index(i,col),Qt::EditRole).toDouble();
     }
     ui->labelSum->setText("Итого: "+QLocale().toString(sum,'f',2)+" кг");
+    if (ui->tableView->model()->rowCount()){
+        ui->tableView->selectRow(0);
+    }
 }
 
 void FormBalance::setFilter()
@@ -86,16 +93,33 @@ void FormBalance::updPart(QModelIndex index)
         QVector<QVector<QVariant>> data;
         balanceModel->getPartData(kis,data);
         partModel->setModelData(data);
+        ui->tableViewPart->setColumnHidden(12,true);
         ui->tableViewPart->resizeToContents();
+        if (ui->tableViewPart->model()->rowCount()){
+            ui->tableViewPart->selectRow(0);
+        }
     } else {
         partModel->clear();
+    }
+}
+
+void FormBalance::createPackList()
+{
+    QString kis;
+    QTableView *tableView = ui->radioButtonPart->isChecked() ? ui->tableView : ui->tableViewPart;
+    QModelIndex ind=tableView->model()->index(tableView->currentIndex().row(),12);
+    if (ind.isValid()){
+        kis=tableView->model()->data(ind,Qt::EditRole).toString();
+    }
+    if (!kis.isEmpty()){
+        qDebug()<<kis;
     }
 }
 
 BalanceModel::BalanceModel(QObject *parent): TableModel(parent)
 {
     byp=true;
-    headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон";
+    headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"id";
     headerMark<<"t"<<"Номенклатура"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
 }
 
@@ -133,6 +157,7 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             row.push_back(cinfo.zone);
             row.push_back(cinfo.cell);
             row.push_back(cinfo.name);
+            row.push_back(pinfo.id_part_kis);
             tmpd.push_back(row);
             ++i;
         }
@@ -217,6 +242,7 @@ void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
         row.push_back(cnt.zone);
         row.push_back(cnt.cell);
         row.push_back(cnt.name);
+        row.push_back(i.id_part_kis);
         data.push_back(row);
     }
 }

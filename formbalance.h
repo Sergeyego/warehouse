@@ -62,6 +62,7 @@ private slots:
     void setFilter();
     void save();
     void updPart(QModelIndex index);
+    void createPackList();
 };
 
 #endif // FORMBALANCE_H

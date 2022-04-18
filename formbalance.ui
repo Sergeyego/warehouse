@@ -91,6 +91,16 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButtonPackList">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Упаковочный лист</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButtonSave">
        <property name="text">
         <string>Сохранить</string>
@@ -104,7 +114,7 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="TableView" name="tableView">
@@ -141,6 +151,12 @@
       </layout>
      </widget>
      <widget class="TableView" name="tableViewPart">
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
       <property name="sortingEnabled">
        <bool>true</bool>
       </property>

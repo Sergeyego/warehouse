@@ -107,7 +107,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -147,13 +147,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="cmdEdtCods">
-           <property name="text">
-            <string>Коды 1С</string>
-           </property>
-          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButton1C">
@@ -363,13 +356,6 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonXml">
-           <property name="text">
-            <string>XML</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
       </layout>
@@ -380,6 +366,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
+  <customwidget>
    <class>DbViewer</class>
    <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
@@ -388,11 +379,6 @@
    <class>DateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbviewer.h</header>
-  </customwidget>
-  <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

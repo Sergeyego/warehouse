@@ -112,7 +112,7 @@
   </action>
   <action name="actionShip">
    <property name="text">
-    <string>Отгрузка со склада</string>
+    <string>Планирование отгрузок со склада</string>
    </property>
   </action>
   <action name="actionPoluch">

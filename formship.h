@@ -22,7 +22,6 @@ struct shipContInfo {
     QString namKis;
     QString namIdPart;
     QString namKvo;
-    QString queryState;
     QString prefix;
     ModelBalance *modelBalence;
     DbRelation *relPart;
@@ -58,7 +57,6 @@ class ModelShipData : public DbTableModel
     Q_OBJECT
 public:
     ModelShipData(shipContInfo c, QObject *parent=0);
-    QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const;
     void refresh(int id_ship);
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
     bool submit();
@@ -68,13 +66,11 @@ public:
 
 public slots:
     double getStock(QModelIndex index);
-    void refreshState();
     void setPartFlt(int ind);
     void setOstControl(bool b);
 
 private:
     shipContInfo info;
-    QMap <int,int> colorState;
     int currentIdShip;
     int fltind;
     bool ostControl;
@@ -117,8 +113,6 @@ private slots:
     void updShip();
     void setCurrentShip(int index);
     void sync();
-    void goXml();
-    void edtCods();
     void updPol();
     void updBalance();
     void updKisBalance(QModelIndex ind);

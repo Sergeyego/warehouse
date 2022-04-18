@@ -1142,7 +1142,7 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
     QSqlQuery query;
     query.prepare("(select 'e:'||o.id_part as idp, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
                   "p.n_s, p.dat_part, ep.pack_ed||'/'||ep.pack_group as npack, ep.mass_ed, o.massa, 'e:'||o.id as idship "
-                  "from otpusk o "
+                  "from ship_plan_el o "
                   "inner join parti p on p.id = o.id_part "
                   "inner join el_pack ep on ep.id = p.id_pack "
                   "where o.id_sert = :id_ship "
@@ -1152,7 +1152,7 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
                   "wpm.n_s, wpm.dat, "
                   "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
                   "wp.mas_ed, wsc.m_netto, 'w:'||wsc.id "
-                  "from wire_shipment_consist wsc "
+                  "from ship_plan_wire wsc "
                   "inner join wire_parti p on p.id = wsc.id_wparti "
                   "inner join wire_parti_m wpm on wpm.id = p.id_m "
                   "inner join wire_pack wp on wp.id = p.id_pack_type "
@@ -1216,7 +1216,7 @@ int Sync1C::syncPartShip(int id_ship)
     int n=0;
     QString queryEl = QString("select 'e:'||o.id_part, p.id_el ||':'||(select id from diam as d where d.diam=p.diam) as kis, "
                               "p.n_s, p.dat_part, i.key1c, p.prim_prod, rn.nam "
-                              "from otpusk o "
+                              "from ship_plan_el o "
                               "inner join parti p on p.id = o.id_part "
                               "inner join istoch i on i.id = p.id_ist "
                               "left join rcp_nam rn on rn.id = p.id_rcp "
@@ -1224,7 +1224,7 @@ int Sync1C::syncPartShip(int id_ship)
                               "order by p.n_s, p.dat_part").arg(id_ship);
     QString queryWire = QString("select 'w:'||wp.id as id_part, wpm.id_provol||':'||wpm.id_diam||':'||wp.id_pack as kis, "
                                 "wpm.n_s, wpm.dat, ws.key1c, null, pb.n_plav "
-                                "from wire_shipment_consist wsc "
+                                "from ship_plan_wire wsc "
                                 "inner join wire_parti wp on wp.id = wsc.id_wparti "
                                 "inner join wire_parti_m wpm on wpm.id = wp.id_m "
                                 "inner join wire_source ws on ws.id = wpm.id_source "
@@ -1283,7 +1283,7 @@ int Sync1C::syncShipDoc(int id_ship)
     const QString objname = "Document_усЗаказНаОтгрузку";
     QJsonObject obj=tmpCatalog("tmpship.json");
     QSqlQuery query;
-    query.prepare("select s.nom_s, st.prefix||date_part('year',s.dat_vid)||'-'|| s.nom_s, s.dat_vid, s.id_pol, st.nam from sertifikat s "
+    query.prepare("select s.nom_s, st.prefix||date_part('year',s.dat_vid)||'-'|| s.nom_s, s.dat_vid, s.id_pol, st.nam from ship_plan s "
                   "inner join sert_type st on st.id = s.id_type "
                   "where s.id = :id_ship");
     query.bindValue(":id_ship",id_ship);
@@ -1398,12 +1398,12 @@ bool Sync1C::checkEanWire(int id_doc)
 
 bool Sync1C::checkEan(int id_ship)
 {
-    QString queryDocEl = QString("select o.id_part, ee.ean_ed from otpusk o "
+    QString queryDocEl = QString("select o.id_part, ee.ean_ed from ship_plan_el o "
                                  "inner join parti p on p.id = o.id_part "
                                  "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam = p.diam) and ee.id_pack = p.id_pack "
                                  "where o.id_sert = %1").arg(id_ship);
     QString queryGenEl = QString("select * from add_ean_el( :id_part )");
-    QString queryDocWire = QString("select wsc.id_wparti, we.ean_ed from wire_shipment_consist wsc "
+    QString queryDocWire = QString("select wsc.id_wparti, we.ean_ed from ship_plan_wire wsc "
                                    "inner join wire_parti wp on wp.id = wsc.id_wparti "
                                    "inner join wire_parti_m wpm on wpm.id = wp.id_m "
                                    "left join wire_ean we on we.id_prov=wpm.id_provol and we.id_diam=wpm.id_diam and we.id_spool=wp.id_pack and we.id_pack=wp.id_pack_type "
