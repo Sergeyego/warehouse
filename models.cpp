@@ -8,7 +8,7 @@ Models::Models(QObject *parent) :
     sync1C = new Sync1C(this);
 
     modelElPart = new DbRelationalModel("select p.id, p.n_s||' '||cast(p.dat_part as varchar(96))||' '||e.marka||'ф'||p.diam || ' ('||ep.pack_ed||')' as str, "
-                                        "p.id_el ||':'||(select d.id from diam d where d.diam=p.diam)||'-'|| date_part('year',p.dat_part), ep.pack_ed, p.prim_prod "
+                                        "p.id_el ||':'||(select d.id from diam d where d.diam=p.diam)||'-'|| date_part('year',p.dat_part), ep.pack_ed, p.prim_prod, ep.mass_ed "
                                         "from parti p "
                                         "inner join el_pack ep on ep.id=p.id_pack "
                                         "inner join elrtr e on e.id=p.id_el order by str desc",this);
@@ -16,7 +16,7 @@ Models::Models(QObject *parent) :
     modelWirePart = new DbRelationalModel("select p.id, m.n_s ||' '||date_part('year',m.dat) ||' '||pr.nam ||' '|| d.sdim || ' '|| k.short || "
                                           "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || ' кг)') ELSE ' ' END as part, "
                                           "m.id_provol ||':'|| m.id_diam ||':'|| p.id_pack ||'-'||date_part('year',m.dat), "
-                                          "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || ' кг)') ELSE ' ' END "
+                                          "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || ' кг)') ELSE ' ' END, NULL, t.mas_ed "
                                           "from wire_parti as p "
                                           "inner join wire_parti_m as m on p.id_m=m.id "
                                           "inner join provol as pr on pr.id=m.id_provol "

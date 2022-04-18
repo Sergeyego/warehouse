@@ -58,6 +58,7 @@ class ModelShipData : public DbTableModel
 public:
     ModelShipData(shipContInfo c, QObject *parent=0);
     void refresh(int id_ship);
+    QVariant data(const QModelIndex &index, int role) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
     bool submit();
     void revert();

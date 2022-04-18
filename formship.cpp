@@ -434,6 +434,21 @@ void ModelShipData::refresh(int id_ship)
     select();
 }
 
+QVariant ModelShipData::data(const QModelIndex &index, int role) const
+{
+    if (role==Qt::BackgroundRole){
+        QString id_part=this->data(this->index(index.row(),3),Qt::EditRole).toString();
+        double mas_ed=info.relPart->data(id_part,5).toDouble();
+        if (mas_ed>0){
+            double kvo=this->data(this->index(index.row(),4),Qt::EditRole).toDouble();
+            double b;
+            double ost=modf(kvo/mas_ed, &b);
+            return ost>0 ? QColor(255,170,170): QColor(255,255,255);
+        }
+    }
+    return DbTableModel::data(index,role);
+}
+
 bool ModelShipData::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     bool ok=DbTableModel::setData(index,value,role);
