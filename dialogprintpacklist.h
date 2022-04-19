@@ -53,12 +53,48 @@ class PackElDoc : public QTextDocument
 {
 public:
     PackElDoc (FormDataEl *data, QObject *parent=0);
+    PackElDoc (int id_part, double kvo, QString cont, QObject *parent=0);
+private:
+    struct packInfo {
+        QString cont;
+        QString marka;
+        QString diam;
+        QString part;
+        QString datePart;
+        QString kvoM;
+        QString kvo;
+        QString datePack;
+        QString packer;
+        QString barcode;
+        QString eanGr;
+    };
+
+    void createDoc(packInfo &inf);
 };
 
 class PackWireDoc : public QTextDocument
 {
 public:
     PackWireDoc (FormDataWire *data, QObject *parent=0);
+    PackWireDoc (int id_part, double kvo, QString cont, QObject *parent=0);
+
+private:
+    struct packInfo {
+        QString cont;
+        QString marka;
+        QString diam;
+        QString plavka;
+        QString part;
+        QString spool;
+        QString kvoM;
+        QString kvo;
+        QString datePack;
+        QString packer;
+        QString barcode;
+        QString eanGr;
+    };
+
+    void createDoc(packInfo &inf);
 };
 
 class PackNaklDoc : public QTextDocument

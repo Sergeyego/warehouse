@@ -58,6 +58,8 @@ void FormBalance::saveSettings()
 
 void FormBalance::refresh()
 {
+    Models::instance()->relElPart->refreshModel();
+    Models::instance()->relWirePart->refreshModel();
     bool byp = ui->radioButtonPart->isChecked();
     balanceModel->refresh(ui->dateEdit->date(),byp);
     if (byp){
@@ -106,13 +108,29 @@ void FormBalance::updPart(QModelIndex index)
 void FormBalance::createPackList()
 {
     QString kis;
+    double kvo=0;
+    QString cont;
     QTableView *tableView = ui->radioButtonPart->isChecked() ? ui->tableView : ui->tableViewPart;
     QModelIndex ind=tableView->model()->index(tableView->currentIndex().row(),12);
     if (ind.isValid()){
         kis=tableView->model()->data(ind,Qt::EditRole).toString();
+        kvo=tableView->model()->data(tableView->model()->index(ind.row(),6),Qt::EditRole).toDouble();
+        cont=tableView->model()->data(tableView->model()->index(ind.row(),11),Qt::EditRole).toString();
     }
     if (!kis.isEmpty()){
-        qDebug()<<kis;
+        QStringList lk=kis.split(":");
+        if (lk.size()==2){
+            int id_part=QString(lk.at(1)).toInt();
+            if (lk.at(0)=="e"){
+                PackElDoc doc(id_part,kvo,cont);
+                DialogPrintPackList d(&doc);
+                d.exec();
+            } else {
+                PackWireDoc doc(id_part,kvo,cont);
+                DialogPrintPackList d(&doc);
+                d.exec();
+            }
+        }
     }
 }
 

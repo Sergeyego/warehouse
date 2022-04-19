@@ -134,6 +134,78 @@ PackElDoc::PackElDoc(FormDataEl *data, QObject *parent) : QTextDocument(parent)
 {
     QString palBarcode=Models::instance()->createPalBarcode("E");
 
+    PackElDoc::packInfo inf;
+    inf.cont=palBarcode;
+    inf.marka=data->marka();
+    inf.diam=data->diametr();
+    inf.part=data->part();
+    inf.datePart=data->datePart();
+    inf.kvoM=data->kvoPackPal();
+    inf.kvo=data->masPal();
+    inf.datePack=data->datePack();
+    inf.packer=data->packer();
+    inf.barcode=data->barCodePack();
+    inf.eanGr=data->eanGr();
+
+    createDoc(inf);
+}
+
+PackElDoc::PackElDoc(int id_part, double kvo, QString cont, QObject *parent) : QTextDocument(parent)
+{
+    QSqlQuery query;
+    query.prepare("select p.id, e.marka, p.diam, p.n_s, p.dat_part, ep.mass_ed, ee.ean_group "
+                  "from parti p "
+                  "inner join elrtr e on e.id = p.id_el "
+                  "inner join el_pack ep on ep.id = p.id_pack "
+                  "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam=p.diam) and ee.id_pack = p.id_pack "
+                  "where p.id = :id_part");
+    query.bindValue(":id_part",id_part);
+    if (query.exec()){
+        if (query.next()){
+            PackElDoc::packInfo inf;
+            inf.cont=cont;
+            inf.marka=query.value(1).toString();
+            inf.diam=QLocale().toString(query.value(2).toDouble(),'f',1);
+            inf.part=query.value(3).toString();
+            inf.datePart=query.value(4).toDate().toString("dd.MM.yyyy");
+            double mas_ed=query.value(5).toDouble();
+            int kvoP;
+            if (mas_ed>0){
+                kvoP=kvo/mas_ed;
+            }
+            inf.kvoM=QString::number(kvoP);
+            inf.kvo=QString::number(kvo);
+            inf.datePack=QDate::currentDate().toString("dd.MM.yyyy");
+            QString ean_gr=query.value(6).toString();
+            inf.eanGr=ean_gr;
+
+            QString barcode;
+            QString ean=ean_gr;
+            ean.resize(13,' ');
+            QString part=query.value(3).toString();
+            part.resize(4,' ');
+            QString id='e'+query.value(0).toString();
+            id.resize(8,'_');
+            QString year=QString::number(query.value(4).toDate().year());
+            year.resize(4,' ');
+            barcode = ean+id+part+'-'+year;
+            int ikvoM=kvo*100;
+            barcode+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
+            barcode+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+
+            inf.barcode=barcode;
+
+            createDoc(inf);
+        }
+
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+
+}
+
+void PackElDoc::createDoc(PackElDoc::packInfo &inf)
+{
     QFont titleFont("Droid Sans",15);
     QFont title2Font("Droid Sans",12);
     QFont normalFont("Droid Sans",12);
@@ -162,7 +234,7 @@ PackElDoc::PackElDoc(FormDataEl *data, QObject *parent) : QTextDocument(parent)
     cursor.insertBlock(formatCenter,textTitleFormat);
 
     QImage code128;
-    if (Code128Img::createCode128(code128,palBarcode)){
+    if (Code128Img::createCode128(code128,inf.cont)){
         this->addResource(QTextDocument::ImageResource, QUrl("code128"),code128);
         QTextImageFormat qrformat;
         qrformat.setName("code128");
@@ -179,35 +251,41 @@ PackElDoc::PackElDoc(FormDataEl *data, QObject *parent) : QTextDocument(parent)
     cursor.insertBlock(formatLeft,textNormalFormat);
 
     cursor.insertText(QString("Марка   "),textNormalFormat);
-    cursor.insertText(data->marka(),textTitleFormat);
+    cursor.insertText(inf.marka,textTitleFormat);
     cursor.insertText(QString("   Ø   "),textNormalFormat);
-    cursor.insertText(data->diametr(),textTitleFormat);
+    cursor.insertText(inf.diam,textTitleFormat);
     cursor.insertText(QString(" мм\n"),textNormalFormat);
 
     cursor.insertText(QString("Партия   "),textNormalFormat);
-    cursor.insertText(data->part(),textTitleFormat);
+    cursor.insertText(inf.part,textTitleFormat);
     cursor.insertText(QString("   Дата выпуска   "),textNormalFormat);
-    cursor.insertText(data->datePart(),textTitleFormat);
+    cursor.insertText(inf.datePart,textTitleFormat);
     cursor.insertText(QString("\n"),textNormalFormat);
 
     cursor.insertText(QString("Количество мест   "),textNormalFormat);
-    cursor.insertText(data->kvoPackPal(),textTitleFormat);
+    cursor.insertText(inf.kvoM,textTitleFormat);
     cursor.insertText(QString("   Масса нетто "),textNormalFormat);
-    cursor.insertText(data->masPal(),textTitleFormat);
+    cursor.insertText(inf.kvo,textTitleFormat);
     cursor.insertText(QString(" кг\n"),textNormalFormat);
 
     cursor.insertText(QString("Дата упаковки   "),textNormalFormat);
-    cursor.insertText(data->datePack(),textTitleFormat);
+    cursor.insertText(inf.datePack,textTitleFormat);
     cursor.insertText(QString("\n"),textNormalFormat);
 
     cursor.insertText(QString("Упаковщик   _______________ "),textNormalFormat);
-    cursor.insertText(data->packer(),textTitleFormat);
+    cursor.insertText(inf.packer,textTitleFormat);
     cursor.insertText(QString("\n"),textNormalFormat);
 
     cursor.insertBlock(formatCenter);
 
+    QString cont=inf.cont;
+    if (cont.size()!=10){
+        cont.resize(10);
+        cont.fill('0');
+    }
+
     QImage qr;
-    if (!data->eanGr().isEmpty() && QRImg::createQr(qr,data->barCodePack()+palBarcode)){
+    if (!inf.eanGr.isEmpty() && QRImg::createQr(qr,inf.barcode+cont)){
         this->addResource(QTextDocument::ImageResource, QUrl("qrcode"),qr);
         QTextImageFormat qrformat;
         qrformat.setName("qrcode");
@@ -219,6 +297,85 @@ PackElDoc::PackElDoc(FormDataEl *data, QObject *parent) : QTextDocument(parent)
 PackWireDoc::PackWireDoc(FormDataWire *data, QObject *parent) : QTextDocument(parent)
 {
     QString palBarcode=Models::instance()->createPalBarcode("W");
+
+    PackWireDoc::packInfo inf;
+    inf.cont=palBarcode;
+    inf.marka=data->marka();
+    inf.diam=data->diametr();
+    inf.part=data->part();
+    inf.plavka=data->plavka();
+    inf.spool=data->spool();
+    inf.kvoM=data->kvoSpool();
+    inf.kvo=data->masPal();
+    inf.datePack=data->datePack();
+    inf.packer=data->master();
+    inf.barcode=data->barCodePack();
+    inf.eanGr=data->eanGr();
+
+    createDoc(inf);
+}
+
+PackWireDoc::PackWireDoc(int id_part, double kvo, QString cont, QObject *parent) : QTextDocument(parent)
+{
+    QSqlQuery query;
+    query.prepare("select wp.id, p.nam, d.diam, wpm.n_s, wpm.dat, wp2.mas_ed, coalesce(we.ean_group, we.ean_ed), wpk.short, pb.n_plav "
+                  "from wire_parti wp "
+                  "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                  "inner join provol p on p.id = wpm.id_provol "
+                  "inner join diam d on d.id = wpm.id_diam "
+                  "inner join wire_pack wp2 on wp2.id = wp.id_pack_type "
+                  "left join wire_ean we on we.id_prov = wpm.id_provol and we.id_diam = wpm.id_diam and we.id_spool = wp.id_pack and we.id_pack = wp.id_pack_type "
+                  "inner join wire_pack_kind wpk on wpk.id = wp.id_pack "
+                  "inner join prov_buht pb on pb.id = wpm.id_buht "
+                  "where wp.id = :id_part");
+    query.bindValue(":id_part",id_part);
+    if (query.exec()){
+        if (query.next()){
+            PackWireDoc::packInfo inf;
+            inf.cont=cont;
+            inf.marka=query.value(1).toString();
+            inf.diam=QLocale().toString(query.value(2).toDouble(),'f',1);
+            inf.part=query.value(3).toString();
+            double mas_ed=query.value(5).toDouble();
+            int kvoP;
+            if (mas_ed>0){
+                kvoP=kvo/mas_ed;
+            }
+            inf.kvoM=QString::number(kvoP);
+            inf.kvo=QString::number(kvo);
+            inf.datePack=QDate::currentDate().toString("dd.MM.yyyy");
+            QString ean_gr=query.value(6).toString();
+            inf.eanGr=ean_gr;
+
+            QString barcode;
+            QString ean=ean_gr;
+            ean.resize(13,' ');
+            QString part=query.value(3).toString();
+            part.resize(4,' ');
+            QString id='w'+query.value(0).toString();
+            id.resize(8,'_');
+            QString year=QString::number(query.value(4).toDate().year());
+            year.resize(4,' ');
+            barcode = ean+id+part+'-'+year;
+            int ikvoM=kvo*100;
+            barcode+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
+            barcode+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+
+            inf.barcode=barcode;
+
+            inf.spool=query.value(7).toString();
+            inf.plavka=query.value(8).toString();
+
+            createDoc(inf);
+        }
+
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+}
+
+void PackWireDoc::createDoc(PackWireDoc::packInfo &inf)
+{
 
     QFont titleFont("Droid Sans",15);
     QFont title2Font("Droid Sans",12);
@@ -248,7 +405,7 @@ PackWireDoc::PackWireDoc(FormDataWire *data, QObject *parent) : QTextDocument(pa
     cursor.insertBlock(formatCenter,textTitleFormat);
 
     QImage code128;
-    if (Code128Img::createCode128(code128,palBarcode)){
+    if (Code128Img::createCode128(code128,inf.cont)){
         this->addResource(QTextDocument::ImageResource, QUrl("code128"),code128);
         QTextImageFormat qrformat;
         qrformat.setName("code128");
@@ -263,51 +420,57 @@ PackWireDoc::PackWireDoc(FormDataWire *data, QObject *parent) : QTextDocument(pa
     cursor.insertBlock(formatLeft,textNormalFormat);
 
     cursor.insertText(QString("Марка   "),textNormalFormat);
-    cursor.insertText(data->marka(),textTitleFormat);
+    cursor.insertText(inf.marka,textTitleFormat);
     cursor.insertText(QString("   Ø   "),textNormalFormat);
-    cursor.insertText(data->diametr(),textTitleFormat);
+    cursor.insertText(inf.diam,textTitleFormat);
     cursor.insertText(QString(" мм\n"),textNormalFormat);
 
     cursor.insertText(QString("Плавка   "),textNormalFormat);
-    cursor.insertText(data->plavka()+"\n",textTitleFormat);
+    cursor.insertText(inf.plavka+"\n",textTitleFormat);
 
     cursor.insertText(QString("Партия   "),textNormalFormat);
-    cursor.insertText(data->part()+"   ",textTitleFormat);
+    cursor.insertText(inf.part+"   ",textTitleFormat);
 
     QRegExp reg("^L-(\\d+)$");
 
-    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+    if (reg.indexIn(inf.spool)==-1){ //обычная этикетка
         cursor.insertText(QString("Тип носителя   "),textNormalFormat);
-        cursor.insertText(data->spool()+"\n",textTitleFormat);
+        cursor.insertText(inf.spool+"\n",textTitleFormat);
 
         cursor.insertText(QString("Количество кассет   "),textNormalFormat);
-        cursor.insertText(data->kvoSpool(),textTitleFormat);
+        cursor.insertText(inf.kvoM,textTitleFormat);
         cursor.insertText(QString("   Масса нетто "),textNormalFormat);
-        cursor.insertText(data->masPal(),textTitleFormat);
+        cursor.insertText(inf.kvo,textTitleFormat);
         cursor.insertText(QString(" кг\n"),textNormalFormat);
 
         cursor.insertText(QString("Мастер   "),textNormalFormat);
-        cursor.insertText(data->master()+"\n",textTitleFormat);
+        cursor.insertText(inf.packer+"\n",textTitleFormat);
     } else { //длинномер
         cursor.insertText(QString("Длина, мм   "),textNormalFormat);
         cursor.insertText(reg.cap(1)+"\n",textTitleFormat);
 
         cursor.insertText(QString("Количество мест   "),textNormalFormat);
-        cursor.insertText(data->kvoSpool(),textTitleFormat);
+        cursor.insertText(inf.kvoM,textTitleFormat);
         cursor.insertText(QString("   Масса нетто "),textNormalFormat);
-        cursor.insertText(data->masPal(),textTitleFormat);
+        cursor.insertText(inf.kvo,textTitleFormat);
         cursor.insertText(QString(" кг\n"),textNormalFormat);
 
         cursor.insertText(QString("Упаковщик  _______________________\n"),textNormalFormat);
     }
 
     cursor.insertText(QString("Дата упаковки   "),textNormalFormat);
-    cursor.insertText(data->datePack(),textTitleFormat);
+    cursor.insertText(inf.datePack,textTitleFormat);
 
     cursor.insertBlock(formatCenter);
 
+    QString cont=inf.cont;
+    if (cont.size()!=10){
+        cont.resize(10);
+        cont.fill('0');
+    }
+
     QImage qr;
-    if (!data->eanGr().isEmpty() && QRImg::createQr(qr,data->barCodePack()+palBarcode)){
+    if (!inf.eanGr.isEmpty() && QRImg::createQr(qr,inf.barcode+cont)){
         this->addResource(QTextDocument::ImageResource, QUrl("qrcode"),qr);
         QTextImageFormat qrformat;
         qrformat.setName("qrcode");
