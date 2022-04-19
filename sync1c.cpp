@@ -1121,7 +1121,7 @@ int Sync1C::syncOpDocData(QString queryCont, QString docKey)
             obj.insert("УпаковкаНоменклатуры_Key",packKey(nomKey,query.value(4).toString()));
             obj.insert("КоличествоУпаковок",kvo);
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
-            obj.insert("Количество",query.value(6).toDouble());
+            obj.insert("Количество",round(query.value(6).toDouble()*100)/100);
             obj.insert("ТипКонтейнера_Key",constKeys.value(namContType,emptyKey));
             obj.insert("НомерКонтейнера",numcont);
             obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));

@@ -13,6 +13,7 @@
 #include <QEventLoop>
 #include <QProgressDialog>
 #include <QApplication>
+#include <cmath>
 
 struct base1CSettigs
 {
