@@ -69,7 +69,8 @@ SOURCES += \
     qr/qrencode.cpp \
     formcells.cpp \
     dialoglblsize.cpp \
-    code128/code128.cpp
+    code128/code128.cpp \
+    formdrv.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -115,7 +116,8 @@ HEADERS += \
     qr/qrencode.h \
     formcells.h \
     dialoglblsize.h \
-    code128/code128.h
+    code128/code128.h \
+    formdrv.h
 
 FORMS += \
         mainwindow.ui \
@@ -142,7 +144,8 @@ FORMS += \
     formdatawire.ui \
     dialogprintpacklist.ui \
     formcells.ui \
-    dialoglblsize.ui
+    dialoglblsize.ui \
+    formdrv.ui
 
 RC_FILE = ico.rc
 

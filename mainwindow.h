@@ -8,6 +8,7 @@
 #include "formacceptanceel.h"
 #include "formship.h"
 #include "formpoluch.h"
+#include "formdrv.h"
 #include "formbalance.h"
 #include "formturnovers.h"
 #include "olap/cubewidget.h"
@@ -41,6 +42,7 @@ private slots:
     void newFormAcceptanceEl();
     void newFormShip();
     void newFormPoluch();
+    void newFormDrv();
     void newFormBalance();
     void newFormTurnovers();
     void newAnShipEl();

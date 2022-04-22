@@ -57,6 +57,7 @@
      <string>Справочники</string>
     </property>
     <addaction name="actionPoluch"/>
+    <addaction name="actionDrv"/>
    </widget>
    <widget class="QMenu" name="menu_4">
     <property name="title">
@@ -188,6 +189,11 @@
   <action name="actionCells">
    <property name="text">
     <string>Печать этикеток ячеек, контейнеров</string>
+   </property>
+  </action>
+  <action name="actionDrv">
+   <property name="text">
+    <string>Водители</string>
    </property>
   </action>
  </widget>

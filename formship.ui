@@ -269,17 +269,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEditDrv"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>Машина</string>
+          <widget class="QComboBox" name="comboBoxDrv">
+           <property name="editable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEditCar"/>
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Примечание</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEditPrim"/>
          </item>
         </layout>
        </item>
@@ -393,14 +397,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
-  </customwidget>
-  <customwidget>
    <class>DbViewer</class>
    <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
   </customwidget>
   <customwidget>
    <class>DateEdit</class>
