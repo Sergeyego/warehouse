@@ -8,6 +8,7 @@
 #include <QDomDocument>
 #include "models.h"
 #include "tablemodel.h"
+#include "dialogprintpacklist.h"
 
 namespace Ui {
 class FormShip;
@@ -114,6 +115,7 @@ private slots:
     void updShip();
     void setCurrentShip(int index);
     void sync();
+    void printNakl();
     void updPol();
     void updBalance();
     void updKisBalance(QModelIndex ind);

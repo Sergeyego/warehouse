@@ -101,5 +101,9 @@ class PackNaklDoc : public QTextDocument
 {
 public:
     PackNaklDoc (QString kis, QObject *parent=0);
+    PackNaklDoc (int id_ship, QObject *parent=0);
+
+private:
+    void createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo);
 };
 #endif // DIALOGPRINTPACKLIST_H

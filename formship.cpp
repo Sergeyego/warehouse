@@ -43,7 +43,9 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->tableViewShip->setColumnWidth(1,55);
     ui->tableViewShip->setColumnWidth(2,70);
     ui->tableViewShip->setColumnWidth(3,350);
-    ui->tableViewShip->setColumnHidden(4,true);
+    for (int i=4; i<modelShip->columnCount(); i++){
+        ui->tableViewShip->setColumnHidden(i,true);
+    }
 
     push = new DbMapper(ui->tableViewShip,this);
     ui->horizontalLayoutPush->insertWidget(0,push);
@@ -51,11 +53,14 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     push->addMapping(ui->dateEdit,2);
     push->addMapping(ui->comboBoxPol,3);
     push->addMapping(ui->comboBoxType,4);
+    push->addMapping(ui->lineEditDrv,5);
+    push->addMapping(ui->lineEditCar,6);
     push->setDefaultFocus(3);
     push->addEmptyLock(ui->tableViewEl);
     push->addEmptyLock(ui->tableViewWire);
     push->addEmptyLock(ui->pushButton1C);
     push->addEmptyLock(ui->pushButtonEdt);
+    push->addEmptyLock(ui->pushButtonNakl);
     push->addLock(ui->cmdUpdShip);
     push->addLock(ui->checkBoxOnly);
     push->addLock(ui->comboBoxOnly);
@@ -125,6 +130,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(modelShipEl, SIGNAL(sigStock(QString)),ui->labelEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigStock(QString)),ui->labelWire,SLOT(setText(QString)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
+    connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
     connect(ui->tableViewEl->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
     connect(ui->tableViewWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
     connect(modelBalance,SIGNAL(sigUpd()),ui->tableViewBal,SLOT(resizeToContents()));
@@ -195,6 +201,16 @@ void FormShip::sync()
 {
     const int id_ship = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),0),Qt::EditRole).toInt();
     Models::instance()->sync1C->syncShip(id_ship);
+}
+
+void FormShip::printNakl()
+{
+    const int id_ship = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),0),Qt::EditRole).toInt();
+    PackNaklDoc doc(id_ship);
+    DialogPrintPackList d(&doc);
+    d.setWindowTitle("Накладная");
+    d.setSingle(false);
+    d.exec();
 }
 
 void FormShip::setPartFilter()
@@ -284,6 +300,8 @@ ModelShip::ModelShip(QObject *parent) : DbTableModel("ship_plan",parent)
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
     addColumn("id_type",tr("Тип отгрузки"),Models::instance()->relShipType);
+    addColumn("drv",tr("Водитель"));
+    addColumn("car",tr("Машина"));
     setSort("ship_plan.dat_vid, ship_plan.nom_s");
     setDefaultValue(4,1);
 }

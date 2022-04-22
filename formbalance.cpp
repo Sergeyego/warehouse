@@ -36,6 +36,7 @@ FormBalance::FormBalance(QWidget *parent) :
     connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(save()));
     connect(ui->tableView->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updPart(QModelIndex)));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(createPackList()));
+    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),this,SLOT(refreshPart()));
 }
 
 FormBalance::~FormBalance()
@@ -58,8 +59,6 @@ void FormBalance::saveSettings()
 
 void FormBalance::refresh()
 {
-    Models::instance()->relElPart->refreshModel();
-    Models::instance()->relWirePart->refreshModel();
     bool byp = ui->radioButtonPart->isChecked();
     balanceModel->refresh(ui->dateEdit->date(),byp);
     if (byp){
@@ -76,6 +75,13 @@ void FormBalance::refresh()
     if (ui->tableView->model()->rowCount()){
         ui->tableView->selectRow(0);
     }
+}
+
+void FormBalance::refreshPart()
+{
+    Models::instance()->relElPart->refreshModel();
+    Models::instance()->relWirePart->refreshModel();
+    refresh();
 }
 
 void FormBalance::setFilter()

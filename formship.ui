@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1019</width>
+    <width>1266</width>
     <height>646</height>
    </rect>
   </property>
@@ -149,6 +149,13 @@
           </spacer>
          </item>
          <item>
+          <widget class="QPushButton" name="pushButtonNakl">
+           <property name="text">
+            <string>Накладная</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="pushButton1C">
            <property name="text">
             <string>Выгрузить в 1С WMS</string>
@@ -229,6 +236,13 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonEdt">
+           <property name="text">
+            <string>Редактировать табл. часть</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -248,11 +262,24 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButtonEdt">
+          <widget class="QLabel" name="label_9">
            <property name="text">
-            <string>Редактировать табличную часть</string>
+            <string>Водитель</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEditDrv"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Машина</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEditCar"/>
          </item>
         </layout>
        </item>

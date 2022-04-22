@@ -175,14 +175,14 @@ void Sync1C::getConts(QVector<QVector<QVariant> > &info)
 
 void Sync1C::getNakl(QString kis, naklInfo &info, QVector<naklDataInfo> &datainfo)
 {
-    QString objinfo=QString("Document_усОжидаемаяПриемка?$filter=НомерКИС eq '%1'&$expand=Контрагент,Поклажедатель&$select=Ref_Key,Number,Date,Контрагент/Description,Поклажедатель/Description").arg(kis);
+    QString objinfo=QString("Document_усОжидаемаяПриемка?$filter=НомерКИС eq '%1'&$expand=Контрагент,Поклажедатель&$select=Ref_Key,НомерКИС,Date,Контрагент/Description,Поклажедатель/Description").arg(kis);
     QString ref_key;
     QJsonObject oi=getSync(objinfo);
     QJsonArray json=oi.value("value").toArray();
     datainfo.clear();
     if (json.size()){
         QJsonObject o = json.at(0).toObject();
-        info.number = o.value("Number").toString();
+        info.number = o.value("НомерКИС").toString();
         info.to = o.value("Контрагент").toObject().value("Description").toString();
         info.from = o.value("Поклажедатель").toObject().value("Description").toString();
         info.date = QDateTime::fromString(o.value("Date").toString(),"yyyy-MM-ddThh:mm:ss");

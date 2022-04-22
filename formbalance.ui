@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>911</width>
+    <width>1003</width>
     <height>613</height>
    </rect>
   </property>
@@ -89,6 +89,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonUpdPart">
+       <property name="text">
+        <string>Обновить партии</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonPackList">

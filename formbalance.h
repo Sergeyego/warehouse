@@ -60,6 +60,7 @@ private:
     void saveSettings();
 private slots:
     void refresh();
+    void refreshPart();
     void setFilter();
     void save();
     void updPart(QModelIndex index);

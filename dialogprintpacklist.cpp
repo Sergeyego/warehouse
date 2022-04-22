@@ -488,8 +488,91 @@ PackNaklDoc::PackNaklDoc(QString kis, QObject *parent) : QTextDocument(parent)
     naklInfo info;
     QVector<naklDataInfo> datainfo;
 
-     Models::instance()->sync1C->getNakl(kis,info,datainfo);
+    Models::instance()->sync1C->getNakl(kis,info,datainfo);
+    createDoc(info,datainfo);
+}
 
+PackNaklDoc::PackNaklDoc(int id_ship, QObject *parent) : QTextDocument(parent)
+{
+    naklInfo info;
+    QVector<naklDataInfo> datainfo;
+
+    QSqlQuery query;
+    query.prepare("select st.prefix||date_part('year',sp.dat_vid)||'-'||sp.nom_s, sp.dat_vid, p.naim "
+                  "from ship_plan sp "
+                  "inner join sert_type st on st.id = sp.id_type "
+                  "inner join poluch p on p.id = sp.id_pol "
+                  "where sp.id = :id_ship ");
+    query.bindValue(":id_ship",id_ship);
+
+    QSqlQuery queryEl;
+    queryEl.prepare("select e.marka ||' ф '|| cast(p.diam as varchar(3)), p.n_s ||'-'||date_part('year',p.dat_part), rn.nam, spe.massa "
+                    "from ship_plan_el spe "
+                    "inner join parti p on p.id = spe.id_part "
+                    "inner join elrtr e on e.id = p.id_el "
+                    "left join rcp_nam rn on rn.id = p.id_rcp "
+                    "where spe.id_sert = :id_ship "
+                    "order by spe.id");
+    queryEl.bindValue(":id_ship",id_ship);
+
+    QSqlQuery queryWire;
+    queryWire.prepare("select p2.nam ||' ф '||cast(d.diam as varchar(3))||' '||wpk.short , wpm.n_s||'-'||date_part('year',wpm.dat) , pb.n_plav, spw.m_netto "
+                      "from ship_plan_wire spw "
+                      "inner join wire_parti wp on wp.id = spw.id_wparti "
+                      "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                      "inner join provol p2 on p2.id = wpm.id_provol "
+                      "inner join diam d on d.id = wpm.id_diam "
+                      "inner join prov_buht pb on pb.id = wpm.id_buht "
+                      "inner join wire_pack_kind wpk on wpk.id = wp.id_pack "
+                      "where spw.id_ship = :id_ship "
+                      "order by spw.id");
+    queryWire.bindValue(":id_ship",id_ship);
+
+    if (query.exec()){
+        if (query.next()){
+            QDateTime t;
+            t.setDate(query.value(1).toDate());
+            info.number=query.value(0).toString();
+            info.date=t;
+            info.from=tr("Склад готовой продукции");
+            info.to=query.value(2).toString();
+
+            if (queryEl.exec()){
+                while (queryEl.next()){
+                    naklDataInfo di;
+                    di.name=queryEl.value(0).toString();
+                    di.parti=queryEl.value(1).toString();
+                    di.rcp=queryEl.value(2).toString();
+                    di.kvo=queryEl.value(3).toDouble();
+                    datainfo.push_back(di);
+                }
+            } else {
+                QMessageBox::critical(nullptr,tr("Ошибка"),queryEl.lastError().text(),QMessageBox::Ok);
+            }
+
+            if (queryWire.exec()){
+                while (queryWire.next()){
+                    naklDataInfo di;
+                    di.name=queryWire.value(0).toString();
+                    di.parti=queryWire.value(1).toString();
+                    di.rcp=queryWire.value(2).toString();
+                    di.kvo=queryWire.value(3).toDouble();
+                    datainfo.push_back(di);
+                }
+            } else {
+                QMessageBox::critical(nullptr,tr("Ошибка"),queryWire.lastError().text(),QMessageBox::Ok);
+            }
+
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+
+    createDoc(info,datainfo);
+}
+
+void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
+{
     QFont titleFont("Droid Sans",8);
     QFont normalSmallFont("Droid Sans",5);
     QFont normalFont("Droid Sans",8);
@@ -519,7 +602,7 @@ PackNaklDoc::PackNaklDoc(QString kis, QObject *parent) : QTextDocument(parent)
     cursor.setBlockFormat(formatRight);
 
     QImage code128;
-    if (Code128Img::createCode128(code128,kis)){
+    if (Code128Img::createCode128(code128,info.number)){
         this->addResource(QTextDocument::ImageResource, QUrl("code128"),code128);
         QTextImageFormat qrformat;
         qrformat.setName("code128");
@@ -530,9 +613,10 @@ PackNaklDoc::PackNaklDoc(QString kis, QObject *parent) : QTextDocument(parent)
     cursor.insertBlock(formatCenter);
 
     cursor.insertText(QString("Накладная №   "),textNormalFormat);
-    cursor.insertText(kis,textTitleFormat);
+    cursor.insertText(info.number,textTitleFormat);
     cursor.insertText(QString("    От   "),textNormalFormat);
-    cursor.insertText(info.date.toString("dd.MM.yyyy hh:mm:ss"),textTitleFormat);
+    QString formatDate = info.date.time().toString("hh:mm:ss")==QString("00:00:00") ? "dd.MM.yyyy" : "dd.MM.yyyy hh:mm:ss";
+    cursor.insertText(info.date.toString(formatDate),textTitleFormat);
 
     cursor.insertBlock(formatLeft);
     cursor.insertText(QString("Кому   "),textNormalFormat);
@@ -625,5 +709,4 @@ PackNaklDoc::PackNaklDoc(QString kis, QObject *parent) : QTextDocument(parent)
     cursor.insertBlock();
     cursor.insertText(QString("Водитель  _________________  _________________\n"),textNormalFormat);
     cursor.insertText(QString("                                      (подпись)           (расшифровка подписи)"),textNormalSmallFormat);
-
 }
