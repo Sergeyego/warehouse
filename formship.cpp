@@ -351,7 +351,7 @@ double ModelBalance::getStock(QString ide)
     while (i != part.constEnd()) {
         partInfo pinfo=i.value();
         contInfo cnt = cont.value(pinfo.contKey);
-        if (zoneOt.contains(cnt.zone) && pinfo.id_part_kis==ide){
+        if (zoneOt.contains(cnt.zone) && pinfo.id_part_kis==ide && cnt.kvo>0 && cnt.rasch<1){
             kvo+=(pinfo.kvo-pinfo.rasch);
         }
         ++i;
@@ -405,7 +405,7 @@ void ModelBalance::refresh(QString kis)
     for (partInfo i : list){
         QVector<QVariant> row;
         contInfo cnt = cont.value(i.contKey);        
-        if (zoneOt.contains(cnt.zone)){
+        if (zoneOt.contains(cnt.zone) && cnt.kvo>0 && cnt.rasch<1){
             row.push_back(i.name);
             row.push_back(getPackName(i.id_part_kis));
             row.push_back(i.number);

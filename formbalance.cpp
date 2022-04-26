@@ -177,7 +177,11 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             row.push_back(getDesc(pinfo.id_part_kis,pinfo.desc));
             row.push_back(pinfo.kvo);
             row.push_back(pinfo.prich);
-            row.push_back(pinfo.rasch);
+            if (cinfo.rasch>0){
+                row.push_back(pinfo.kvo);
+            } else {
+                row.push_back(pinfo.rasch);
+            }
             row.push_back(cinfo.zone);
             row.push_back(cinfo.cell);
             row.push_back(cinfo.name);

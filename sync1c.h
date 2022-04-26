@@ -48,9 +48,9 @@ struct contInfo
     QString name;
     QString cell;
     QString zone;
-    double kvo;
-    double prich;
-    double rasch;
+    int kvo;
+    int prich;
+    int rasch;
 };
 
 struct turnInfo

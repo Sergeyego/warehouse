@@ -56,9 +56,9 @@ void Sync1C::getContBalance(QDate dat, QHash<QString, contInfo> &info)
         inf.name=bal.value("Контейнер").toObject().value("Description").toString();
         inf.cell=cell.value("Code").toString();
         inf.zone=zoneKeys.value(zoneKey);
-        inf.kvo=bal.value("КоличествоBalance").toDouble();
-        inf.prich=bal.value("КоличествоПриходBalance").toDouble();
-        inf.rasch=bal.value("КоличествоРасходBalance").toDouble();
+        inf.kvo=bal.value("КоличествоBalance").toString().toInt();
+        inf.prich=bal.value("КоличествоПриходBalance").toString().toInt();
+        inf.rasch=bal.value("КоличествоРасходBalance").toString().toInt();
         info.insert(contKey,inf);
     }
 }
