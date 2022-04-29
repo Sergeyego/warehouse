@@ -60,6 +60,7 @@ private:
     void saveSettings();
 private slots:
     void refresh();
+    void calcSum();
     void refreshPart();
     void setFilter();
     void save();

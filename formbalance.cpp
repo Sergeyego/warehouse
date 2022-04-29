@@ -66,15 +66,23 @@ void FormBalance::refresh()
     }
     ui->tableView->resizeToContents();
     ui->tableViewPart->setHidden(byp);
+
+    calcSum();
+
+    if (ui->tableView->model()->rowCount()){
+        ui->tableView->selectRow(0);
+    }
+}
+
+void FormBalance::calcSum()
+{
+    bool byp = ui->radioButtonPart->isChecked();
     double sum=0;
     int col = byp? 6 : 1;
     for (int i=0; i<proxyModel->rowCount();i++){
         sum+=proxyModel->data(proxyModel->index(i,col),Qt::EditRole).toDouble();
     }
     ui->labelSum->setText("Итого: "+QLocale().toString(sum,'f',2)+" кг");
-    if (ui->tableView->model()->rowCount()){
-        ui->tableView->selectRow(0);
-    }
 }
 
 void FormBalance::refreshPart()
@@ -87,6 +95,7 @@ void FormBalance::refreshPart()
 void FormBalance::setFilter()
 {
     proxyModel->setNomFilret(ui->checkBoxEl->isChecked(),ui->checkBoxWire->isChecked());
+    calcSum();
 }
 
 void FormBalance::save()
@@ -201,6 +210,11 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             double rasch=0;
             QList <partInfo> plist = part.values(kis);
             for (partInfo pinfo : plist){
+                contInfo cnt = cont.value(pinfo.contKey);
+                if (cnt.rasch>0){
+                    rasch+=pinfo.kvo;
+                }
+
                 kvo+=pinfo.kvo;
                 prich+=pinfo.prich;
                 rasch+=pinfo.rasch;
@@ -266,7 +280,11 @@ void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
         row.push_back(getDesc(i.id_part_kis,i.desc));
         row.push_back(i.kvo);
         row.push_back(i.prich);
-        row.push_back(i.rasch);
+        if (cnt.rasch>0){
+            row.push_back(i.kvo);
+        } else {
+            row.push_back(i.rasch);
+        }
         row.push_back(cnt.zone);
         row.push_back(cnt.cell);
         row.push_back(cnt.name);

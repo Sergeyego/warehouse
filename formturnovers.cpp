@@ -38,9 +38,10 @@ TurnoversModel::TurnoversModel(QObject *parent) : TableModel(parent)
 {
     el_en=true;
     wire_en=true;
+    setDecimal(2);
     QStringList head;
     head<<"Номенклатура"<<"Наличие на \nначало периода, кг"<<"Поступление \nс производства, кг"<<"Возврат \nот потребителей, кг"<<"Поступление \nдругое, кг"
-       <<"Возврат \nв цех, кг"<<"Отгрузка \nпотребителю, кг"<<"Расход \nдругое, кг"<<"Остаток на \nконец периода, кг";
+       <<"Возврат \nв цех, кг"<<"Отгрузка \nпотребителю, кг"<<"Расход \nдругое, кг"<<"Коррект./\nинвент.(+/-), кг"<<"Остаток на \nконец периода, кг";
     setHeader(head);
 }
 
@@ -75,6 +76,7 @@ void TurnoversModel::recalc()
     double itogo_exp_ret=0;
     double itogo_exp_shp=0;
     double itogo_exp_oth=0;
+    double itogo_inv=0;
     double itogo_end_kvo=0;
 
     QAbstractItemModel *kisModel = Models::instance()->relKis->model();
@@ -96,11 +98,15 @@ void TurnoversModel::recalc()
         double exp_ret=0;
         double exp_shp=0;
         double exp_oth=0;
+        double inv=0;
         double end_kvo=0;
 
         getBal(kis,beg_kvo,end_kvo);
         getAcc(kis,rec_ind,rec_ret,rec_oth);
         getShip(kis,exp_shp,exp_ret,exp_oth);
+
+        inv=beg_kvo+rec_ind+rec_ret+rec_oth-exp_ret-exp_shp-exp_oth-end_kvo;
+        inv*=-1;
 
         row.push_back(kisModel->data(kisModel->index(i,1),Qt::EditRole).toString());
         row.push_back(beg_kvo);
@@ -110,6 +116,7 @@ void TurnoversModel::recalc()
         row.push_back(exp_ret);
         row.push_back(exp_shp);
         row.push_back(exp_oth);
+        row.push_back(inv);
         row.push_back(end_kvo);
         data.push_back(row);
 
@@ -120,6 +127,7 @@ void TurnoversModel::recalc()
         itogo_exp_ret+=exp_ret;
         itogo_exp_shp+=exp_shp;
         itogo_exp_oth+=exp_oth;
+        itogo_inv+=inv;
         itogo_end_kvo+=end_kvo;
     }
 
@@ -132,6 +140,7 @@ void TurnoversModel::recalc()
     itogo_row.push_back(itogo_exp_ret);
     itogo_row.push_back(itogo_exp_shp);
     itogo_row.push_back(itogo_exp_oth);
+    itogo_row.push_back(itogo_inv);
     itogo_row.push_back(itogo_end_kvo);
     data.push_back(itogo_row);
     setModelData(data);
