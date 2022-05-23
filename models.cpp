@@ -7,7 +7,7 @@ Models::Models(QObject *parent) :
 {
     sync1C = new Sync1C(this);
 
-    modelElPart = new DbRelationalModel("select p.id, p.n_s||' '||cast(p.dat_part as varchar(96))||' '||e.marka||'ф'||p.diam || ' ('||ep.pack_ed||')' as str, "
+    modelElPart = new DbRelationalModel("select p.id, p.n_s||' '||date_part('year',p.dat_part)||' '||e.marka||' ф '||cast(p.diam as varchar(3)) || ' ('||ep.pack_ed||')' as str, "
                                         "p.id_el ||':'||(select d.id from diam d where d.diam=p.diam)||'-'|| date_part('year',p.dat_part), ep.pack_ed, p.prim_prod, ep.mass_ed "
                                         "from parti p "
                                         "inner join el_pack ep on ep.id=p.id_pack "

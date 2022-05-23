@@ -235,7 +235,7 @@ bool ModelAcceptanceWireData::insertRow(int row, const QModelIndex &parent)
 
 Qt::ItemFlags ModelAcceptanceWireData::flags(const QModelIndex &index) const
 {
-    if (index.column()==5 || (index.column()==2 && !this->data(this->index(index.row(),5),Qt::EditRole).toString().isEmpty())){
+    if ((index.column()==5 || index.column()==2) && DbTableModel::data(this->index(index.row(),6),Qt::EditRole).toBool()){
         return Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
     }
     return DbTableModel::flags(index);

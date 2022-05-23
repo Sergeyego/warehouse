@@ -276,9 +276,12 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
     QVector <QVector<QVariant>> data;
     QMultiMap<QString, double> hash;
     for (int i=0; i<modelShipData->rowCount(); i++){
-        QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString();
-        double kvo=modelShipData->data(modelShipData->index(i,4),Qt::EditRole).toDouble();
-        hash.insert(nom,kvo);
+        QVariant id_part=modelShipData->data(modelShipData->index(i,3),Qt::EditRole);
+        if (id_part.toInt()>0){
+            QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString()+" "+modelShipData->relation(3)->data(id_part.toString(),3).toString();
+            double kvo=modelShipData->data(modelShipData->index(i,4),Qt::EditRole).toDouble();
+            hash.insert(nom,kvo);
+        }
     }
     for (QString key : hash.uniqueKeys()){
         double sum=0;
