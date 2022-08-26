@@ -6,6 +6,8 @@
 #include <QDataWidgetMapper>
 #include <QSettings>
 #include <math.h>
+#include <QItemDelegate>
+#include "models.h"
 
 namespace Ui {
 class FormDataEl;
@@ -40,10 +42,14 @@ private:
     ModelRo *modelPart;
     QDataWidgetMapper *mapper;
     QSqlQueryModel *modelPacker;
+    QString strAdr;
+    ModelRo *modelGost;
+    ModelRo *modelAmp;
     bool selectPart();
     void loadSettings();
     void saveSettings();
     QVariant currentData(int row);
+    QString getSrtStr(int id_part);
 
 private slots:
     void refreshData(QModelIndex index);
@@ -53,6 +59,14 @@ private slots:
 public slots:
     void updPart();
     void updPacker();
+};
+
+class CustomDelegate : public QItemDelegate
+{
+    Q_OBJECT
+public:
+    explicit CustomDelegate(QObject *parent=0);
+    void setEditorData(QWidget *editor,const QModelIndex &index) const;
 };
 
 #endif // FORMDATAEL_H

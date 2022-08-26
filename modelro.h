@@ -17,6 +17,7 @@ public:
     QVariant data(const QModelIndex &item, int role) const;
     bool execQuery(QSqlQuery &query);
     void setQuery(const QSqlQuery &query);
+    void setDecimal(int d);
 protected:
     int dec;
 public slots:

@@ -11,6 +11,13 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    modelGost = new ModelRo(this);
+    ui->listViewGost->setModel(modelGost);
+
+    modelAmp = new ModelRo(this);
+    modelAmp->setDecimal(1);
+    ui->tableViewAmp->setModel(modelAmp);
+
     modelPacker = new QSqlQueryModel(this);
     updPacker();
 
@@ -23,6 +30,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->tableViewPart->verticalHeader()->setDefaultSectionSize(ui->tableViewPart->verticalHeader()->fontMetrics().height()*1.5);
 
     mapper = new QDataWidgetMapper(this);
+    mapper->setItemDelegate(new CustomDelegate(this));
 
     mapper->setModel(modelPart);
 
@@ -36,6 +44,12 @@ FormDataEl::FormDataEl(QWidget *parent) :
     mapper->addMapping(ui->lineEditKvoGr,9);
     mapper->addMapping(ui->lineEditEanEd,10);
     mapper->addMapping(ui->lineEditEanGr,11);
+    mapper->addMapping(ui->lineEditTypeGost,12);
+    mapper->addMapping(ui->lineEditPost,13);
+    mapper->addMapping(ui->lineEditZnam,14);
+    mapper->addMapping(ui->lineEditVl,15);
+    mapper->addMapping(ui->lineEditProc,16);
+    mapper->addMapping(ui->plainTextEditDesc,17);
 
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),mapper,SLOT(setCurrentModelIndex(QModelIndex)));
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshData(QModelIndex)));
@@ -150,11 +164,14 @@ QString FormDataEl::barCodePack()
 bool FormDataEl::selectPart()
 {
     QSqlQuery query;
-    query.prepare("select p.id, p.n_s, p.dat_part, e.marka, p.diam, i.nam, ep.pack_ed, ep.pack_group, ep.mass_ed, ep.mass_group, ee.ean_ed, ee.ean_group "
+    query.prepare("select p.id, p.n_s, p.dat_part, e.marka, p.diam, i.nam, ep.pack_ed, ep.pack_group, ep.mass_ed, ep.mass_group, ee.ean_ed, ee.ean_group, "
+                  "g.nam, pu.nam, p.ibco, e.vl, e.pr2, e.descr, e.id_pic "
                   "from parti as p "
                   "inner join elrtr as e on p.id_el=e.id "
                   "inner join istoch as i on p.id_ist=i.id "
                   "inner join el_pack as ep on ep.id=p.id_pack "
+                  "inner join gost_types as g on e.id_gost_type=g.id "
+                  "inner join purpose as pu on e.id_purpose=pu.id "
                   "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam=p.diam) and ee.id_pack = p.id_pack "
                   "where p.dat_part between :d1 and :d2 "
                   "order by p.dat_part, p.n_s");
@@ -174,6 +191,18 @@ bool FormDataEl::selectPart()
             ui->tableViewPart->setColumnHidden(i,true);
         }
     }
+
+    QSqlQuery queryAdr;
+    queryAdr.prepare("select nam_lbl, adr from hoz where id=1");
+    if (queryAdr.exec()){
+        while (queryAdr.next()){
+            strAdr=QString::fromUtf8("Изготовитель: ")+queryAdr.value(0).toString()+QString::fromUtf8(", ")+queryAdr.value(1).toString();
+        }
+        strAdr.replace("\"","");
+    } else {
+        QMessageBox::critical(this,tr("Error"),queryAdr.lastError().text(),QMessageBox::Ok);
+    }
+
     ui->dateEditPack->setDate(QDate::currentDate());
     return ok;
 }
@@ -195,10 +224,96 @@ QVariant FormDataEl::currentData(int row)
     return mapper->model()->data(mapper->model()->index(mapper->currentIndex(),row),Qt::EditRole);
 }
 
+QString FormDataEl::getSrtStr(int id_part)
+{
+    QString srtStr;
+    QMultiMap <int, QString> srt;
+
+    QSqlQuery vedQuery;
+    vedQuery.prepare("select z.id_doc_t, z.ved_short, z.grade_nam "
+                     "from zvd_get_sert((select dat_part from parti where id = :id_part1 ), "
+                     "(select id_el from parti where id = :id_part2 ), "
+                     "(select d.id from diam as d where d.diam = (select diam from parti where id = :id_part3 ))) as z order by z.id_doc_t, z.ved_short");
+    vedQuery.bindValue(":id_part1",id_part);
+    vedQuery.bindValue(":id_part2",id_part);
+    vedQuery.bindValue(":id_part3",id_part);
+    if (vedQuery.exec()){
+        while (vedQuery.next()){
+            int id_doc_t=vedQuery.value(0).toInt();
+            QString ved=vedQuery.value(1).toString();
+            QString grade=vedQuery.value(2).toString();
+
+            QString s=ved;
+            if (!grade.isEmpty()){
+                s+=QString::fromUtf8(" категория ")+grade;
+            }
+
+            if (srt.contains(id_doc_t, ved) && (ved!=s)){
+                srt.remove(id_doc_t,ved);
+            }
+
+            QStringList list(srt.values(id_doc_t));
+
+            if (list.indexOf(QRegExp(QString("^"+s+".*")))==-1){
+                srt.insert(id_doc_t,s);
+            }
+        }
+    } else {
+        QMessageBox::critical(NULL,tr("Error"),vedQuery.lastError().text(),QMessageBox::Ok);
+    }
+
+    QList<int> keys = srt.uniqueKeys();
+
+    for (int i=0; i<keys.size(); ++i){
+        if (!srtStr.isEmpty()){
+            srtStr+="\n";
+        }
+        srtStr+=Models::instance()->relDocType->data(QString::number(keys.at(i))).toString()+":";
+        QList<QString> v = srt.values(keys.at(i));
+        qSort(v.begin(),v.end());
+        for (QString st:v){
+            if (!srtStr.isEmpty()){
+                srtStr+="\n";
+            }
+            srtStr+=st;
+        }
+    }
+    return srtStr;
+}
+
 void FormDataEl::refreshData(QModelIndex /*index*/)
 {
     ui->pushButtonGen->setEnabled(ui->lineEditEanEd->text().isEmpty());
     setKvoPack();
+    int id_part=currentData(0).toInt();
+
+    QSqlQuery tuQuery;
+    tuQuery.prepare("select gn.nam  from parti_gost pg "
+                    "inner join gost_new gn on gn.id = pg.id_gost "
+                    "where pg.id_part = :id "
+                    "order by gn.nam");
+    tuQuery.bindValue(":id",id_part);
+    modelGost->execQuery(tuQuery);
+
+    ui->plainTextEditSert->setPlainText(getSrtStr(id_part));
+
+    QSqlQuery queryAmp;
+    queryAmp.prepare("select d.diam, a.bot, a.vert, a.ceil "
+                     "from amp as a "
+                     "inner join diam as d on a.id_diam = d.id "
+                     "where a.id_el = (select id_el from parti where id = :id1 ) and d.diam = (select diam from parti where id = :id2 )");
+    queryAmp.bindValue(":id1",id_part);
+    queryAmp.bindValue(":id2",id_part);
+    if (modelAmp->execQuery(queryAmp)){
+        ui->tableViewAmp->setColumnWidth(0,100);
+        ui->tableViewAmp->setColumnWidth(1,100);
+        ui->tableViewAmp->setColumnWidth(2,100);
+        ui->tableViewAmp->setColumnWidth(3,100);
+        modelAmp->setHeaderData(0,Qt::Horizontal,tr("Диаметр, мм"));
+        modelAmp->setHeaderData(1,Qt::Horizontal,tr("Нижнее"));
+        modelAmp->setHeaderData(2,Qt::Horizontal,tr("Вертикальное"));
+        modelAmp->setHeaderData(3,Qt::Horizontal,tr("Потолочное"));
+    }
 }
 
 void FormDataEl::genEan()
@@ -258,5 +373,29 @@ void FormDataEl::updPacker()
         modelPacker->setQuery(query);
     } else {
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+}
+
+CustomDelegate::CustomDelegate(QObject *parent) : QItemDelegate(parent)
+{
+
+}
+
+void CustomDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    if (index.column()==16){
+        QLineEdit *line = qobject_cast<QLineEdit *>(editor);
+        if (line){
+            QString pr=index.model()->data(index,Qt::EditRole).toString();
+            QStringList list=pr.split(":");
+            if (list.size()==4){
+                line->setText(QString("%1±%2°C %3 %4").arg(list.at(0)).arg(list.at(1)).arg(list.at(2)).arg(list.at(3)));
+            } else {
+                line->clear();
+            }
+        }
+
+    } else {
+        QItemDelegate::setEditorData(editor,index);
     }
 }

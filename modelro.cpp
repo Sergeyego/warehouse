@@ -40,6 +40,11 @@ void ModelRo::setQuery(const QSqlQuery &query)
     emit newQuery();
 }
 
+void ModelRo::setDecimal(int d)
+{
+    dec=d;
+}
+
 void ModelRo::select()
 {
     QSqlQuery q(query());

@@ -23,6 +23,7 @@ public:
     DbRelation *relAccTypeEl;
     DbRelation *relAccTypeWire;
     DbRelation *relKis;
+    DbRelation *relDocType;
     DbRelationalModel *modelElPart;
     DbRelationalModel *modelWirePart;
     QString createPalBarcode(QString prefix);
