@@ -11,6 +11,8 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    relPosPix = new DbRelation(QString("select id, data from pics"),0,1,this);
+
     modelGost = new ModelRo(this);
     ui->listViewGost->setModel(modelGost);
 
@@ -313,6 +315,16 @@ void FormDataEl::refreshData(QModelIndex /*index*/)
         modelAmp->setHeaderData(1,Qt::Horizontal,tr("Нижнее"));
         modelAmp->setHeaderData(2,Qt::Horizontal,tr("Вертикальное"));
         modelAmp->setHeaderData(3,Qt::Horizontal,tr("Потолочное"));
+    }
+
+    QModelIndex ind=mapper->model()->index(mapper->currentIndex(),18);
+    int id_pix=mapper->model()->data(ind,Qt::EditRole).toInt();
+    QPixmap pix;
+    pix.loadFromData(relPosPix->data(QString::number(id_pix)).toByteArray());
+    if (pix.isNull()){
+        ui->labelPol->setPixmap(pix);
+    } else {
+        ui->labelPol->setPixmap(pix.scaled(ui->labelPol->size(),Qt::KeepAspectRatio));
     }
 }
 

@@ -42,6 +42,7 @@ private:
     ModelRo *modelPart;
     QDataWidgetMapper *mapper;
     QSqlQueryModel *modelPacker;
+    DbRelation *relPosPix;
     QString strAdr;
     ModelRo *modelGost;
     ModelRo *modelAmp;

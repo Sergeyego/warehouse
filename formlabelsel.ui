@@ -44,6 +44,20 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButtonEd60150">
+       <property name="text">
+        <string>Пачка 60*150</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonGr60150">
+       <property name="text">
+        <string>Гофрокороб 60*150</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButtonEd5040">
        <property name="text">
         <string>Пачка 50*40</string>

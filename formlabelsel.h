@@ -23,6 +23,8 @@ private:
     FormDataEl *data;
     LabelE5040 *labelE5040;
     LabelG5040 *labelG5040;
+    LabelE60150 *labelE60150;
+    LabelG60150 *labelG60150;
 
 private slots:
     void printPackList();
