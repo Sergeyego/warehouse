@@ -143,6 +143,57 @@ QString LabelBase::otkStamp(double x, double y, QString num)
     return cod;
 }
 
+QString LabelBase::box(double x, double y, double x1, double y1, double lineThickness, double radius)
+{
+    return QString("BOX %1,%2,%3,%4,%5,%6\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(x1)).arg(getDots(y1)).arg(getDots(lineThickness)).arg(getDots(radius));
+}
+
+QString LabelBase::diagonal(double x, double y, double x1, double y1, double lineThickness)
+{
+    return QString("DIAGONAL %1,%2,%3,%4,%5\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(x1)).arg(getDots(y1)).arg(getDots(lineThickness));
+}
+
+QString LabelBase::pixPol(double x, double y, double h, double lineThickness, int dat)
+{
+    double s=h*0.15;
+    double sh=s*0.25;
+
+    QString cod;
+
+    if (dat & 1){
+        cod.push_back(diagonal(x,y,x,y+h,lineThickness));
+        cod.push_back(diagonal(x+sh,y+h-s,x,y+h,lineThickness));
+        cod.push_back(diagonal(x-sh,y+h-s,x,y+h,lineThickness));
+    }
+    if (dat & 2) {
+        cod.push_back(diagonal(x,y,x+h,y,lineThickness));
+        cod.push_back(diagonal(x+h-s,y-sh,x+h,y,lineThickness));
+        cod.push_back(diagonal(x+h-s,y+sh,x+h,y,lineThickness));
+    }
+    if (dat & 4) {
+        cod.push_back(diagonal(x+h,y,x+h,y+h,lineThickness));
+        cod.push_back(diagonal(x+h-sh,y+h-s,x+h,y+h,lineThickness));
+        cod.push_back(diagonal(x+h+sh,y+h-s,x+h,y+h,lineThickness));
+    }
+    if (dat & 8){
+        cod.push_back(diagonal(x+h/2,y,x+h/2,y+h,lineThickness));
+        cod.push_back(diagonal(x+h/2-sh,y+h-s,x+h/2,y+h,lineThickness));
+        cod.push_back(diagonal(x+h/2+sh,y+h-s,x+h/2,y+h,lineThickness));
+    }
+    if (dat & 16) {
+        cod.push_back(diagonal(x,y+h,x+h,y+h,lineThickness));
+        cod.push_back(diagonal(x+s,y+h-sh,x,y+h,lineThickness));
+        cod.push_back(diagonal(x+s,y+h+sh,x,y+h,lineThickness));
+    }
+    if (dat & 32) {
+        cod.push_back(diagonal(x,y,x+h/2,y+h/2,lineThickness));
+        cod.push_back(diagonal(x+s*0.866,y+s*0.5,x,y,lineThickness));
+        cod.push_back(diagonal(x+s*0.5,y+s*0.866,x,y,lineThickness));
+    }
+
+    return cod;
+}
+
 QString LabelBase::cls()
 {
     return QString("CLS\n");

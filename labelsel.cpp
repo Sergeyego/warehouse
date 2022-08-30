@@ -33,7 +33,7 @@ QString LabelG5040::getCod()
     s+=QString::fromUtf8("Масса нетто, кг - ")+data->masGr()+"\n";
     s+=QString::fromUtf8("Дата изг. - ")+data->datePart();
     cod.push_back(block(2,18,35,20,s,10));
-    cod.push_back(dataMatrix(37,25,13,0.7,data->barCode()));
+    cod.push_back(dataMatrix(37,25,13,0.7,data->barCodeGr()));
 
     return cod;
 }
@@ -46,6 +46,9 @@ LabelE60150::LabelE60150(QString nam, double w, double h, double g, FormDataEl *
 QString LabelE60150::getCod()
 {
     QString cod=LabelBase::getCod();
+    cod.push_back(box(5,5,40,65));
+    //cod.push_back(diagonal(5,5,40,65));
+    cod.push_back(pixPol(25,45,10,0.375,data->posPix()));
 
     return cod;
 }

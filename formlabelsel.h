@@ -28,6 +28,8 @@ private:
 
 private slots:
     void printPackList();
+    void printE60150();
+    void printG60150();
 };
 
 #endif // FORMLABELSEL_H

@@ -13,6 +13,13 @@ namespace Ui {
 class FormDataEl;
 }
 
+struct ampInfo {
+    QString diam;
+    QString bot;
+    QString vert;
+    QString ceil;
+};
+
 class FormDataEl : public QWidget
 {
     Q_OBJECT
@@ -34,8 +41,22 @@ public:
     QString kvoPackPal();
     QString eanEd();
     QString eanGr();
-    QString barCode();
+    QString codePart();
+    QString barCodeEd();
+    QString barCodeGr();
     QString barCodePack();
+    QString descr();
+    QString numerator();
+    QString znam();
+    QString vendorCode();
+    QString gost();
+    QString sert();
+    QString proc();
+    QString vl();
+    QString adr();
+    ampInfo amp();
+    int posPix();
+    bool check();
 
 private:
     Ui::FormDataEl *ui;

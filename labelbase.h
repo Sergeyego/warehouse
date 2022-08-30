@@ -51,6 +51,9 @@ protected:
     QString qrCode(double x, double y, QString t, int cellWidth=5);
     QString dataMatrix(double x, double y, double size, double sizeCell, QString data, int rotation=0);
     QString otkStamp(double x, double y, QString num);
+    QString box(double x, double y, double x1, double y1, double lineThickness=0.25, double radius=0);
+    QString diagonal(double x, double y, double x1, double y1, double lineThickness=0.25);
+    QString pixPol(double x, double y, double h, double lineThickness, int dat);
     QString cls();
 
 signals:

@@ -11,7 +11,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    relPosPix = new DbRelation(QString("select id, data from pics"),0,1,this);
+    relPosPix = new DbRelation(QString("select id, data, dt from pics"),0,1,this);
 
     modelGost = new ModelRo(this);
     ui->listViewGost->setModel(modelGost);
@@ -138,28 +138,152 @@ QString FormDataEl::eanGr()
     return ui->lineEditEanGr->text().left(12);
 }
 
-QString FormDataEl::barCode()
+QString FormDataEl::codePart()
 {
-    QString ean=ui->lineEditEanGr->text();
-    ean.resize(13,' ');
     QString part=ui->lineEditPart->text();
     part.resize(4,' ');
     QString id='e'+currentData(0).toString();
     id.resize(8,'_');
     QString year=QString::number(ui->dateEditPart->date().year());
     year.resize(4,' ');
-    return ean+id+part+'-'+year;
+    return id+part+'-'+year;
+}
+
+QString FormDataEl::barCodeEd()
+{
+    QString ean=ui->lineEditEanEd->text();
+    return ean.length()==13 ? ean+codePart() : "";
+}
+
+QString FormDataEl::barCodeGr()
+{
+    QString ean=ui->lineEditEanGr->text();
+    return ean.length()==13 ? ean+codePart() : "";
 }
 
 QString FormDataEl::barCodePack()
 {
-    QString base=barCode();
-    double kvoM=ui->lineEditMasPal->text().toDouble();
-    int kvoP = ui->lineEditKvoPack->text().toInt();
-    int ikvoM=kvoM*100;
-    base+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
-    base+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+    QString base=barCodeGr();
+    if (base.length()==30){
+        double kvoM=ui->lineEditMasPal->text().toDouble();
+        int kvoP = ui->lineEditKvoPack->text().toInt();
+        int ikvoM=kvoM*100;
+        base+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
+        base+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+    }
     return base;
+}
+
+QString FormDataEl::descr()
+{
+    return ui->plainTextEditDesc->toPlainText();
+}
+
+QString FormDataEl::numerator()
+{
+    QString  num;
+    QString tgost=ui->lineEditTypeGost->text();
+    if (!tgost.isEmpty() && tgost!="-"){
+        num+=tgost+"-";
+    }
+    num+=marka()+"-∅"+ui->lineEditDiam->text().replace(".",",");
+    QString post=ui->lineEditPost->text();
+    if (!post.isEmpty() && post!="-"){
+        num+="-"+post;
+    }
+    return num;
+}
+
+QString FormDataEl::znam()
+{
+    return ui->lineEditZnam->text();
+}
+
+QString FormDataEl::vendorCode()
+{
+    return eanEd().length()==12 ? eanEd().right(5) : "";
+}
+
+QString FormDataEl::gost()
+{
+    QString s;
+    for (int i=0; i<modelGost->rowCount(); i++){
+        if (!s.isEmpty()){
+            s+="\n";
+        }
+        s+=modelGost->data(modelGost->index(i,0),Qt::EditRole).toString();
+    }
+    return s;
+}
+
+QString FormDataEl::sert()
+{
+    return ui->plainTextEditSert->toPlainText();
+}
+
+QString FormDataEl::proc()
+{
+    return ui->lineEditProc->text();
+}
+
+QString FormDataEl::vl()
+{
+    return ui->lineEditVl->text();
+}
+
+QString FormDataEl::adr()
+{
+    return strAdr;
+}
+
+ampInfo FormDataEl::amp()
+{
+    ampInfo ai;
+    if (modelAmp->rowCount()>0){
+        ai.diam=modelAmp->data(modelAmp->index(0,0),Qt::DisplayRole).toString();
+        ai.bot=modelAmp->data(modelAmp->index(0,1),Qt::DisplayRole).toString();
+        ai.vert=modelAmp->data(modelAmp->index(0,2),Qt::DisplayRole).toString();
+        ai.ceil=modelAmp->data(modelAmp->index(0,3),Qt::DisplayRole).toString();
+    }
+    return ai;
+}
+
+int FormDataEl::posPix()
+{
+    QModelIndex ind=mapper->model()->index(mapper->currentIndex(),18);
+    int id_pix=mapper->model()->data(ind,Qt::EditRole).toInt();
+    return relPosPix->data(QString::number(id_pix),2).toInt();
+}
+
+bool FormDataEl::check()
+{
+    QString err;
+    if (eanEd().length()!=12){
+        err+=QString::fromUtf8("Отсутствует штрихкод. Нажмите кнопку \"Сгенерировать\".\n");
+    }
+    if (modelGost->rowCount()<1){
+        err+=QString::fromUtf8("Отсутствует нормативная документация. Обратитесь к контролёрам.\n");
+    }
+    if (znam().isEmpty()){
+        err+=QString::fromUtf8("Отсутствует знаменатель. Обратитесь к контролёрам.\n");
+    }
+    if (modelAmp->rowCount()<1){
+        err+=QString::fromUtf8("Отсутствуют рекомендуемые значения токов. Обратитесь к начальнику ОТК.\n");
+    }
+    if (proc().isEmpty()){
+        err+=QString::fromUtf8("Отсутствует режим повторной прокалки. Обратитесь к начальнику ОТК.\n");
+    }
+    if (vl().isEmpty()){
+        err+=QString::fromUtf8("Отсутствует допустимое содержание влаги. Обратитесь к начальнику ОТК.\n");
+    }
+    if (descr().isEmpty()){
+        err+=QString::fromUtf8("Отсутствует описание. Обратитесь к начальнику ОТК.\n");
+    }
+
+    if (!err.isEmpty()){
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),err,QMessageBox::Ok);
+    }
+    return err.isEmpty();
 }
 
 
