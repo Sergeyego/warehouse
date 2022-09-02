@@ -274,7 +274,7 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
     for (int i=0; i<modelShipData->rowCount(); i++){
         QVariant id_part=modelShipData->data(modelShipData->index(i,3),Qt::EditRole);
         if (id_part.toInt()>0){
-            QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString()+" "+modelShipData->relation(3)->data(id_part.toString(),3).toString();
+            QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString()+tr(" (")+modelShipData->relation(3)->data(id_part.toString(),3).toString()+tr(" кг)");
             double kvo=modelShipData->data(modelShipData->index(i,4),Qt::EditRole).toDouble();
             hash.insert(nom,kvo);
         }
