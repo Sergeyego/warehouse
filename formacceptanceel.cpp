@@ -23,7 +23,10 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     ui->toolButtonPal->addAction(actionPrintLblAll);
     ui->toolButtonPal->addAction(actionPrintLblOne);
 
-    modelAcceptanceElData = new ModelAcceptanceElData(this);
+    modelElPart = new ModelElPart(this);
+    relElPart = new RelPart(modelElPart,this);
+
+    modelAcceptanceElData = new ModelAcceptanceElData(relElPart, this);
     ui->tableViewAccData->setModel(modelAcceptanceElData);
     for (int i=0; i<5; i++){
         ui->tableViewAccData->setColumnHidden(i,true);
@@ -53,11 +56,9 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
-    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),Models::instance()->relElPart,SLOT(refreshModel()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
-    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart,SLOT(refreshModel()));
+    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),relElPart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(modelAcceptanceElData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
@@ -87,6 +88,24 @@ void FormAcceptanceEl::savesettings()
 
 void FormAcceptanceEl::updAcc()
 {
+    QDate minDate=ui->dateEditBeg->date().addYears(-4);
+    QSqlQuery query;
+    query.prepare("select min(p2.dat_part) from prod_nakl pn "
+                  "inner join prod p on p.id_nakl = pn.id "
+                  "inner join parti p2 on p2.id = p.id_part "
+                  "where pn.dat between :d1 and :d2");
+    query.bindValue(":d1",ui->dateEditBeg->date());
+    query.bindValue(":d2",ui->dateEditEnd->date());
+    if (query.exec()){
+        query.next();
+        QDate dt=query.value(0).toDate();
+        if (dt<minDate){
+            minDate=dt;
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+    modelElPart->refresh(minDate);
     modelAcceptanceEl->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 
@@ -94,11 +113,6 @@ void FormAcceptanceEl::updAccData(int index)
 {
     int id_acc=mapper->modelData(index,0).toInt();
     modelAcceptanceElData->refresh(id_acc);
-}
-
-void FormAcceptanceEl::setPartFilter()
-{
-    Models::instance()->setFilter(ui->comboBoxPart->currentIndex());
 }
 
 void FormAcceptanceEl::sync()
@@ -171,14 +185,14 @@ bool ModelAcceptanceEl::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelAcceptanceElData::ModelAcceptanceElData(QObject *parent) : DbTableModel("prod",parent)
+ModelAcceptanceElData::ModelAcceptanceElData(RelPart *relPart, QObject *parent) : DbTableModel("prod",parent)
 {
     addColumn("id",tr("id"));
     addColumn("id_nakl",tr("id_nakl"));
     addColumn("docs",tr("Номер"));
     addColumn("dat",tr("Дата"));
     addColumn("id_ist",tr("Тип"));
-    addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
+    addColumn("id_part",tr("Партия"),relPart);
     addColumn("kvo",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
     addColumn("barcodecont",tr("Штрихкод поддона"));

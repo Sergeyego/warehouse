@@ -5,7 +5,6 @@
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
 #include "dialogcods.h"
-#include <QDomDocument>
 #include "models.h"
 #include "tablemodel.h"
 #include "dialogprintpacklist.h"
@@ -38,10 +37,13 @@ public:
     double getStock(QString ide);
     void clear();
 private:
+    struct pData {
+        QString pack;
+        QString prim;
+    };
+    QHash<QString,pData> partData;
     QMultiHash<QString,partInfo> part;
     QHash<QString,contInfo> cont;
-    QString getPackName(QString id_part_kis);
-    QString getDesc(QString id_part_kis, QString defval=QString());
 };
 
 class ModelShip : public DbTableModel
@@ -103,9 +105,12 @@ private:
     TableModel *modelElStat;
     TableModel *modelWireStat;
     QSortFilterProxyModel *proxyModelBalance;
+    ModelElPart *modelElPart;
+    RelPart *relElPart;
+    ModelWirePart *modelWirePart;
+    RelPart *relWirePart;
     void loadsettings();
     void savesettings();
-    QDomElement newElement(QString nam, QString val,  QDomDocument *doc);
     void calcStat(ModelShipData *modelShipData, TableModel *modelStat);
 
 public slots:

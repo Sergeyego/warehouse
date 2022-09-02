@@ -208,9 +208,7 @@ void MainWindow::loadSettings()
     QString opentab=settings.value("main_opentab").toString();
     QString current=settings.value("main_currenttab").toString();
 
-    if (opentab.isEmpty()){
-        //ui->actionPart->trigger();
-    } else {
+    if (!opentab.isEmpty()){
         QStringList l=opentab.split("|");
         foreach (QString a, l) {
             if (actions.contains(a)){

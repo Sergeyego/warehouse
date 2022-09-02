@@ -14,8 +14,6 @@ class Models : public QObject
 public:
     static Models *instance();
     Sync1C *sync1C;
-    DbRelation *relWirePart;
-    DbRelation *relElPart;
     DbRelation *relEl;
     DbRelation *relPol;
     DbRelation *relDrv;
@@ -24,13 +22,10 @@ public:
     DbRelation *relAccTypeWire;
     DbRelation *relKis;
     DbRelation *relDocType;
-    DbRelationalModel *modelElPart;
-    DbRelationalModel *modelWirePart;
     QString createPalBarcode(QString prefix);
 
 public slots:
     void refresh();
-    void setFilter(int index);
 
 signals:
     void sigRefresh();
@@ -42,6 +37,34 @@ private:
     static Models* models_instance;
     QVector<DbRelation*> rels;
     DbRelation *newDbRelation(QAbstractItemModel *queryModel, int key, int disp);
+};
+
+class ModelElPart : public DbRelationalModel
+{
+    Q_OBJECT
+public:
+    ModelElPart(QObject *parent = 0);
+public slots:
+    void refresh(QDate date);
+};
+
+class ModelWirePart : public DbRelationalModel
+{
+    Q_OBJECT
+public:
+    ModelWirePart(QObject *parent = 0);
+public slots:
+    void refresh(QDate date);
+};
+
+class RelPart : public DbRelation
+{
+    Q_OBJECT
+public:
+    RelPart(DbRelationalModel * model, QObject *parent);
+public slots:
+    void setFilter(int index);
+
 };
 
 #endif // MODELS_H

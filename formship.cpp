@@ -8,7 +8,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->setupUi(this);
     loadsettings();
 
-    ui->cmdUpdPart->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
     ui->cmdUpdShip->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
@@ -19,6 +18,12 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
 
     QStringList listStatHeader;
     listStatHeader<<"Номенклатура"<<"Масса, кг";
+
+    modelElPart = new ModelElPart(this);
+    relElPart = new RelPart(modelElPart,this);
+
+    modelWirePart = new ModelWirePart(this);
+    relWirePart = new RelPart(modelWirePart,this);
 
     modelElStat = new TableModel(this);
     modelElStat->setHeader(listStatHeader);
@@ -37,7 +42,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->tableViewBal->setModel(proxyModelBalance);
 
     modelShip = new ModelShip(this);
-    modelShip->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
     ui->tableViewShip->setModel(modelShip);
     ui->tableViewShip->setColumnHidden(0,true);
     ui->tableViewShip->setColumnWidth(1,55);
@@ -79,7 +83,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ei.namKvo="massa";
     ei.modelBalence=modelBalance;
     ei.prefix="e";
-    ei.relPart = new DbRelation(Models::instance()->modelElPart,0,1,this);
+    ei.relPart = relElPart;
     modelShipEl = new ModelShipData(ei,this);
     ui->tableViewEl->setModel(modelShipEl);
     ui->tableViewEl->setColumnHidden(0,true);
@@ -97,7 +101,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     wi.namKvo="m_netto";
     wi.modelBalence=modelBalance;
     wi.prefix="w";
-    wi.relPart = new DbRelation(Models::instance()->modelWirePart,0,1,this);
+    wi.relPart = relWirePart;
     modelShipWire = new ModelShipData(wi, this);
     ui->tableViewWire->setModel(modelShipWire);
     ui->tableViewWire->setColumnHidden(0,true);
@@ -124,10 +128,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(push,SIGNAL(currentIndexChanged(int)),this,SLOT(setCurrentShip(int)));
     connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
 
-    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relElPart->model(),SLOT(refresh()));
-    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart->model(),SLOT(refresh()));
-    connect(ui->cmdUpdPart,SIGNAL(clicked(bool)),this,SLOT(updBalance()));
-
     connect(modelShipEl, SIGNAL(sigStock(QString)),ui->labelEl,SLOT(setText(QString)));
     connect(modelShipWire, SIGNAL(sigStock(QString)),ui->labelWire,SLOT(setText(QString)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
@@ -146,7 +146,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(modelShipWire,SIGNAL(sigUpd()),this,SLOT(updShipStatisticWire()));
     connect(modelShipWire,SIGNAL(sigRefresh()),this,SLOT(updShipStatisticWire()));
 
-    push->last();
+    updPol();
 }
 
 FormShip::~FormShip()
@@ -178,6 +178,8 @@ void FormShip::updShip()
         if (ui->checkBoxOnly->isChecked()){
             id_pol=ui->comboBoxOnly->model()->data(ui->comboBoxOnly->model()->index(ui->comboBoxOnly->currentIndex(),0),Qt::EditRole).toInt();
         }
+        modelElPart->refresh(ui->dateEditBeg->date().addYears(-4));
+        modelWirePart->refresh(ui->dateEditBeg->date().addYears(-4));
         modelShip->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date(),id_pol);
     }
 }
@@ -217,7 +219,6 @@ void FormShip::printNakl()
 void FormShip::setPartFilter()
 {
     int index=ui->comboBoxPart->currentIndex();
-    Models::instance()->setFilter(index);
     modelShipEl->setPartFlt(index);
     modelShipWire->setPartFlt(index);
 }
@@ -238,6 +239,8 @@ void FormShip::updBalance()
     ui->tableViewWire->setEditTriggers(editTrig);
     modelBalance->updData(date);
     ui->pushButtonEdt->setEnabled(false);
+    relElPart->refreshModel();
+    relWirePart->refreshModel();
     modelShipEl->setFlt("");
     modelShipWire->setFlt("");
 }
@@ -262,13 +265,6 @@ void FormShip::updShipStatisticWire()
 {
     calcStat(modelShipWire,modelWireStat);
     ui->tableViewWireStat->resizeToContents();
-}
-
-QDomElement FormShip::newElement(QString nam, QString val, QDomDocument *doc)
-{
-    QDomElement l = doc->createElement(nam);
-    l.appendChild(doc->createTextNode(val));
-    return l;
 }
 
 void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
@@ -344,6 +340,57 @@ void ModelBalance::updData(QDate dat)
 {
     Models::instance()->sync1C->getBalance(dat,part);
     Models::instance()->sync1C->getContBalance(dat,cont);
+    QList<partInfo> list = part.values();
+    int maxide=0;
+    int maxidw=0;
+    int minide=10000000000;
+    int minidw=10000000000;
+    for (partInfo i : list){
+        QStringList idl=i.id_part_kis.split(":");
+        if (idl.size()>1){
+            if (idl.at(0)=="e"){
+                int ide=idl.at(1).toInt();
+                if (ide>maxide){
+                    maxide=ide;
+                }
+                if (ide<minide){
+                    minide=ide;
+                }
+            } else if (idl.at(0)=="w"){
+                int idw=idl.at(1).toInt();
+                if (idw>maxidw){
+                    maxidw=idw;
+                }
+                if (idw<minidw){
+                    minidw=idw;
+                }
+            }
+        }
+    }
+    QSqlQuery query;
+    query.prepare("select 'e:'||p.id, ep.pack_ed, p.prim_prod  from parti p "
+                  "inner join el_pack ep on ep.id = p.id_pack "
+                  "where p.id between :minide and :maxide "
+                  "union "
+                  "select 'w:'||wp.id, CASE WHEN (COALESCE(wp2.mas_ed,0)<>0) THEN (' (' || COALESCE(wp2.mas_ed,0) || ' кг)') ELSE '' end, wp.prim_prod "
+                  "from wire_parti wp "
+                  "inner join wire_pack wp2 on wp2.id = wp.id_pack_type "
+                  "where wp.id between :minidw and :maxidw ");
+    query.bindValue(":minide",minide);
+    query.bindValue(":maxide",maxide);
+    query.bindValue(":minidw",minidw);
+    query.bindValue(":maxidw",maxidw);
+    if (query.exec()){
+        partData.clear();
+        while (query.next()){
+            ModelBalance::pData pd;
+            pd.pack=query.value(1).toString();
+            pd.prim=query.value(2).toString();
+            partData.insert(query.value(0).toString(),pd);
+        }
+    } else {
+        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
+    }
 }
 
 double ModelBalance::getStock(QString ide)
@@ -369,37 +416,6 @@ void ModelBalance::clear()
     TableModel::clear();
 }
 
-QString ModelBalance::getPackName(QString id_part_kis)
-{
-    QStringList idpl = id_part_kis.split(":");
-    QString pack;
-    if (idpl.size()>1){
-        QString id_part=idpl.at(1);
-        if (idpl.at(0)=="w"){
-            pack=Models::instance()->relWirePart->data(id_part,3).toString();
-        } else if (idpl.at(0)=="e"){
-            pack=Models::instance()->relElPart->data(id_part,3).toString();
-        }
-    }
-    return pack;
-}
-
-QString ModelBalance::getDesc(QString id_part_kis, QString defval)
-{
-    QStringList idpl = id_part_kis.split(":");
-    QString desc=defval;
-    if (idpl.size()>1){
-        QString id_part=idpl.at(1);
-        if (idpl.at(0)=="e"){
-            QString prim=Models::instance()->relElPart->data(id_part,4).toString();
-            if (!prim.isEmpty()){
-                desc=prim;
-            }
-        }
-    }
-    return desc;
-}
-
 void ModelBalance::refresh(QString kis)
 {
     QVector<QVector<QVariant>> tmpd;
@@ -409,12 +425,13 @@ void ModelBalance::refresh(QString kis)
         QVector<QVariant> row;
         contInfo cnt = cont.value(i.contKey);        
         if (zoneOt.contains(cnt.zone) && cnt.kvo>0 && cnt.rasch<1){
+            ModelBalance::pData pd=partData.value(i.id_part_kis);
             row.push_back(i.name);
-            row.push_back(getPackName(i.id_part_kis));
+            row.push_back(pd.pack);
             row.push_back(i.number);
             row.push_back(i.ist);
             row.push_back(i.rcp);
-            row.push_back(getDesc(i.id_part_kis,i.desc));
+            row.push_back(pd.prim);
             row.push_back(i.kvo);
             row.push_back(i.prich);
             row.push_back(i.rasch);
@@ -460,7 +477,7 @@ QVariant ModelShipData::data(const QModelIndex &index, int role) const
 {
     if (role==Qt::BackgroundRole){
         QString id_part=this->data(this->index(index.row(),3),Qt::EditRole).toString();
-        double mas_ed=info.relPart->data(id_part,5).toDouble();
+        double mas_ed=info.relPart->data(id_part,3).toDouble();
         if (mas_ed>0){
             double kvo=this->data(this->index(index.row(),4),Qt::EditRole).toDouble();
             double b;
@@ -539,6 +556,7 @@ bool ModelShipData::insertRow(int row, const QModelIndex &parent)
         oldkis=this->data(this->index(rowCount()-1,2),Qt::EditRole).toString();
     }
     setDefaultValue(2,oldkis);
+    setFlt(oldkis);
     return DbTableModel::insertRow(row,parent);
 }
 

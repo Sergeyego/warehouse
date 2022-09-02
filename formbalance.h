@@ -19,16 +19,19 @@ public:
     explicit BalanceModel(QObject *parent=nullptr);
     QVariant data(const QModelIndex &index, int role) const;
     void refresh(QDate dat, bool bypart=true);
-    QString getPackName(QString id_part_kis);
-    QString getDesc(QString id_part_kis, QString defval=QString());
     void getPartData(QString kis, QVector<QVector<QVariant>> &data);
     QStringList getPartHeader();
 
 private:
+    void updData(QDate dat);
     bool byp;
     QStringList headerPart;
-    QStringList headerMark;
-
+    QStringList headerMark;    
+    struct pData {
+        QString pack;
+        QString prim;
+    };
+    QHash<QString,pData> partData;
     QMultiHash<QString,partInfo> part;
     QHash<QString,contInfo> cont;
 };
@@ -61,7 +64,6 @@ private:
 private slots:
     void refresh();
     void calcSum();
-    void refreshPart();
     void setFilter();
     void save();
     void updPart(QModelIndex index);

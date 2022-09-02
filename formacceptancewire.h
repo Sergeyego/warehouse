@@ -26,7 +26,7 @@ class ModelAcceptanceWireData: public DbTableModel
 {
     Q_OBJECT
 public:
-    ModelAcceptanceWireData(QObject *parent = 0);
+    ModelAcceptanceWireData(RelPart *relPart, QObject *parent = 0);
     QVariant data(const QModelIndex &index, int role) const;
     void refresh(int id_acc);
     bool insertRow(int row, const QModelIndex &parent);
@@ -64,6 +64,8 @@ public:
 
 private:
     Ui::FormAcceptanceWire *ui;
+    ModelWirePart *modelWirePart;
+    RelPart *relWirePart;
     ModelAcceptanceWire *modelAcceptanceWire;
     ModelAcceptanceWireData *modelAcceptanceWireData;
     DbMapper *mapper;
@@ -77,7 +79,6 @@ private slots:
     void updAcc();
     void updAccData(int index);
     void sync();
-    void setPartFilter();
     void printPalAll();
     void printPalOne();
     void printNakl();

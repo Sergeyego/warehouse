@@ -91,13 +91,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonUpdPart">
-       <property name="text">
-        <string>Обновить партии</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="pushButtonPackList">
        <property name="enabled">
         <bool>true</bool>
@@ -134,6 +127,9 @@
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
         </widget>
        </item>
        <item>
@@ -167,6 +163,9 @@
       <property name="sortingEnabled">
        <bool>true</bool>
       </property>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
      </widget>
     </widget>
    </item>

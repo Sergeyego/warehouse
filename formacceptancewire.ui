@@ -73,13 +73,6 @@
       <widget class="QComboBox" name="comboBoxPart"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonUpdPart">
-       <property name="text">
-        <string>Обновить список партий</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="pushButton1C">
        <property name="text">
         <string>Выгрузить в 1С WMS</string>

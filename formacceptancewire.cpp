@@ -25,6 +25,9 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->toolButtonPal->addAction(actionPrintLblAll);
     ui->toolButtonPal->addAction(actionPrintLblOne);
 
+    modelWirePart = new ModelWirePart(this);
+    relWirePart = new RelPart(modelWirePart,this);
+
     modelAcceptanceWire = new ModelAcceptanceWire(this);
     ui->tableViewAcc->setModel(modelAcceptanceWire);
     ui->tableViewAcc->setColumnHidden(0,true);
@@ -32,7 +35,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->tableViewAcc->setColumnWidth(2,100);
     ui->tableViewAcc->setColumnWidth(3,200);
 
-    modelAcceptanceWireData = new ModelAcceptanceWireData(this);
+    modelAcceptanceWireData = new ModelAcceptanceWireData(relWirePart, this);
     ui->tableViewAccData->setModel(modelAcceptanceWireData);
     ui->tableViewAccData->setColumnHidden(0,true);
     ui->tableViewAccData->setColumnHidden(1,true);
@@ -52,10 +55,8 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),this,SLOT(setPartFilter()));
-    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),Models::instance()->relWirePart,SLOT(refreshModel()));
+    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),relWirePart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
-    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),Models::instance()->relWirePart,SLOT(refreshModel()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
     connect(modelAcceptanceWireData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
@@ -104,6 +105,25 @@ void FormAcceptanceWire::printPal(int id_acc, int cont)
 
 void FormAcceptanceWire::updAcc()
 {
+    QDate minDate=ui->dateEditBeg->date().addYears(-4);
+    QSqlQuery query;
+    query.prepare("select min(wpm.dat) from wire_whs_waybill www "
+                  "inner join wire_warehouse ww on ww.id_waybill = www.id "
+                  "inner join wire_parti wp on wp.id = ww.id_wparti "
+                  "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                  "where www.dat between :d1 and :d2");
+    query.bindValue(":d1",ui->dateEditBeg->date());
+    query.bindValue(":d2",ui->dateEditEnd->date());
+    if (query.exec()){
+        query.next();
+        QDate dt=query.value(0).toDate();
+        if (dt<minDate){
+            minDate=dt;
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+    modelWirePart->refresh(minDate);
     modelAcceptanceWire->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 
@@ -116,12 +136,6 @@ void FormAcceptanceWire::updAccData(int index)
 void FormAcceptanceWire::sync()
 {
     Models::instance()->sync1C->syncPriemWire(mapper->modelData(mapper->currentIndex(),0).toInt());
-}
-
-
-void FormAcceptanceWire::setPartFilter()
-{
-    Models::instance()->setFilter(ui->comboBoxPart->currentIndex());
 }
 
 void FormAcceptanceWire::printPalAll()
@@ -187,11 +201,11 @@ bool ModelAcceptanceWire::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel("wire_warehouse",parent)
+ModelAcceptanceWireData::ModelAcceptanceWireData(RelPart *relPart, QObject *parent) : DbTableModel("wire_warehouse",parent)
 {
     addColumn("id","id");
     addColumn("id_waybill","id_waybill");
-    addColumn("id_wparti",tr("Партия"),Models::instance()->relWirePart);
+    addColumn("id_wparti",tr("Партия"),relPart);
     addColumn("m_netto",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
     addColumn("barcodecont",tr("Штрихкод поддона"));

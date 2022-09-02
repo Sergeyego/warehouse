@@ -36,7 +36,6 @@ FormBalance::FormBalance(QWidget *parent) :
     connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(save()));
     connect(ui->tableView->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updPart(QModelIndex)));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(createPackList()));
-    connect(ui->pushButtonUpdPart,SIGNAL(clicked(bool)),this,SLOT(refreshPart()));
 }
 
 FormBalance::~FormBalance()
@@ -83,13 +82,6 @@ void FormBalance::calcSum()
         sum+=proxyModel->data(proxyModel->index(i,col),Qt::EditRole).toDouble();
     }
     ui->labelSum->setText("Итого: "+QLocale().toString(sum,'f',2)+" кг");
-}
-
-void FormBalance::refreshPart()
-{
-    Models::instance()->relElPart->refreshModel();
-    Models::instance()->relWirePart->refreshModel();
-    refresh();
 }
 
 void FormBalance::setFilter()
@@ -168,8 +160,7 @@ QVariant BalanceModel::data(const QModelIndex &index, int role) const
 void BalanceModel::refresh(QDate dat, bool bypart)
 {
     byp=bypart;
-    Models::instance()->sync1C->getBalance(dat,part);
-    Models::instance()->sync1C->getContBalance(dat,cont);
+    updData(dat);
     QVector<QVector<QVariant>> tmpd;
     if (byp){
         QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();
@@ -177,13 +168,14 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             QVector<QVariant> row;
             partInfo pinfo=i.value();
             contInfo cinfo = cont.value(pinfo.contKey);
+            BalanceModel::pData pd=partData.value(pinfo.id_part_kis);
             row.push_back(Models::instance()->relKis->data(pinfo.id_kis,2));
             row.push_back(pinfo.id_kis);
-            row.push_back(getPackName(pinfo.id_part_kis));
+            row.push_back(pd.pack);
             row.push_back(pinfo.number);
             row.push_back(pinfo.ist);
             row.push_back(pinfo.rcp);
-            row.push_back(getDesc(pinfo.id_part_kis,pinfo.desc));
+            row.push_back(pd.prim);
             row.push_back(pinfo.kvo);
             row.push_back(pinfo.prich);
             if (cinfo.rasch>0){
@@ -228,40 +220,66 @@ void BalanceModel::refresh(QDate dat, bool bypart)
     }
 }
 
-QString BalanceModel::getPackName(QString id_part_kis)
-{
-    QStringList idpl = id_part_kis.split(":");
-    QString pack;
-    if (idpl.size()>1){
-        QString id_part=idpl.at(1);
-        if (idpl.at(0)=="w"){
-            pack=Models::instance()->relWirePart->data(id_part,3).toString();
-        } else if (idpl.at(0)=="e"){
-            pack=Models::instance()->relElPart->data(id_part,3).toString();
-        }
-    }
-    return pack;
-}
-
-QString BalanceModel::getDesc(QString id_part_kis, QString defval)
-{
-    QStringList idpl = id_part_kis.split(":");
-    QString desc=defval;
-    if (idpl.size()>1){
-        QString id_part=idpl.at(1);
-        if (idpl.at(0)=="e"){
-            QString prim=Models::instance()->relElPart->data(id_part,4).toString();
-            if (!prim.isEmpty()){
-                desc=prim;
-            }
-        }
-    }
-    return desc;
-}
-
 QStringList BalanceModel::getPartHeader()
 {
     return headerPart;
+}
+
+void BalanceModel::updData(QDate dat)
+{
+    Models::instance()->sync1C->getBalance(dat,part);
+    Models::instance()->sync1C->getContBalance(dat,cont);
+    QList<partInfo> list = part.values();
+    int maxide=0;
+    int maxidw=0;
+    int minide=10000000000;
+    int minidw=10000000000;
+    for (partInfo i : list){
+        QStringList idl=i.id_part_kis.split(":");
+        if (idl.size()>1){
+            if (idl.at(0)=="e"){
+                int ide=idl.at(1).toInt();
+                if (ide>maxide){
+                    maxide=ide;
+                }
+                if (ide<minide){
+                    minide=ide;
+                }
+            } else if (idl.at(0)=="w"){
+                int idw=idl.at(1).toInt();
+                if (idw>maxidw){
+                    maxidw=idw;
+                }
+                if (idw<minidw){
+                    minidw=idw;
+                }
+            }
+        }
+    }
+    QSqlQuery query;
+    query.prepare("(select 'e:'||p.id, ep.pack_ed, p.prim_prod  from parti p "
+                  "inner join el_pack ep on ep.id = p.id_pack "
+                  "where p.id between :minide and :maxide "
+                  ") union ("
+                  "select 'w:'||wp.id, CASE WHEN (COALESCE(wp2.mas_ed,0)<>0) THEN (' (' || COALESCE(wp2.mas_ed,0) || ' кг)') ELSE '' end, wp.prim_prod "
+                  "from wire_parti wp "
+                  "inner join wire_pack wp2 on wp2.id = wp.id_pack_type "
+                  "where wp.id between :minidw and :maxidw )");
+    query.bindValue(":minide",minide);
+    query.bindValue(":maxide",maxide);
+    query.bindValue(":minidw",minidw);
+    query.bindValue(":maxidw",maxidw);
+    if (query.exec()){
+        partData.clear();
+        while (query.next()){
+            BalanceModel::pData pd;
+            pd.pack=query.value(1).toString();
+            pd.prim=query.value(2).toString();
+            partData.insert(query.value(0).toString(),pd);
+        }
+    } else {
+        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
+    }
 }
 
 void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
@@ -269,15 +287,16 @@ void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
     QList<partInfo> list = part.values(kis);
     data.clear();
     for (partInfo i : list){
+        BalanceModel::pData pd=partData.value(i.id_part_kis);
         QVector<QVariant> row;
         contInfo cnt = cont.value(i.contKey);
         row.push_back(Models::instance()->relKis->data(i.id_kis,2));
         row.push_back(i.name);
-        row.push_back(getPackName(i.id_part_kis));
+        row.push_back(pd.pack);
         row.push_back(i.number);
         row.push_back(i.ist);
         row.push_back(i.rcp);
-        row.push_back(getDesc(i.id_part_kis,i.desc));
+        row.push_back(pd.prim);
         row.push_back(i.kvo);
         row.push_back(i.prich);
         if (cnt.rasch>0){
