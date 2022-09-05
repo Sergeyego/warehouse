@@ -209,9 +209,9 @@ QString LabelBase::text(double x, double y, QString t, int size, int rotation)
     return QString("TEXT %1,%2,\"0\",%6,%3,%4,\"%5\"\n").arg(getDots(x)).arg(getDots(y)).arg(size).arg(size).arg(normalize(t)).arg(rotation);
 }
 
-QString LabelBase::block(double x, double y, double w, double h, QString t, int size, int rotation)
+QString LabelBase::block(double x, double y, double w, double h, QString t, int size, int rotation, int align)
 {
-    return QString("BLOCK %1,%2,%3,%4,\"0\",%5,%6,%7,0,0,1,\"%8\"\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(w)).arg(getDots(h)).arg(rotation).arg(size).arg(size).arg(normalize(t));
+    return QString("BLOCK %1,%2,%3,%4,\"0\",%5,%6,%7,0,%8,1,\"%9\"\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(w)).arg(getDots(h)).arg(rotation).arg(size).arg(size).arg(align).arg(normalize(t));
 }
 
 void LabelBase::printLabel()

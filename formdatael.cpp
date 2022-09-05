@@ -186,7 +186,7 @@ QString FormDataEl::numerator()
     if (!tgost.isEmpty() && tgost!="-"){
         num+=tgost+"-";
     }
-    num+=marka()+"-∅"+ui->lineEditDiam->text().replace(".",",");
+    num+=marka()+"-Ф"+ui->lineEditDiam->text().replace(".",",");
     QString post=ui->lineEditPost->text();
     if (!post.isEmpty() && post!="-"){
         num+="-"+post;
