@@ -52,6 +52,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     mapper->addMapping(ui->lineEditVl,15);
     mapper->addMapping(ui->lineEditProc,16);
     mapper->addMapping(ui->plainTextEditDesc,17);
+    mapper->addMapping(ui->lineEditMarkSert,19);
 
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),mapper,SLOT(setCurrentModelIndex(QModelIndex)));
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshData(QModelIndex)));
@@ -71,6 +72,11 @@ FormDataEl::~FormDataEl()
 QString FormDataEl::marka()
 {
     return ui->lineEditMark->text();
+}
+
+QString FormDataEl::markaSert()
+{
+    return ui->lineEditMarkSert->text();
 }
 
 QString FormDataEl::diametr()
@@ -110,12 +116,12 @@ QString FormDataEl::packGr()
 
 QString FormDataEl::masEd()
 {
-    return ui->lineEditKvoEd->text();
+    return ui->lineEditKvoEd->text().replace(".",",");
 }
 
 QString FormDataEl::masGr()
 {
-    return ui->lineEditKvoGr->text();
+    return ui->lineEditKvoGr->text().replace(".",",");
 }
 
 QString FormDataEl::masPal()
@@ -186,7 +192,7 @@ QString FormDataEl::numerator()
     if (!tgost.isEmpty() && tgost!="-"){
         num+=tgost+"-";
     }
-    num+=marka()+"-Ф"+ui->lineEditDiam->text().replace(".",",");
+    num+=markaSert()+"-Ф"+ui->lineEditDiam->text().replace(".",",");
     QString post=ui->lineEditPost->text();
     if (!post.isEmpty() && post!="-"){
         num+="-"+post;
@@ -291,7 +297,7 @@ bool FormDataEl::selectPart()
 {
     QSqlQuery query;
     query.prepare("select p.id, p.n_s, p.dat_part, e.marka, p.diam, i.nam, ep.pack_ed, ep.pack_group, ep.mass_ed, ep.mass_group, ee.ean_ed, ee.ean_group, "
-                  "g.nam, pu.nam, p.ibco, e.vl, e.pr2, e.descr, e.id_pic "
+                  "g.nam, pu.nam, coalesce(p.ibco, ev.znam), e.vl, e.pr2, ev.descr, e.id_pic, coalesce(e.marka_sert,e.marka) "
                   "from parti as p "
                   "inner join elrtr as e on p.id_el=e.id "
                   "inner join istoch as i on p.id_ist=i.id "
@@ -299,6 +305,7 @@ bool FormDataEl::selectPart()
                   "inner join gost_types as g on e.id_gost_type=g.id "
                   "inner join purpose as pu on e.id_purpose=pu.id "
                   "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam=p.diam) and ee.id_pack = p.id_pack "
+                  "left join el_var ev on ev.id_el = p.id_el and ev.id_var = p.id_var "
                   "where p.dat_part between :d1 and :d2 "
                   "order by p.dat_part, p.n_s");
     query.bindValue(":d1",ui->dateEditBeg->date());
@@ -414,11 +421,15 @@ void FormDataEl::refreshData(QModelIndex /*index*/)
     int id_part=currentData(0).toInt();
 
     QSqlQuery tuQuery;
-    tuQuery.prepare("select gn.nam  from parti_gost pg "
-                    "inner join gost_new gn on gn.id = pg.id_gost "
-                    "where pg.id_part = :id "
-                    "order by gn.nam");
-    tuQuery.bindValue(":id",id_part);
+    tuQuery.prepare("select nam "
+                    "from zvd_get_tu_var((select dat_part from parti where id = :id1 ), "
+                    "(select id_el from parti where id = :id2 ), "
+                    "(select d.id from diam as d where d.diam = (select diam from parti where id = :id3 )), "
+                    "(select id_var from parti where id = :id4 ) ) ");
+    tuQuery.bindValue(":id1",id_part);
+    tuQuery.bindValue(":id2",id_part);
+    tuQuery.bindValue(":id3",id_part);
+    tuQuery.bindValue(":id4",id_part);
     modelGost->execQuery(tuQuery);
 
     ui->plainTextEditSert->setPlainText(getSrtStr(id_part));

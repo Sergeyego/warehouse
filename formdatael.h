@@ -28,6 +28,7 @@ public:
     explicit FormDataEl(QWidget *parent = 0);
     ~FormDataEl();
     QString marka();
+    QString markaSert();
     QString diametr();
     QString part();
     QString datePart();
