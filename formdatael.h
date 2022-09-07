@@ -84,12 +84,4 @@ public slots:
     void updPacker();
 };
 
-class CustomDelegate : public QItemDelegate
-{
-    Q_OBJECT
-public:
-    explicit CustomDelegate(QObject *parent=0);
-    void setEditorData(QWidget *editor,const QModelIndex &index) const;
-};
-
 #endif // FORMDATAEL_H

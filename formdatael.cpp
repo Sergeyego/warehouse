@@ -32,7 +32,6 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->tableViewPart->verticalHeader()->setDefaultSectionSize(ui->tableViewPart->verticalHeader()->fontMetrics().height()*1.5);
 
     mapper = new QDataWidgetMapper(this);
-    mapper->setItemDelegate(new CustomDelegate(this));
 
     mapper->setModel(modelPart);
 
@@ -53,6 +52,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     mapper->addMapping(ui->lineEditProc,16);
     mapper->addMapping(ui->plainTextEditDesc,17);
     mapper->addMapping(ui->lineEditMarkSert,19);
+    mapper->addMapping(ui->lineEditVar,20);
 
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),mapper,SLOT(setCurrentModelIndex(QModelIndex)));
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshData(QModelIndex)));
@@ -264,32 +264,39 @@ int FormDataEl::posPix()
 bool FormDataEl::check()
 {
     QString err;
+    bool dop=true;
     if (eanEd().length()!=12){
         err+=QString::fromUtf8("Отсутствует штрихкод. Нажмите кнопку \"Сгенерировать\".\n");
+        dop=false;
     }
     if (modelGost->rowCount()<1){
-        err+=QString::fromUtf8("Отсутствует нормативная документация. Обратитесь к контролёрам.\n");
+        err+=QString::fromUtf8("Отсутствует нормативная документация.\n");
     }
     if (znam().isEmpty()){
-        err+=QString::fromUtf8("Отсутствует знаменатель. Обратитесь к контролёрам.\n");
+        err+=QString::fromUtf8("Отсутствует знаменатель.\n");
     }
     if (modelAmp->rowCount()<1){
-        err+=QString::fromUtf8("Отсутствуют рекомендуемые значения токов. Обратитесь к начальнику ОТК.\n");
+        err+=QString::fromUtf8("Отсутствуют рекомендуемые значения токов.\n");
     }
     if (proc().isEmpty()){
-        err+=QString::fromUtf8("Отсутствует режим повторной прокалки. Обратитесь к начальнику ОТК.\n");
+        err+=QString::fromUtf8("Отсутствует режим повторной прокалки.\n");
     }
     if (vl().isEmpty()){
-        err+=QString::fromUtf8("Отсутствует допустимое содержание влаги. Обратитесь к начальнику ОТК.\n");
+        err+=QString::fromUtf8("Отсутствует допустимое содержание влаги.\n");
     }
     if (descr().isEmpty()){
-        err+=QString::fromUtf8("Отсутствует описание. Обратитесь к начальнику ОТК.\n");
+        err+=QString::fromUtf8("Отсутствует описание.\n");
     }
 
-    if (!err.isEmpty()){
+    bool ok=err.isEmpty();
+
+    if (!ok){
+        if (dop){
+            err+=QString::fromUtf8("Обратитесь к начальнику ОТК.");
+        }
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),err,QMessageBox::Ok);
     }
-    return err.isEmpty();
+    return ok;
 }
 
 
@@ -297,7 +304,7 @@ bool FormDataEl::selectPart()
 {
     QSqlQuery query;
     query.prepare("select p.id, p.n_s, p.dat_part, e.marka, p.diam, i.nam, ep.pack_ed, ep.pack_group, ep.mass_ed, ep.mass_group, ee.ean_ed, ee.ean_group, "
-                  "g.nam, pu.nam, coalesce(p.ibco, ev.znam), e.vl, e.pr2, ev.descr, e.id_pic, coalesce(e.marka_sert,e.marka) "
+                  "g.nam, pu.nam, coalesce(p.ibco, ev.znam), e.vl, ev.proc, ev.descr, e.id_pic, coalesce(e.marka_sert,e.marka), elv.nam "
                   "from parti as p "
                   "inner join elrtr as e on p.id_el=e.id "
                   "inner join istoch as i on p.id_ist=i.id "
@@ -306,6 +313,7 @@ bool FormDataEl::selectPart()
                   "inner join purpose as pu on e.id_purpose=pu.id "
                   "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam=p.diam) and ee.id_pack = p.id_pack "
                   "left join el_var ev on ev.id_el = p.id_el and ev.id_var = p.id_var "
+                  "inner join elrtr_vars elv on elv.id = p.id_var "
                   "where p.dat_part between :d1 and :d2 "
                   "order by p.dat_part, p.n_s");
     query.bindValue(":d1",ui->dateEditBeg->date());
@@ -438,9 +446,12 @@ void FormDataEl::refreshData(QModelIndex /*index*/)
     queryAmp.prepare("select d.diam, a.bot, a.vert, a.ceil "
                      "from amp as a "
                      "inner join diam as d on a.id_diam = d.id "
-                     "where a.id_el = (select id_el from parti where id = :id1 ) and d.diam = (select diam from parti where id = :id2 )");
+                     "where a.id_el = (select id_el from parti where id = :id1 ) "
+                     "and d.diam = (select diam from parti where id = :id2 ) "
+                     "and a.id_var = (select id_var from parti where id = :id3 )");
     queryAmp.bindValue(":id1",id_part);
     queryAmp.bindValue(":id2",id_part);
+    queryAmp.bindValue(":id3",id_part);
     if (modelAmp->execQuery(queryAmp)){
         ui->tableViewAmp->setColumnWidth(0,100);
         ui->tableViewAmp->setColumnWidth(1,100);
@@ -520,29 +531,5 @@ void FormDataEl::updPacker()
         modelPacker->setQuery(query);
     } else {
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-    }
-}
-
-CustomDelegate::CustomDelegate(QObject *parent) : QItemDelegate(parent)
-{
-
-}
-
-void CustomDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
-{
-    if (index.column()==16){
-        QLineEdit *line = qobject_cast<QLineEdit *>(editor);
-        if (line){
-            QString pr=index.model()->data(index,Qt::EditRole).toString();
-            QStringList list=pr.split(":");
-            if (list.size()==4){
-                line->setText(QString("%1±%2°C %3 %4").arg(list.at(0)).arg(list.at(1)).arg(list.at(2)).arg(list.at(3)));
-            } else {
-                line->clear();
-            }
-        }
-
-    } else {
-        QItemDelegate::setEditorData(editor,index);
     }
 }
