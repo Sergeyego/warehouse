@@ -372,12 +372,14 @@ QString FormDataEl::getSrtStr(int id_part)
 
     QSqlQuery vedQuery;
     vedQuery.prepare("select z.id_doc_t, z.ved_short, z.grade_nam "
-                     "from zvd_get_sert((select dat_part from parti where id = :id_part1 ), "
+                     "from zvd_get_sert_var((select dat_part from parti where id = :id_part1 ), "
                      "(select id_el from parti where id = :id_part2 ), "
-                     "(select d.id from diam as d where d.diam = (select diam from parti where id = :id_part3 ))) as z order by z.id_doc_t, z.ved_short");
+                     "(select d.id from diam as d where d.diam = (select diam from parti where id = :id_part3 )), "
+                     "(select id_var from parti where id = :id_part4 ) ) as z where z.en = true order by z.id_doc_t, z.ved_short");
     vedQuery.bindValue(":id_part1",id_part);
     vedQuery.bindValue(":id_part2",id_part);
     vedQuery.bindValue(":id_part3",id_part);
+    vedQuery.bindValue(":id_part4",id_part);
     if (vedQuery.exec()){
         while (vedQuery.next()){
             int id_doc_t=vedQuery.value(0).toInt();
