@@ -257,8 +257,10 @@ void BalanceModel::updData(QDate dat)
         }
     }
     QSqlQuery query;
-    query.prepare("(select 'e:'||p.id, ep.pack_ed, p.prim_prod  from parti p "
+    query.prepare("(select 'e:'||p.id, ep.pack_ed, "
+                  "CASE WHEN p.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || p.prim_prod from parti p "
                   "inner join el_pack ep on ep.id = p.id_pack "
+                  "inner join elrtr_vars ev on ev.id = p.id_var "
                   "where p.id between :minide and :maxide "
                   ") union ("
                   "select 'w:'||wp.id, CASE WHEN (COALESCE(wp2.mas_ed,0)<>0) THEN (' (' || COALESCE(wp2.mas_ed,0) || ' кг)') ELSE '' end, wp.prim_prod "
