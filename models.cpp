@@ -76,11 +76,15 @@ ModelElPart::ModelElPart(QObject *parent) : DbRelationalModel(parent)
 
 void ModelElPart::refresh(QDate date)
 {
-    QString query="select p.id, p.n_s||'-'||date_part('year',p.dat_part)||' '||e.marka||' ф '||cast(p.diam as varchar(3)) || ' ('||ep.pack_ed||')' as str, "
+    QString query="select p.id, p.n_s||'-'||date_part('year',p.dat_part)||' '||e.marka||' ф '||cast(p.diam as varchar(3)) "
+                  "|| ' ('||ep.pack_ed||')' "
+                  "|| CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END "
+                  "as str, "
                   "p.id_el ||':'||(select d.id from diam d where d.diam=p.diam)||'-'|| date_part('year',p.dat_part), ep.mass_ed "
                   "from parti p "
                   "inner join el_pack ep on ep.id=p.id_pack "
                   "inner join elrtr e on e.id=p.id_el "
+                  "inner join elrtr_vars ev on ev.id = p.id_var "
                   "where p.dat_part >= '"+date.toString("yyyy-MM-dd")+"' "
                   "order by str desc";
     setQuery(query);
