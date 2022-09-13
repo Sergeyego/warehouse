@@ -18,6 +18,7 @@
 #include "formlabelsel.h"
 #include "formlabelswire.h"
 #include "formcells.h"
+#include "formbalanceew.h"
 
 namespace Ui {
 class MainWindow;
@@ -44,6 +45,8 @@ private slots:
     void newFormPoluch();
     void newFormDrv();
     void newFormBalance();
+    void newFormBalanceEl();
+    void newFormBalanceWire();
     void newFormTurnovers();
     void newAnShipEl();
     void newAnShipWire();

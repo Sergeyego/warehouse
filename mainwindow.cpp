@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
     actAction(ui->actionDrv,&MainWindow::newFormDrv);
     actAction(ui->actionBalance,&MainWindow::newFormBalance);
+    actAction(ui->actionBalanceEl,&MainWindow::newFormBalanceEl);
+    actAction(ui->actionBalanceWire,&MainWindow::newFormBalanceWire);
     actAction(ui->actionTurnovers,&MainWindow::newFormTurnovers);
     actAction(ui->actionAnShipEl,&MainWindow::newAnShipEl);
     actAction(ui->actionAnShipWire,&MainWindow::newAnShipWire);
@@ -121,6 +123,20 @@ void MainWindow::newFormBalance()
 {
     if (!exist(sender())){
         addSubWindow(new FormBalance(),sender());
+    }
+}
+
+void MainWindow::newFormBalanceEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormBalanceEW(true,false),sender());
+    }
+}
+
+void MainWindow::newFormBalanceWire()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormBalanceEW(false,true),sender());
     }
 }
 

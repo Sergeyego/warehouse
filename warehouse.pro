@@ -70,7 +70,8 @@ SOURCES += \
     formcells.cpp \
     dialoglblsize.cpp \
     code128/code128.cpp \
-    formdrv.cpp
+    formdrv.cpp \
+    formbalanceew.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -117,7 +118,8 @@ HEADERS += \
     formcells.h \
     dialoglblsize.h \
     code128/code128.h \
-    formdrv.h
+    formdrv.h \
+    formbalanceew.h
 
 FORMS += \
         mainwindow.ui \
@@ -145,7 +147,8 @@ FORMS += \
     dialogprintpacklist.ui \
     formcells.ui \
     dialoglblsize.ui \
-    formdrv.ui
+    formdrv.ui \
+    formbalanceew.ui
 
 RC_FILE = ico.rc
 

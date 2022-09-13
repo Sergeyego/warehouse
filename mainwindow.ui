@@ -65,6 +65,8 @@
     </property>
     <addaction name="actionBalance"/>
     <addaction name="actionTurnovers"/>
+    <addaction name="actionBalanceEl"/>
+    <addaction name="actionBalanceWire"/>
    </widget>
    <widget class="QMenu" name="menu_5">
     <property name="title">
@@ -123,12 +125,12 @@
   </action>
   <action name="actionBalance">
    <property name="text">
-    <string>Остатки</string>
+    <string>Наличие в ячейках</string>
    </property>
   </action>
   <action name="actionTurnovers">
    <property name="text">
-    <string>Обороты</string>
+    <string>Обороты по ячейкам</string>
    </property>
   </action>
   <action name="actionAnShipEl">
@@ -194,6 +196,16 @@
   <action name="actionDrv">
    <property name="text">
     <string>Водители</string>
+   </property>
+  </action>
+  <action name="actionBalanceEl">
+   <property name="text">
+    <string>Наличие электродов</string>
+   </property>
+  </action>
+  <action name="actionBalanceWire">
+   <property name="text">
+    <string>Наличие проволоки</string>
    </property>
   </action>
  </widget>
