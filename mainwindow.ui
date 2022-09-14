@@ -45,6 +45,8 @@
     </property>
     <addaction name="actionAcceptanceEl"/>
     <addaction name="actionAcceptanceWire"/>
+    <addaction name="actionRetEl"/>
+    <addaction name="actionRetWire"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -64,9 +66,11 @@
      <string>Отчеты</string>
     </property>
     <addaction name="actionBalance"/>
-    <addaction name="actionTurnovers"/>
     <addaction name="actionBalanceEl"/>
     <addaction name="actionBalanceWire"/>
+    <addaction name="actionTurnovers"/>
+    <addaction name="actionReportEl"/>
+    <addaction name="actionReportWire"/>
    </widget>
    <widget class="QMenu" name="menu_5">
     <property name="title">
@@ -206,6 +210,26 @@
   <action name="actionBalanceWire">
    <property name="text">
     <string>Наличие проволоки</string>
+   </property>
+  </action>
+  <action name="actionReportEl">
+   <property name="text">
+    <string>Отчет по электродам</string>
+   </property>
+  </action>
+  <action name="actionReportWire">
+   <property name="text">
+    <string>Отчет по проволоке</string>
+   </property>
+  </action>
+  <action name="actionRetEl">
+   <property name="text">
+    <string>Возврат/перемещение электродов</string>
+   </property>
+  </action>
+  <action name="actionRetWire">
+   <property name="text">
+    <string>Возврат/перемещение проволоки</string>
    </property>
   </action>
  </widget>

@@ -6,6 +6,9 @@ FormBalance::FormBalance(QWidget *parent) :
     ui(new Ui::FormBalance)
 {
     ui->setupUi(this);
+    ui->pushButtonUpd->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
+    ui->pushButtonSave->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
+
     loadSettings();
 
     ui->tableViewPart->hide();

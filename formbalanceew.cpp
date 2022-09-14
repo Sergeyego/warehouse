@@ -6,6 +6,9 @@ FormBalanceEW::FormBalanceEW(bool e, bool w, QWidget *parent) :
     ui(new Ui::FormBalanceEW)
 {
     ui->setupUi(this);
+    ui->pushButtonUpd->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
+    ui->pushButtonSave->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
+
     ui->dateEdit->setDate(QDate::currentDate());
 
     ui->tableViewMark->setHidden(ui->radioButtonPart->isChecked());

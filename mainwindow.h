@@ -6,11 +6,14 @@
 #include <QSettings>
 #include "formacceptancewire.h"
 #include "formacceptanceel.h"
+#include "formretwire.h"
 #include "formship.h"
 #include "formpoluch.h"
 #include "formdrv.h"
 #include "formbalance.h"
 #include "formturnovers.h"
+#include "formreportel.h"
+#include "formreportwire.h"
 #include "olap/cubewidget.h"
 #include "formaccnaklel.h"
 #include "formaccnaklwire.h"
@@ -41,6 +44,7 @@ private slots:
     void closeTab(int index);
     void newFormAcceptanceWire();
     void newFormAcceptanceEl();
+    void newFormRetWire();
     void newFormShip();
     void newFormPoluch();
     void newFormDrv();
@@ -48,6 +52,8 @@ private slots:
     void newFormBalanceEl();
     void newFormBalanceWire();
     void newFormTurnovers();
+    void newFormReportEl();
+    void newFormReportWire();
     void newAnShipEl();
     void newAnShipWire();
     void newAnAccEl();

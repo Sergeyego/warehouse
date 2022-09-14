@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionLblWire,&MainWindow::newFormLabelsWire);
     actAction(ui->actionAcceptanceWire,&MainWindow::newFormAcceptanceWire);
     actAction(ui->actionAcceptanceEl,&MainWindow::newFormAcceptanceEl);
+    actAction(ui->actionRetWire,&MainWindow::newFormRetWire);
     actAction(ui->actionShip,&MainWindow::newFormShip);
     actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
     actAction(ui->actionDrv,&MainWindow::newFormDrv);
@@ -18,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionBalanceEl,&MainWindow::newFormBalanceEl);
     actAction(ui->actionBalanceWire,&MainWindow::newFormBalanceWire);
     actAction(ui->actionTurnovers,&MainWindow::newFormTurnovers);
+    actAction(ui->actionReportEl,&MainWindow::newFormReportEl);
+    actAction(ui->actionReportWire,&MainWindow::newFormReportWire);
     actAction(ui->actionAnShipEl,&MainWindow::newAnShipEl);
     actAction(ui->actionAnShipWire,&MainWindow::newAnShipWire);
     actAction(ui->actionAnAccEl,&MainWindow::newAnAccEl);
@@ -98,6 +101,13 @@ void MainWindow::newFormAcceptanceEl()
     }
 }
 
+void MainWindow::newFormRetWire()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormRetWire,sender());
+    }
+}
+
 void MainWindow::newFormShip()
 {
     if (!exist(sender())){
@@ -144,6 +154,20 @@ void MainWindow::newFormTurnovers()
 {
     if (!exist(sender())){
         addSubWindow(new FormTurnovers(),sender());
+    }
+}
+
+void MainWindow::newFormReportEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormReportEl(),sender());
+    }
+}
+
+void MainWindow::newFormReportWire()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormReportWire(),sender());
     }
 }
 

@@ -73,7 +73,10 @@ SOURCES += \
     formdrv.cpp \
     formbalanceew.cpp \
     executor.cpp \
-    progressreportdialog.cpp
+    progressreportdialog.cpp \
+    formreportel.cpp \
+    formreportwire.cpp \
+    formretwire.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -123,7 +126,10 @@ HEADERS += \
     formdrv.h \
     formbalanceew.h \
     executor.h \
-    progressreportdialog.h
+    progressreportdialog.h \
+    formreportel.h \
+    formreportwire.h \
+    formretwire.h
 
 FORMS += \
         mainwindow.ui \
@@ -153,7 +159,10 @@ FORMS += \
     dialoglblsize.ui \
     formdrv.ui \
     formbalanceew.ui \
-    progressreportdialog.ui
+    progressreportdialog.ui \
+    formreportel.ui \
+    formreportwire.ui \
+    formretwire.ui
 
 RC_FILE = ico.rc
 
