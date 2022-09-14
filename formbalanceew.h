@@ -5,6 +5,8 @@
 #include "tablemodel.h"
 #include <QSqlQuery>
 #include <QSortFilterProxyModel>
+#include <QInputDialog>
+#include "executor.h"
 
 namespace Ui {
 class FormBalanceEW;
@@ -25,13 +27,15 @@ private:
     QSortFilterProxyModel *proxyModelPart;
     bool en_el;
     bool en_wire;
-    double loadData(QVector<QVector<QVariant>> &data, QMultiMap<QString,double> &map, QSqlQuery &query);
+    Executor *sqlExecutor;
 
 private slots:
+    void startUpd();
     void upd();
     void setByPart();
     void selectMark(QModelIndex index);
     void save();
+    void edtDesc(QModelIndex index);
 };
 
 #endif // FORMBALANCEEW_H

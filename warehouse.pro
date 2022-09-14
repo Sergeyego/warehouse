@@ -71,7 +71,9 @@ SOURCES += \
     dialoglblsize.cpp \
     code128/code128.cpp \
     formdrv.cpp \
-    formbalanceew.cpp
+    formbalanceew.cpp \
+    executor.cpp \
+    progressreportdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -119,7 +121,9 @@ HEADERS += \
     dialoglblsize.h \
     code128/code128.h \
     formdrv.h \
-    formbalanceew.h
+    formbalanceew.h \
+    executor.h \
+    progressreportdialog.h
 
 FORMS += \
         mainwindow.ui \
@@ -148,7 +152,8 @@ FORMS += \
     formcells.ui \
     dialoglblsize.ui \
     formdrv.ui \
-    formbalanceew.ui
+    formbalanceew.ui \
+    progressreportdialog.ui
 
 RC_FILE = ico.rc
 

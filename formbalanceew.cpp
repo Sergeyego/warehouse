@@ -10,6 +10,8 @@ FormBalanceEW::FormBalanceEW(bool e, bool w, QWidget *parent) :
 
     ui->tableViewMark->setHidden(ui->radioButtonPart->isChecked());
 
+    sqlExecutor = new Executor(this);
+
     modelMark = new TableModel(this);
     modelPart = new TableModel(this);
     modelPart->setDecimal(2);
@@ -35,11 +37,13 @@ FormBalanceEW::FormBalanceEW(bool e, bool w, QWidget *parent) :
     ui->tableViewPart->setColumnHidden(ui->tableViewPart->model()->columnCount()-1,true);
     ui->tableViewMark->setColumnHidden(0,true);
 
-    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(upd()));
+    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(startUpd()));
+    connect(sqlExecutor,SIGNAL(finished()),this,SLOT(upd()));
     connect(ui->radioButtonMark,SIGNAL(clicked(bool)),this,SLOT(setByPart()));
     connect(ui->radioButtonPart,SIGNAL(clicked(bool)),this,SLOT(setByPart()));
     connect(ui->tableViewMark->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(selectMark(QModelIndex)));
     connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(save()));
+    connect(ui->tableViewPart,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(edtDesc(QModelIndex)));
 }
 
 FormBalanceEW::~FormBalanceEW()
@@ -47,76 +51,59 @@ FormBalanceEW::~FormBalanceEW()
     delete ui;
 }
 
-double FormBalanceEW::loadData(QVector<QVector<QVariant> > &data, QMultiMap<QString,double> &map, QSqlQuery &query)
+void FormBalanceEW::startUpd()
 {
-    double sum=0;
-    int colCount=query.record().count();
-    while (query.next()){
-        QVector<QVariant> dt;
-        for (int i=0; i<colCount; i++){
-            dt.push_back(query.value(i));
-        }
-        QString key=query.value(1).toString()+"#"+query.value(2).toString()+"#"+query.value(3).toString();
-        dt.push_back(key);
-        double kvo=query.value(colCount-1).toDouble();
-        map.insert(key,kvo);
-        sum+=kvo;
-        data.push_back(dt);
+    QString query;
+    if (en_el){
+        query=QString("select 'e:'||cpn.id_part, e.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END, "
+                      "cast(p.diam as varchar(3)), ep.pack_ed, p.n_s, date_part('year',p.dat_part)::integer as pye, i.nam, rn.nam, p.prim_prod, cpn.kvo, "
+                      "e.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END||'#'||cast(p.diam as varchar(3))||'#'||ep.pack_ed "
+                      "from calc_parti_new('%1') as cpn "
+                      "inner join parti p on p.id = cpn.id_part "
+                      "inner join elrtr e on e.id = p.id_el "
+                      "inner join el_pack ep on ep.id = p.id_pack "
+                      "inner join istoch i on i.id = p.id_ist "
+                      "left join rcp_nam rn  on rn.id = p.id_rcp "
+                      "inner join elrtr_vars ev on ev.id = p.id_var "
+                      "where cpn.kvo<>0 "
+                      "order by e.marka, p.diam, pye, p.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
+
+    } else if (en_wire){
+        query=QString("select 'w:'||p.id, pr.nam, d.sdim, k.short|| "
+                      "CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END, "
+                      "m.n_s, cast(date_part('year',m.dat) as integer) as yer, "
+                      "s.nam, pb.n_plav, p.prim_prod, c.st, "
+                      "pr.nam||'#'||d.sdim||'#'||k.short|| CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END "
+                      "from wire_parti p "
+                      "inner join wire_parti_m as m on p.id_m=m.id "
+                      "inner join provol pr on pr.id=m.id_provol "
+                      "inner join (select cs.id_wparti, cs.st from wire_calc_stock('%1') cs) c on c.id_wparti=p.id "
+                      "inner join diam d on d.id=m.id_diam "
+                      "inner join wire_pack_kind k on p.id_pack=k.id "
+                      "inner join wire_source s on m.id_source=s.id "
+                      "inner join prov_buht pb on pb.id = m.id_buht "
+                      "inner join wire_pack wp on wp.id = p.id_pack_type "
+                      "where c.st <>0 "
+                      "order by pr.nam, d.sdim, k.nam, yer, m.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
     }
-    return sum;
+    if (!query.isEmpty()){
+        sqlExecutor->setQuery(query);
+        sqlExecutor->start();
+    }
 }
 
 void FormBalanceEW::upd()
 {
-    QVector<QVector<QVariant>> data;
+    QVector<QVector<QVariant>> data=sqlExecutor->getData();
     QVector<QVector<QVariant>> dataMark;
     QMultiMap<QString,double> map;
     double sum=0;
 
-    if (en_el){
-        QSqlQuery queryEl;
-        queryEl.prepare("select 'e:'||cpn.id_part, e.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END, "
-                        "cast(p.diam as varchar(3)), ep.pack_ed, p.n_s, date_part('year',p.dat_part)::integer as pye, i.nam, rn.nam, p.prim_prod, cpn.kvo "
-                        "from calc_parti_new(:d) as cpn "
-                        "inner join parti p on p.id = cpn.id_part "
-                        "inner join elrtr e on e.id = p.id_el "
-                        "inner join el_pack ep on ep.id = p.id_pack "
-                        "inner join istoch i on i.id = p.id_ist "
-                        "left join rcp_nam rn  on rn.id = p.id_rcp "
-                        "inner join elrtr_vars ev on ev.id = p.id_var "
-                        "where cpn.kvo<>0 "
-                        "order by e.marka, p.diam, pye, p.n_s");
-        queryEl.bindValue(":d",ui->dateEdit->date());
-        if (queryEl.exec()){
-            sum+=loadData(data,map,queryEl);
-        } else {
-            QMessageBox::critical(this,tr("Ошибка"),queryEl.lastError().text(),QMessageBox::Cancel);
-        }
-    }
-
-    if (en_wire){
-        QSqlQuery queryWire;
-        queryWire.prepare("select 'w:'||p.id, pr.nam, d.sdim, k.short|| "
-                          "CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END, "
-                          "m.n_s, cast(date_part('year',m.dat) as integer) as yer, "
-                          "s.nam, pb.n_plav, p.prim_prod, c.st "
-                          "from wire_parti p "
-                          "inner join wire_parti_m as m on p.id_m=m.id "
-                          "inner join provol pr on pr.id=m.id_provol "
-                          "inner join (select cs.id_wparti, cs.st from wire_calc_stock(:d) cs) c on c.id_wparti=p.id "
-                          "inner join diam d on d.id=m.id_diam "
-                          "inner join wire_pack_kind k on p.id_pack=k.id "
-                          "inner join wire_source s on m.id_source=s.id "
-                          "inner join prov_buht pb on pb.id = m.id_buht "
-                          "inner join wire_pack wp on wp.id = p.id_pack_type "
-                          "where c.st <>0 "
-                          "order by pr.nam, d.sdim, k.nam, yer, m.n_s");
-        queryWire.bindValue(":d",ui->dateEdit->date());
-        if (queryWire.exec()){
-            sum+=loadData(data,map,queryWire);
-        } else {
-            QMessageBox::critical(this,tr("Ошибка"),queryWire.lastError().text(),QMessageBox::Cancel);
-        }
+    for (QVector<QVariant> dt : data){
+        double kvo=dt.at(dt.size()-2).toDouble();
+        sum+=kvo;
+        QString key=dt.at(dt.size()-1).toString();
+        map.insert(key,kvo);
     }
 
     QStringList keys=map.uniqueKeys();
@@ -195,5 +182,42 @@ void FormBalanceEW::save()
     } else {
         title+=tr(" по маркам");
         ui->tableViewMark->save(title,2,true);
+    }
+}
+
+void FormBalanceEW::edtDesc(QModelIndex index)
+{
+    QString key = ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),ui->tableViewPart->model()->columnCount()-1),Qt::EditRole).toString();
+    if (key.isEmpty()){
+        return;
+    }
+    key=key.replace("#"," ");
+    QString descr = ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),8),Qt::EditRole).toString();
+    QString part = ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),4),Qt::EditRole).toString();
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("Введите комментарий"),key+tr(" партия № ")+part, QLineEdit::Normal,descr, &ok);
+    if (ok){
+        QString id = ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),0),Qt::EditRole).toString();
+        QStringList idl=id.split(":");
+        if (idl.size()>1){
+            QString pref=idl.at(0);
+            int id_part=idl.at(1).toInt();
+            QSqlQuery query;
+            if (pref=="e"){
+                query.prepare("update parti set prim_prod = :text where id = :id");
+            } else if (pref=="w"){
+                query.prepare("update wire_parti set prim_prod = :text where id = :id");
+            }
+            if (!query.executedQuery().isEmpty()){
+                query.bindValue(":text",text);
+                query.bindValue(":id",id_part);
+                if (query.exec()){
+                    QModelIndex descIndex = ui->tableViewPart->model()->index(index.row(),8);
+                    ui->tableViewPart->model()->setData(descIndex,text,Qt::EditRole);
+                } else {
+                    QMessageBox::critical(this,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
+                }
+            }
+        }
     }
 }
