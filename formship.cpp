@@ -19,12 +19,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     QStringList listStatHeader;
     listStatHeader<<"Номенклатура"<<"Масса, кг";
 
-    modelElPart = new ModelElPart(this);
-    relElPart = new RelPart(modelElPart,this);
-
-    modelWirePart = new ModelWirePart(this);
-    relWirePart = new RelPart(modelWirePart,this);
-
     modelElStat = new TableModel(this);
     modelElStat->setHeader(listStatHeader);
     modelElStat->setDecimal(2);
@@ -83,7 +77,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ei.namKvo="massa";
     ei.modelBalence=modelBalance;
     ei.prefix="e";
-    ei.relPart = relElPart;
+    ei.relPart = new RelPart(Models::instance()->modelElPart,this);
     modelShipEl = new ModelShipData(ei,this);
     ui->tableViewEl->setModel(modelShipEl);
     ui->tableViewEl->setColumnHidden(0,true);
@@ -101,7 +95,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     wi.namKvo="m_netto";
     wi.modelBalence=modelBalance;
     wi.prefix="w";
-    wi.relPart = relWirePart;
+    wi.relPart = new RelPart(Models::instance()->modelWirePart,this);
     modelShipWire = new ModelShipData(wi, this);
     ui->tableViewWire->setModel(modelShipWire);
     ui->tableViewWire->setColumnHidden(0,true);
@@ -178,8 +172,8 @@ void FormShip::updShip()
         if (ui->checkBoxOnly->isChecked()){
             id_pol=ui->comboBoxOnly->model()->data(ui->comboBoxOnly->model()->index(ui->comboBoxOnly->currentIndex(),0),Qt::EditRole).toInt();
         }
-        modelElPart->refresh(ui->dateEditBeg->date().addYears(-4));
-        modelWirePart->refresh(ui->dateEditBeg->date().addYears(-4));
+        Models::instance()->modelElPart->refresh();
+        Models::instance()->modelWirePart->refresh();
         modelShip->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date(),id_pol);
     }
 }
@@ -239,8 +233,8 @@ void FormShip::updBalance()
     ui->tableViewWire->setEditTriggers(editTrig);
     modelBalance->updData(date);
     ui->pushButtonEdt->setEnabled(false);
-    relElPart->refreshModel();
-    relWirePart->refreshModel();
+    Models::instance()->modelElPart->refresh();
+    Models::instance()->modelWirePart->refresh();
     modelShipEl->setFlt("");
     modelShipWire->setFlt("");
 }

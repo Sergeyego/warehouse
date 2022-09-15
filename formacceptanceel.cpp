@@ -15,7 +15,7 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     ui->comboBoxPart->addItem(tr("начиная с текущего года"));
     ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
     ui->comboBoxPart->addItem(tr("за всё время"));
-    ui->comboBoxPart->setCurrentIndex(1);
+    ui->comboBoxPart->setCurrentIndex(Models::instance()->relElPart->currentFilter());
 
     actionPrintLblAll = new QAction("Напечатать все",this);
     actionPrintLblOne = new QAction("Напечатать одну",this);
@@ -23,10 +23,7 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     ui->toolButtonPal->addAction(actionPrintLblAll);
     ui->toolButtonPal->addAction(actionPrintLblOne);
 
-    modelElPart = new ModelElPart(this);
-    relElPart = new RelPart(modelElPart,this);
-
-    modelAcceptanceElData = new ModelAcceptanceElData(relElPart, this);
+    modelAcceptanceElData = new ModelAcceptanceElData(this);
     ui->tableViewAccData->setModel(modelAcceptanceElData);
     for (int i=0; i<5; i++){
         ui->tableViewAccData->setColumnHidden(i,true);
@@ -58,12 +55,13 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
 
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),relElPart,SLOT(setFilter(int)));
+    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(modelAcceptanceElData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
+    connect(Models::instance()->relElPart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
 
     updAcc();
 }
@@ -105,7 +103,10 @@ void FormAcceptanceEl::updAcc()
     } else {
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
-    modelElPart->refresh(minDate);
+    Models::instance()->modelElPart->setMinDate(minDate);
+    if (sender()==ui->pushButtonUpd){
+        Models::instance()->modelElPart->refresh();
+    }
     modelAcceptanceEl->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 
@@ -156,6 +157,13 @@ void FormAcceptanceEl::printNakl()
     d.exec();
 }
 
+void FormAcceptanceEl::setCurrentFilter(int ind)
+{
+    ui->comboBoxPart->blockSignals(true);
+    ui->comboBoxPart->setCurrentIndex(ind);
+    ui->comboBoxPart->blockSignals(false);
+}
+
 ModelAcceptanceEl::ModelAcceptanceEl(QWidget *parent) : DbTableModel("prod_nakl",parent)
 {
     addColumn("id",tr("id"));
@@ -185,14 +193,14 @@ bool ModelAcceptanceEl::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelAcceptanceElData::ModelAcceptanceElData(RelPart *relPart, QObject *parent) : DbTableModel("prod",parent)
+ModelAcceptanceElData::ModelAcceptanceElData(QObject *parent) : DbTableModel("prod",parent)
 {
     addColumn("id",tr("id"));
     addColumn("id_nakl",tr("id_nakl"));
     addColumn("docs",tr("Номер"));
     addColumn("dat",tr("Дата"));
     addColumn("id_ist",tr("Тип"));
-    addColumn("id_part",tr("Партия"),relPart);
+    addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
     addColumn("kvo",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
     addColumn("barcodecont",tr("Штрихкод поддона"));

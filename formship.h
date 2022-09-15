@@ -105,10 +105,6 @@ private:
     TableModel *modelElStat;
     TableModel *modelWireStat;
     QSortFilterProxyModel *proxyModelBalance;
-    ModelElPart *modelElPart;
-    RelPart *relElPart;
-    ModelWirePart *modelWirePart;
-    RelPart *relWirePart;
     void loadsettings();
     void savesettings();
     void calcStat(ModelShipData *modelShipData, TableModel *modelStat);

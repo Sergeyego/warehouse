@@ -26,6 +26,14 @@ Models::Models(QObject *parent) :
                                                  "inner  join diam d on d.id = we.id_diam "
                                                  "inner join wire_pack_kind wpk on wpk.id = we.id_spool) "
                                                  "order by typ, id_u, mark"),0,1);
+    modelWirePart = new ModelWirePart(this);
+    relWirePart = new RelPart(modelWirePart,this);
+    rels.push_back(relWirePart);
+
+    modelElPart = new ModelElPart(this);
+    relElPart = new RelPart(modelElPart,this);
+    rels.push_back(relElPart);
+
     relKis->proxyModel()->sort(1);
     relKis->proxyModel()->sort(2);
 }
@@ -71,29 +79,46 @@ void Models::refresh()
 
 ModelElPart::ModelElPart(QObject *parent) : DbRelationalModel(parent)
 {
-
+    minDate = QDate::currentDate().addYears(-4);
 }
 
-void ModelElPart::refresh(QDate date)
+void ModelElPart::setMinDate(QDate d)
 {
-    QString query="select p.id, p.n_s||'-'||date_part('year',p.dat_part)||' '||e.marka||' ф '||cast(p.diam as varchar(3)) "
-                  "|| ' ('||ep.pack_ed||')' "
-                  "|| CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END "
-                  "as str, "
-                  "p.id_el ||':'||(select d.id from diam d where d.diam=p.diam)||'-'|| date_part('year',p.dat_part), ep.mass_ed "
-                  "from parti p "
-                  "inner join el_pack ep on ep.id=p.id_pack "
-                  "inner join elrtr e on e.id=p.id_el "
-                  "inner join elrtr_vars ev on ev.id = p.id_var "
-                  "where p.dat_part >= '"+date.toString("yyyy-MM-dd")+"' "
-                  "order by str desc";
+    if (d<minDate){
+        minDate=d;
+        refresh();
+    } else if (rowCount()<1) {
+        refresh();
+    }
+}
+
+void ModelElPart::refresh()
+{
+    //qDebug()<<"el_parti_refresh";
+    QString query=QString("select p.id, p.n_s||'-'||date_part('year',p.dat_part)||' '||e.marka||' ф '||cast(p.diam as varchar(3)) "
+                          "|| ' ('||ep.pack_ed||')' "
+                          "|| CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END "
+                          "as str, "
+                          "p.id_el ||':'||(select d.id from diam d where d.diam=p.diam)||'-'|| date_part('year',p.dat_part), ep.mass_ed "
+                          "from parti p "
+                          "inner join el_pack ep on ep.id=p.id_pack "
+                          "inner join elrtr e on e.id=p.id_el "
+                          "inner join elrtr_vars ev on ev.id = p.id_var "
+                          "where p.dat_part >= '%1' "
+                          "order by str desc").arg(minDate.toString("yyyy-MM-dd"));
     setQuery(query);
 }
 
 RelPart::RelPart(DbRelationalModel *model, QObject *parent) : DbRelation(model,0,1,parent)
 {
     this->proxyModel()->setFilterKeyColumn(2);
-    setFilter(1);
+    fltIndex=1;
+    setFilter(fltIndex);
+}
+
+int RelPart::currentFilter()
+{
+    return fltIndex;
 }
 
 void RelPart::setFilter(int index)
@@ -106,16 +131,29 @@ void RelPart::setFilter(int index)
         pattern=QString::number(year-1)+"|"+QString::number(year);
     }
     this->proxyModel()->setFilterRegExp(pattern);
+    fltIndex=index;
+    emit filterChanged(index);
 }
 
 ModelWirePart::ModelWirePart(QObject *parent) : DbRelationalModel(parent)
 {
-
+    minDate = QDate::currentDate().addYears(-4);
 }
 
-void ModelWirePart::refresh(QDate date)
+void ModelWirePart::setMinDate(QDate d)
 {
-    QString query="select p.id, m.n_s ||'-'||date_part('year',m.dat) ||' '||pr.nam ||' '|| d.sdim || ' '|| k.short || "
+    if (d<minDate){
+        minDate=d;
+        refresh();
+    } else if (rowCount()<1) {
+        refresh();
+    }
+}
+
+void ModelWirePart::refresh()
+{
+    //qDebug()<<"wire_parti_refresh";
+    QString query=QString("select p.id, m.n_s ||'-'||date_part('year',m.dat) ||' '||pr.nam ||' '|| d.sdim || ' '|| k.short || "
                   "CASE WHEN (COALESCE(t.mas_ed,0)<>0) THEN (' (' || COALESCE(t.mas_ed,0) || ' кг)') ELSE ' ' END as part, "
                   "m.id_provol ||':'|| m.id_diam ||':'|| p.id_pack ||'-'||date_part('year',m.dat), "
                   "t.mas_ed "
@@ -125,7 +163,7 @@ void ModelWirePart::refresh(QDate date)
                   "inner join diam as d on d.id=m.id_diam "
                   "inner join wire_pack_kind as k on k.id=p.id_pack "
                   "inner join wire_pack as t on t.id=p.id_pack_type "
-                  "where m.dat >= '"+date.toString("yyyy-MM-dd")+"' "
-                  "order by part desc";
+                  "where m.dat >= '%1' "
+                  "order by part desc").arg(minDate.toString("yyyy-MM-dd"));
     setQuery(query);
 }

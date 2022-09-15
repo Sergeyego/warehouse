@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
+#include "models.h"
 
 namespace Ui {
 class FormRetWire;
@@ -22,6 +23,15 @@ private:
     int type;
 };
 
+class ModelNaklRetWireData : public DbTableModel
+{
+    Q_OBJECT
+
+public:
+    explicit ModelNaklRetWireData(QObject *parent = 0);
+    void refresh(int id_nakl);
+};
+
 class FormRetWire : public QWidget
 {
     Q_OBJECT
@@ -33,10 +43,13 @@ public:
 private:
     Ui::FormRetWire *ui;
     ModelNaklRetWire *modelNakl;
+    ModelNaklRetWireData *modelNaklData;
     DbMapper *mapper;
 
 private slots:
     void upd();
+    void updData(int index);
+    void setCurrentFilter(int num);
 };
 
 #endif // FORMRETWIRE_H

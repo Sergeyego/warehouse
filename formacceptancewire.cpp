@@ -17,16 +17,13 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->comboBoxPart->addItem(tr("начиная с текущего года"));
     ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
     ui->comboBoxPart->addItem(tr("за всё время"));
-    ui->comboBoxPart->setCurrentIndex(1);
+    ui->comboBoxPart->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
 
     actionPrintLblAll = new QAction("Напечатать все",this);
     actionPrintLblOne = new QAction("Напечатать одну",this);
 
     ui->toolButtonPal->addAction(actionPrintLblAll);
     ui->toolButtonPal->addAction(actionPrintLblOne);
-
-    modelWirePart = new ModelWirePart(this);
-    relWirePart = new RelPart(modelWirePart,this);
 
     modelAcceptanceWire = new ModelAcceptanceWire(this);
     ui->tableViewAcc->setModel(modelAcceptanceWire);
@@ -35,7 +32,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->tableViewAcc->setColumnWidth(2,100);
     ui->tableViewAcc->setColumnWidth(3,200);
 
-    modelAcceptanceWireData = new ModelAcceptanceWireData(relWirePart, this);
+    modelAcceptanceWireData = new ModelAcceptanceWireData(this);
     ui->tableViewAccData->setModel(modelAcceptanceWireData);
     ui->tableViewAccData->setColumnHidden(0,true);
     ui->tableViewAccData->setColumnHidden(1,true);
@@ -55,7 +52,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),relWirePart,SLOT(setFilter(int)));
+    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
@@ -63,6 +60,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
+    connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
 
     updAcc();
 }
@@ -123,7 +121,11 @@ void FormAcceptanceWire::updAcc()
     } else {
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
-    modelWirePart->refresh(minDate);
+    Models::instance()->modelWirePart->setMinDate(minDate);
+    if (sender()==ui->pushButtonUpd){
+        Models::instance()->modelWirePart->refresh();
+    }
+
     modelAcceptanceWire->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 
@@ -172,6 +174,13 @@ void FormAcceptanceWire::printNakl()
     d.exec();
 }
 
+void FormAcceptanceWire::setCurrentFilter(int ind)
+{
+    ui->comboBoxPart->blockSignals(true);
+    ui->comboBoxPart->setCurrentIndex(ind);
+    ui->comboBoxPart->blockSignals(false);
+}
+
 ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)
 {
     addColumn("id","id");
@@ -201,11 +210,11 @@ bool ModelAcceptanceWire::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelAcceptanceWireData::ModelAcceptanceWireData(RelPart *relPart, QObject *parent) : DbTableModel("wire_warehouse",parent)
+ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel("wire_warehouse",parent)
 {
     addColumn("id","id");
     addColumn("id_waybill","id_waybill");
-    addColumn("id_wparti",tr("Партия"),relPart);
+    addColumn("id_wparti",tr("Партия"),Models::instance()->relWirePart);
     addColumn("m_netto",tr("Масса, кг"));
     addColumn("numcont",tr("№ поддона"));
     addColumn("barcodecont",tr("Штрихкод поддона"));
