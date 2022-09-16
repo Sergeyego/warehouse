@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionLblWire,&MainWindow::newFormLabelsWire);
     actAction(ui->actionAcceptanceWire,&MainWindow::newFormAcceptanceWire);
     actAction(ui->actionAcceptanceEl,&MainWindow::newFormAcceptanceEl);
+    actAction(ui->actionRetEl,&MainWindow::newFormRetEl);
     actAction(ui->actionRetWire,&MainWindow::newFormRetWire);
     actAction(ui->actionShip,&MainWindow::newFormShip);
     actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
@@ -101,10 +102,17 @@ void MainWindow::newFormAcceptanceEl()
     }
 }
 
+void MainWindow::newFormRetEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormRetEl(),sender());
+    }
+}
+
 void MainWindow::newFormRetWire()
 {
     if (!exist(sender())){
-        addSubWindow(new FormRetWire,sender());
+        addSubWindow(new FormRetWire(),sender());
     }
 }
 

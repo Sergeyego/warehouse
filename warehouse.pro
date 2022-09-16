@@ -76,7 +76,8 @@ SOURCES += \
     progressreportdialog.cpp \
     formreportel.cpp \
     formreportwire.cpp \
-    formretwire.cpp
+    formretwire.cpp \
+    formretel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -129,7 +130,8 @@ HEADERS += \
     progressreportdialog.h \
     formreportel.h \
     formreportwire.h \
-    formretwire.h
+    formretwire.h \
+    formretel.h
 
 FORMS += \
         mainwindow.ui \
@@ -162,7 +164,8 @@ FORMS += \
     progressreportdialog.ui \
     formreportel.ui \
     formreportwire.ui \
-    formretwire.ui
+    formretwire.ui \
+    formretel.ui
 
 RC_FILE = ico.rc
 

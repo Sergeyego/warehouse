@@ -26,7 +26,7 @@ public:
 signals:
     void sigRefresh();
 public slots:
-    void refresh();
+    virtual void refresh();
 private:
     QString qu;
 };

@@ -1,5 +1,5 @@
-#ifndef FORMRETWIRE_H
-#define FORMRETWIRE_H
+#ifndef FORMRETEL_H
+#define FORMRETEL_H
 
 #include <QWidget>
 #include "db/dbtablemodel.h"
@@ -7,15 +7,15 @@
 #include "models.h"
 
 namespace Ui {
-class FormRetWire;
+class FormRetEl;
 }
 
-class ModelNaklRetWire : public DbTableModel
+class ModelNaklRetEl : public DbTableModel
 {
     Q_OBJECT
 
 public:
-    explicit ModelNaklRetWire(QObject *parent = 0);
+    explicit ModelNaklRetEl(QObject *parent = 0);
     void refresh(int id_type, QDate begDate, QDate endDate);
     bool insertRow(int row, const QModelIndex &parent=QModelIndex());
 
@@ -23,28 +23,31 @@ private:
     int type;
 };
 
-class ModelNaklRetWireData : public DbTableModel
+class ModelNaklRetElData : public DbTableModel
 {
     Q_OBJECT
 
 public:
-    explicit ModelNaklRetWireData(QObject *parent = 0);
+    explicit ModelNaklRetElData(QObject *parent = 0);
     void refresh(int id_nakl);
     bool submit();
+
+private:
+    double getStock(QModelIndex index);
 };
 
-class FormRetWire : public QWidget
+class FormRetEl : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit FormRetWire(QWidget *parent = 0);
-    ~FormRetWire();
+    explicit FormRetEl(QWidget *parent = 0);
+    ~FormRetEl();
 
 private:
-    Ui::FormRetWire *ui;
-    ModelNaklRetWire *modelNakl;
-    ModelNaklRetWireData *modelNaklData;
+    Ui::FormRetEl *ui;
+    ModelNaklRetEl *modelNakl;
+    ModelNaklRetElData *modelNaklData;
     DbMapper *mapper;
     void loadSettings();
     void saveSettings();
@@ -56,4 +59,4 @@ private slots:
     void printNakl();
 };
 
-#endif // FORMRETWIRE_H
+#endif // FORMRETEL_H

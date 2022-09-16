@@ -6,6 +6,8 @@ FormRetWire::FormRetWire(QWidget *parent) :
     ui(new Ui::FormRetWire)
 {
     ui->setupUi(this);
+    loadSettings();
+
     ui->pushButtonUpd->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
 
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
@@ -45,19 +47,34 @@ FormRetWire::FormRetWire(QWidget *parent) :
     mapper->addMapping(ui->dateEdit,2);
     mapper->addLock(ui->comboBoxType);
     mapper->addEmptyLock(ui->tableViewNaklData);
+    mapper->addEmptyLock(ui->pushButtonNakl);
 
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(upd()));
     connect(ui->comboBoxType,SIGNAL(currentIndexChanged(int)),this,SLOT(upd()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updData(int)));
     connect(ui->comboBoxFlt,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
     connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
+    connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
 
     upd();
 }
 
 FormRetWire::~FormRetWire()
 {
+    saveSettings();
     delete ui;
+}
+
+void FormRetWire::loadSettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    ui->splitter->restoreState(settings.value("ret_wire_splitter_width").toByteArray());
+}
+
+void FormRetWire::saveSettings()
+{
+    QSettings settings("szsm", QApplication::applicationName());
+    settings.setValue("ret_wire_splitter_width",ui->splitter->saveState());
 }
 
 void FormRetWire::upd()
@@ -81,10 +98,7 @@ void FormRetWire::upd()
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
 
-    Models::instance()->modelWirePart->setMinDate(minDate);
-    if (sender()==ui->pushButtonUpd){
-        Models::instance()->modelWirePart->refresh();
-    }
+    Models::instance()->modelWirePart->setMinDate(minDate,(sender()==ui->pushButtonUpd));
 
     int id_type=ui->comboBoxType->model()->data(ui->comboBoxType->model()->index(ui->comboBoxType->currentIndex(),0)).toInt();
     modelNakl->refresh(id_type,ui->dateEditBeg->date(),ui->dateEditEnd->date());
@@ -103,6 +117,21 @@ void FormRetWire::setCurrentFilter(int num)
     ui->comboBoxFlt->blockSignals(false);
 }
 
+void FormRetWire::printNakl()
+{
+    int id_nakl=mapper->modelData(mapper->currentIndex(),0).toInt();
+    int id_type=mapper->modelData(mapper->currentIndex(),3).toInt();
+    QTcpSocket tcpSocket;
+    tcpSocket.connectToHost("127.0.0.1", 5555);
+    if (tcpSocket.waitForConnected()) {
+        tcpSocket.write((QString("%1:%2:%3:%4").arg(1).arg(1).arg(id_nakl).arg(id_type)).toLocal8Bit().data());
+        tcpSocket.waitForBytesWritten();
+        tcpSocket.disconnectFromHost();
+    } else {
+        QMessageBox::critical(this,tr("Ошибка"),tcpSocket.errorString(),QMessageBox::Ok);
+    }
+}
+
 ModelNaklRetWire::ModelNaklRetWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)
 {
     addColumn("id",tr("id"));
@@ -119,6 +148,7 @@ void ModelNaklRetWire::refresh(int id_type, QDate begDate, QDate endDate)
               "' and wire_whs_waybill.id_type = "+QString::number(id_type));
     type=id_type;
     setDefaultValue(3,type);
+    setDefaultValue(1,"0001");
     select();
 }
 
@@ -128,8 +158,8 @@ bool ModelNaklRetWire::insertRow(int row, const QModelIndex &parent)
     if (rowCount()>0 && !isAdd()) {
         int old_num=this->data(this->index(rowCount()-1,1),Qt::EditRole).toInt();
         setDefaultValue(1,QString("%1").arg((old_num+1),4,'d',0,QChar('0')));
-        setDefaultValue(2,QDate::currentDate());
     }
+    setDefaultValue(2,QDate::currentDate());
     return DbTableModel::insertRow(row,parent);
 }
 
@@ -147,4 +177,57 @@ void ModelNaklRetWireData::refresh(int id_nakl)
     setFilter("wire_warehouse.id_waybill = "+QString::number(id_nakl));
     setDefaultValue(1,id_nakl);
     select();
+}
+
+bool ModelNaklRetWireData::submit()
+{
+    bool ok=false;
+    if (this->isEdt()){
+        int id_nakl=this->data(this->index(currentEdtRow(),1),Qt::EditRole).toInt();
+        int id_part=this->data(this->index(currentEdtRow(),2),Qt::EditRole).toInt();
+        double kvo=this->data(this->index(currentEdtRow(),3),Qt::EditRole).toDouble();
+        QSqlQuery query;
+        query.prepare("select dat, id_type from wire_whs_waybill where id = :id_n");
+        query.bindValue(":id_n",id_nakl);
+        QDate date;
+        int type;
+        if (query.exec()){
+            while (query.next()){
+                date=query.value(0).toDate();
+                type=query.value(1).toInt();
+            }
+        } else {
+            QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
+        }
+        if (type==5){
+            query.clear();
+            query.prepare("select st from wire_calc_stock(:date) where id_wparti = :id_part ");
+            query.bindValue(":date",date);
+            query.bindValue(":id_part",id_part);
+            if (query.exec()){
+                double m;
+                while (query.next()){
+                    m=query.value(0).toDouble();
+                }
+                if (kvo>0 && m>=kvo){
+                    ok=DbTableModel::submit();
+                } else {
+                    QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на ")+date.toString("dd.MM.yy")+tr(" числится ")+
+                                          QLocale().toString(m,'f',2)+tr(" кг проволоки этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Ok);
+                }
+
+            } else {
+                QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
+            }
+        } else {
+            if (type==7 || kvo>0){
+                ok=DbTableModel::submit();
+            } else {
+                QMessageBox::critical(NULL,tr("Ошибка"),tr("Масса должна быть больше нуля."),QMessageBox::Ok);
+            }
+        }
+    } else {
+        ok=DbTableModel::submit();
+    }
+    return ok;
 }

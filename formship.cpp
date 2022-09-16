@@ -172,8 +172,6 @@ void FormShip::updShip()
         if (ui->checkBoxOnly->isChecked()){
             id_pol=ui->comboBoxOnly->model()->data(ui->comboBoxOnly->model()->index(ui->comboBoxOnly->currentIndex(),0),Qt::EditRole).toInt();
         }
-        Models::instance()->modelElPart->refresh();
-        Models::instance()->modelWirePart->refresh();
         modelShip->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date(),id_pol);
     }
 }
@@ -222,6 +220,10 @@ void FormShip::updPol()
     ui->comboBoxOnly->blockSignals(true);
     Models::instance()->relPol->refreshModel();
     ui->comboBoxOnly->blockSignals(false);
+
+    Models::instance()->modelElPart->setMinDate(ui->dateEditBeg->date().addYears(-4),(sender()==ui->cmdUpdShip));
+    Models::instance()->modelWirePart->setMinDate(ui->dateEditBeg->date().addYears(-4),(sender()==ui->cmdUpdShip));
+
     updShip();
 }
 
@@ -542,7 +544,7 @@ void ModelShipData::setFlt(QString kis)
     } else {
         pattern=kis;
     }
-    info.relPart->proxyModel()->setFilterRegExp(pattern);
+    info.relPart->proxyModel()->setFilterRegularExpression(pattern);
 }
 
 bool ModelShipData::insertRow(int row, const QModelIndex &parent)

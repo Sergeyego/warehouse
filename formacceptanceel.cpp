@@ -103,10 +103,7 @@ void FormAcceptanceEl::updAcc()
     } else {
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
-    Models::instance()->modelElPart->setMinDate(minDate);
-    if (sender()==ui->pushButtonUpd){
-        Models::instance()->modelElPart->refresh();
-    }
+    Models::instance()->modelElPart->setMinDate(minDate,(sender()==ui->pushButtonUpd));
     modelAcceptanceEl->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 

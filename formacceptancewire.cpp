@@ -121,11 +121,7 @@ void FormAcceptanceWire::updAcc()
     } else {
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
-    Models::instance()->modelWirePart->setMinDate(minDate);
-    if (sender()==ui->pushButtonUpd){
-        Models::instance()->modelWirePart->refresh();
-    }
-
+    Models::instance()->modelWirePart->setMinDate(minDate,(sender()==ui->pushButtonUpd));
     modelAcceptanceWire->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 

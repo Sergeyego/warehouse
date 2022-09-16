@@ -8,28 +8,17 @@
 #include "db/dbtablemodel.h"
 #include "sync1c.h"
 
-class ModelElPart : public DbRelationalModel
+class ModelPart : public DbRelationalModel
 {
     Q_OBJECT
 public:
-    ModelElPart(QObject *parent = 0);
-    void setMinDate(QDate d);
+    ModelPart(QString partQuery, QObject *parent = 0);
+    void setMinDate(QDate d, bool upd=false);
 public slots:
     void refresh();
 private:
     QDate minDate;
-};
-
-class ModelWirePart : public DbRelationalModel
-{
-    Q_OBJECT
-public:
-    ModelWirePart(QObject *parent = 0);
-    void setMinDate(QDate d);
-public slots:
-    void refresh();
-private:
-    QDate minDate;
+    QString baseQuery;
 };
 
 class RelPart : public DbRelation
@@ -61,9 +50,9 @@ public:
     DbRelation *relAccTypeWire;
     DbRelation *relKis;
     DbRelation *relDocType;
-    ModelWirePart *modelWirePart;
+    ModelPart *modelWirePart;
     RelPart *relWirePart;
-    ModelElPart *modelElPart;
+    ModelPart *modelElPart;
     RelPart *relElPart;
     QString createPalBarcode(QString prefix);
 

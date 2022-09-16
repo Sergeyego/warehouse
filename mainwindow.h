@@ -7,6 +7,7 @@
 #include "formacceptancewire.h"
 #include "formacceptanceel.h"
 #include "formretwire.h"
+#include "formretel.h"
 #include "formship.h"
 #include "formpoluch.h"
 #include "formdrv.h"
@@ -44,6 +45,7 @@ private slots:
     void closeTab(int index);
     void newFormAcceptanceWire();
     void newFormAcceptanceEl();
+    void newFormRetEl();
     void newFormRetWire();
     void newFormShip();
     void newFormPoluch();

@@ -56,6 +56,9 @@ void TableView::resizeToContents()
                     max=fontMetrics().width(l.at(k));
             }
         }
+        if (max>300) {
+            max=300;
+        }
         setColumnWidth(i,max+12);
     }
 }
