@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionAccNaklEl,&MainWindow::newFormAccNaklEl);
     actAction(ui->actionAccNaklWire,&MainWindow::newFormAccNaklWire);
     actAction(ui->actionCells,&MainWindow::newFormCells);
+    actAction(ui->actionMovEl,&MainWindow::newFormMovEl);
 
     connect(ui->actionCfgPrint,SIGNAL(triggered(bool)),this,SLOT(cfgPrint()));
     connect(ui->actionAllRefresh,SIGNAL(triggered(bool)),Models::instance(),SLOT(refresh()));
@@ -239,6 +240,13 @@ void MainWindow::newFormCells()
 {
     if (!exist(sender())){
         addSubWindow(new FormCells(),sender());
+    }
+}
+
+void MainWindow::newFormMovEl()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormMovEl(),sender());
     }
 }
 

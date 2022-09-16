@@ -23,6 +23,7 @@
 #include "formlabelswire.h"
 #include "formcells.h"
 #include "formbalanceew.h"
+#include "formmovel.h"
 
 namespace Ui {
 class MainWindow;
@@ -65,6 +66,7 @@ private slots:
     void newFormLabelsEl();
     void newFormLabelsWire();
     void newFormCells();
+    void newFormMovEl();
     void cfgPrint();
 
 private:

@@ -103,9 +103,17 @@
     <addaction name="actionAllRefresh"/>
     <addaction name="actionCells"/>
    </widget>
+   <widget class="QMenu" name="menu_9">
+    <property name="title">
+     <string>Движение партий</string>
+    </property>
+    <addaction name="actionMovEl"/>
+    <addaction name="actionMovWire"/>
+   </widget>
    <addaction name="menu_7"/>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_9"/>
    <addaction name="menu_6"/>
    <addaction name="menu_3"/>
    <addaction name="menu_4"/>
@@ -230,6 +238,16 @@
   <action name="actionRetWire">
    <property name="text">
     <string>Возврат/перемещение проволоки</string>
+   </property>
+  </action>
+  <action name="actionMovEl">
+   <property name="text">
+    <string>Движение партий электродов</string>
+   </property>
+  </action>
+  <action name="actionMovWire">
+   <property name="text">
+    <string>Движение партий проволоки</string>
    </property>
   </action>
  </widget>
