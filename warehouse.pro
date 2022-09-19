@@ -78,7 +78,8 @@ SOURCES += \
     formreportwire.cpp \
     formretwire.cpp \
     formretel.cpp \
-    formmovel.cpp
+    formmovel.cpp \
+    dialogrest.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -133,7 +134,8 @@ HEADERS += \
     formreportwire.h \
     formretwire.h \
     formretel.h \
-    formmovel.h
+    formmovel.h \
+    dialogrest.h
 
 FORMS += \
         mainwindow.ui \
@@ -168,7 +170,8 @@ FORMS += \
     formreportwire.ui \
     formretwire.ui \
     formretel.ui \
-    formmovel.ui
+    formmovel.ui \
+    dialogrest.ui
 
 RC_FILE = ico.rc
 
