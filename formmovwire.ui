@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FormMovEl</class>
- <widget class="QWidget" name="FormMovEl">
+ <class>FormMovWire</class>
+ <widget class="QWidget" name="FormMovWire">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1036</width>
-    <height>729</height>
+    <width>1073</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_8">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Дата партии c</string>
+        <string>Дата партии с</string>
        </property>
       </widget>
      </item>
@@ -56,13 +56,6 @@
        </property>
       </spacer>
      </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonCalcOst">
-       <property name="text">
-        <string>Пересчитать остатки</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
@@ -81,103 +74,63 @@
        <bool>false</bool>
       </attribute>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout">
+     <widget class="QWidget" name="">
+      <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <layout class="QGridLayout" name="gridLayout">
-           <item row="0" column="2">
-            <widget class="QLineEdit" name="lineEditIn">
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QLineEdit" name="lineEditShip">
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QLineEdit" name="lineEditOst">
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_6">
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QLabel" name="label_7">
              <property name="text">
               <string>Комментарий</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="2" rowspan="2">
+           <item>
             <widget class="QPlainTextEdit" name="plainTextEditPrim">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="maximumSize">
               <size>
-               <width>16777215</width>
-               <height>60</height>
+               <width>150</width>
+               <height>16777215</height>
               </size>
              </property>
             </widget>
            </item>
-           <item row="4" column="1">
-            <widget class="QPushButton" name="pushButtonSaveInfo">
+           <item>
+            <widget class="QPushButton" name="pushButtonSavePrim">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>150</width>
+               <height>16777215</height>
+              </size>
              </property>
              <property name="text">
               <string>Сохранить</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QCheckBox" name="checkBoxFinish">
-             <property name="text">
-              <string>Партия закончена</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Остаток на складе</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Отпуск за последний период</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0" colspan="2">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Поступление за последний период</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
-            <widget class="QLabel" name="labelPress">
+            <widget class="QLabel" name="labelNam">
              <property name="font">
               <font>
                <weight>75</weight>
@@ -185,12 +138,12 @@
               </font>
              </property>
              <property name="text">
-              <string>Опрессовка</string>
+              <string>Намотка</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="TableView" name="tableViewPress">
+            <widget class="TableView" name="tableViewNam">
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>
@@ -198,17 +151,13 @@
            </item>
           </layout>
          </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="QLabel" name="labelPack">
              <property name="maximumSize">
               <size>
-               <width>220</width>
+               <width>200</width>
                <height>16777215</height>
               </size>
              </property>
@@ -233,7 +182,7 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>220</width>
+               <width>200</width>
                <height>16777215</height>
               </size>
              </property>
@@ -244,8 +193,12 @@
            </item>
           </layout>
          </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
+          <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
             <widget class="QLabel" name="labelPerePack">
              <property name="font">
@@ -269,15 +222,9 @@
           </layout>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
+          <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
             <widget class="QLabel" name="labelBreak">
-             <property name="maximumSize">
-              <size>
-               <width>220</width>
-               <height>16777215</height>
-              </size>
-             </property>
              <property name="font">
               <font>
                <weight>75</weight>
@@ -285,24 +232,12 @@
               </font>
              </property>
              <property name="text">
-              <string>Брак</string>
+              <string>Списание</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="TableView" name="tableViewBreak">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>220</width>
-               <height>16777215</height>
-              </size>
-             </property>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>
@@ -313,33 +248,9 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
-           <item>
-            <widget class="QLabel" name="labelSelf">
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Собственное потребление</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="TableView" name="tableViewSelf">
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
+          <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
             <widget class="QLabel" name="labelStock">
              <property name="font">
@@ -362,12 +273,8 @@
            </item>
           </layout>
          </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_9">
+          <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
             <widget class="QLabel" name="labelShip">
              <property name="font">
@@ -383,30 +290,6 @@
            </item>
            <item>
             <widget class="TableView" name="tableViewShip">
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_10">
-           <item>
-            <widget class="QLabel" name="labelOst">
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Остатки на складе</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="TableView" name="tableViewOst">
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>

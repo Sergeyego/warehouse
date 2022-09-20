@@ -142,6 +142,13 @@
           </spacer>
          </item>
          <item>
+          <widget class="QPushButton" name="pushButtonEdt">
+           <property name="text">
+            <string>Редактировать табл. часть</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="pushButtonNakl">
            <property name="text">
             <string>Накладная</string>
@@ -228,13 +235,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonEdt">
-           <property name="text">
-            <string>Редактировать табл. часть</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
@@ -394,8 +394,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DbViewer</class>
-   <extends>QTableView</extends>
+   <class>DateEdit</class>
+   <extends>QDateEdit</extends>
    <header>db/dbviewer.h</header>
   </customwidget>
   <customwidget>
@@ -404,8 +404,8 @@
    <header>olap/tableview.h</header>
   </customwidget>
   <customwidget>
-   <class>DateEdit</class>
-   <extends>QDateEdit</extends>
+   <class>DbViewer</class>
+   <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
   </customwidget>
  </customwidgets>

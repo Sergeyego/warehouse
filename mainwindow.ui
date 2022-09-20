@@ -53,6 +53,7 @@
      <string>Отгрузить со склада</string>
     </property>
     <addaction name="actionShip"/>
+    <addaction name="actionShipCons"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -248,6 +249,11 @@
   <action name="actionMovWire">
    <property name="text">
     <string>Движение партий проволоки</string>
+   </property>
+  </action>
+  <action name="actionShipCons">
+   <property name="text">
+    <string>Отгрузка</string>
    </property>
   </action>
  </widget>

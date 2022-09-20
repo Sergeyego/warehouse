@@ -19,11 +19,13 @@ FormMovEl::FormMovEl(QWidget *parent) :
     modelPartElInfo->refresh(-1);
 
     mapperInfo = new QDataWidgetMapper(this);
+    mapperInfo->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
     mapperInfo->setModel(modelPartElInfo);
     mapperInfo->addMapping(ui->lineEditIn,0);
     mapperInfo->addMapping(ui->lineEditShip,1);
     mapperInfo->addMapping(ui->lineEditOst,2);
     mapperInfo->addMapping(ui->checkBoxFinish,3);
+    mapperInfo->addMapping(ui->plainTextEditPrim,5);
 
     modelPressEl = new ModelPressEl(this);
     ui->tableViewPress->setModel(modelPressEl);
@@ -63,6 +65,9 @@ FormMovEl::FormMovEl(QWidget *parent) :
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(startUpd()));
     connect(executorPart,SIGNAL(finished()),this,SLOT(upd()));
     connect(ui->pushButtonCalcOst,SIGNAL(clicked(bool)),this,SLOT(calcOst()));
+    connect(ui->plainTextEditPrim,SIGNAL(textChanged()),this,SLOT(enSaveInfo()));
+    connect(ui->checkBoxFinish,SIGNAL(stateChanged(int)),this,SLOT(enSaveInfo()));
+    connect(ui->pushButtonSaveInfo,SIGNAL(clicked(bool)),this,SLOT(saveInfo()));
 
     connect(modelPressEl,SIGNAL(sigSum(QString)),ui->labelPress,SLOT(setText(QString)));
     connect(modelPackEl,SIGNAL(sigSum(QString)),ui->labelPack,SLOT(setText(QString)));
@@ -124,6 +129,7 @@ void FormMovEl::updInfo(QModelIndex index)
 
     modelPartElInfo->refresh(id_part);
     mapperInfo->toFirst();
+    ui->pushButtonSaveInfo->setEnabled(false);
 
     modelPressEl->refresh(id_part);
     ui->tableViewPress->resizeToContents();
@@ -166,6 +172,20 @@ void FormMovEl::calcOst()
     }
 }
 
+void FormMovEl::enSaveInfo()
+{
+    if (ui->tableViewPart->currentIndex().isValid()){
+        ui->pushButtonSaveInfo->setEnabled(true);
+    }
+}
+
+void FormMovEl::saveInfo()
+{
+    if (mapperInfo->submit()){
+        ui->pushButtonSaveInfo->setEnabled(false);
+    }
+}
+
 ModelPartElInfo::ModelPartElInfo(QObject *parent) : QSqlQueryModel(parent)
 {
 
@@ -174,7 +194,7 @@ ModelPartElInfo::ModelPartElInfo(QObject *parent) : QSqlQueryModel(parent)
 void ModelPartElInfo::refresh(int id_part)
 {
     QSqlQuery query;
-    query.prepare("select c.sumIn, c.sumOt, c.kvoRs, p.fini, c.id_p from "
+    query.prepare("select c.sumIn, c.sumOt, c.kvoRs, p.fini, c.id_p, p.prim_prod from "
                   "calc_parti_one(:id_part, '3000-01-01') as c "
                   "inner join parti as p on c.id_p=p.id");
     query.bindValue(":id_part",id_part);
@@ -201,14 +221,25 @@ QVariant ModelPartElInfo::data(const QModelIndex &item, int role) const
 bool ModelPartElInfo::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     bool ok = false;
-    if (index.column()==3){
-        QSqlQuery query;
-        query.prepare("update parti set fini = :val where id= :id");
-        query.bindValue(":val",value.toBool());
-        query.bindValue(":id",QSqlQueryModel::data(this->index(index.row(),4),Qt::EditRole).toInt());
-        ok=query.exec();
-        if (!ok){
-            QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    if (role==Qt::EditRole && value!=this->data(index,role)){
+        if (index.column()==3){
+            QSqlQuery query;
+            query.prepare("update parti set fini = :val where id= :id");
+            query.bindValue(":val",value.toBool());
+            query.bindValue(":id",QSqlQueryModel::data(this->index(index.row(),4),Qt::EditRole).toInt());
+            ok=query.exec();
+            if (!ok){
+                QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+            }
+        } else if (index.column()==5){
+            QSqlQuery query;
+            query.prepare("update parti set prim_prod = :text where id = :id");
+            query.bindValue(":text",value.toString());
+            query.bindValue(":id",QSqlQueryModel::data(this->index(index.row(),4),Qt::EditRole).toInt());
+            ok=query.exec();
+            if (!ok){
+                QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
+            }
         }
     }
     return ok;

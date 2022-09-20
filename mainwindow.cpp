@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionRetEl,&MainWindow::newFormRetEl);
     actAction(ui->actionRetWire,&MainWindow::newFormRetWire);
     actAction(ui->actionShip,&MainWindow::newFormShip);
+    actAction(ui->actionShipCons,&MainWindow::newFormShipCons);
     actAction(ui->actionPoluch,&MainWindow::newFormPoluch);
     actAction(ui->actionDrv,&MainWindow::newFormDrv);
     actAction(ui->actionBalance,&MainWindow::newFormBalance);
@@ -30,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actAction(ui->actionAccNaklWire,&MainWindow::newFormAccNaklWire);
     actAction(ui->actionCells,&MainWindow::newFormCells);
     actAction(ui->actionMovEl,&MainWindow::newFormMovEl);
+    actAction(ui->actionMovWire,&MainWindow::newFormMovWire);
 
     connect(ui->actionCfgPrint,SIGNAL(triggered(bool)),this,SLOT(cfgPrint()));
     connect(ui->actionAllRefresh,SIGNAL(triggered(bool)),Models::instance(),SLOT(refresh()));
@@ -121,6 +123,13 @@ void MainWindow::newFormShip()
 {
     if (!exist(sender())){
         addSubWindow(new FormShip(false),sender());
+    }
+}
+
+void MainWindow::newFormShipCons()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormShipCons(),sender());
     }
 }
 
@@ -247,6 +256,13 @@ void MainWindow::newFormMovEl()
 {
     if (!exist(sender())){
         addSubWindow(new FormMovEl(),sender());
+    }
+}
+
+void MainWindow::newFormMovWire()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormMovWire(),sender());
     }
 }
 

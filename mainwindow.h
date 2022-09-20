@@ -9,6 +9,7 @@
 #include "formretwire.h"
 #include "formretel.h"
 #include "formship.h"
+#include "formshipcons.h"
 #include "formpoluch.h"
 #include "formdrv.h"
 #include "formbalance.h"
@@ -24,6 +25,7 @@
 #include "formcells.h"
 #include "formbalanceew.h"
 #include "formmovel.h"
+#include "formmovwire.h"
 
 namespace Ui {
 class MainWindow;
@@ -49,6 +51,7 @@ private slots:
     void newFormRetEl();
     void newFormRetWire();
     void newFormShip();
+    void newFormShipCons();
     void newFormPoluch();
     void newFormDrv();
     void newFormBalance();
@@ -67,6 +70,7 @@ private slots:
     void newFormLabelsWire();
     void newFormCells();
     void newFormMovEl();
+    void newFormMovWire();
     void cfgPrint();
 
 private:

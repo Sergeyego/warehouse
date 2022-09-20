@@ -137,6 +137,8 @@ private slots:
     void upd();
     void updInfo(QModelIndex index);
     void calcOst();
+    void enSaveInfo();
+    void saveInfo();
 };
 
 #endif // FORMMOVEL_H
