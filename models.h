@@ -45,7 +45,6 @@ public:
     DbRelation *relEl;
     DbRelation *relPol;
     DbRelation *relDrv;
-    DbRelation *relShipType;
     DbRelation *relAccTypeEl;
     DbRelation *relAccTypeWire;
     DbRelation *relKis;

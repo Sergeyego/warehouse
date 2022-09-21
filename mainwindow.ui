@@ -39,7 +39,7 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="menuStock">
     <property name="title">
      <string>Отправить на склад</string>
     </property>
@@ -48,21 +48,21 @@
     <addaction name="actionRetEl"/>
     <addaction name="actionRetWire"/>
    </widget>
-   <widget class="QMenu" name="menu_2">
+   <widget class="QMenu" name="menuShip">
     <property name="title">
      <string>Отгрузить со склада</string>
     </property>
     <addaction name="actionShip"/>
     <addaction name="actionShipCons"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
+   <widget class="QMenu" name="menuSprav">
     <property name="title">
      <string>Справочники</string>
     </property>
     <addaction name="actionPoluch"/>
     <addaction name="actionDrv"/>
    </widget>
-   <widget class="QMenu" name="menu_4">
+   <widget class="QMenu" name="menuReport">
     <property name="title">
      <string>Отчеты</string>
     </property>
@@ -73,7 +73,7 @@
     <addaction name="actionReportEl"/>
     <addaction name="actionReportWire"/>
    </widget>
-   <widget class="QMenu" name="menu_5">
+   <widget class="QMenu" name="menuAnalit">
     <property name="title">
      <string>Аналитика</string>
     </property>
@@ -82,21 +82,21 @@
     <addaction name="actionAnShipEl"/>
     <addaction name="actionAnShipWire"/>
    </widget>
-   <widget class="QMenu" name="menu_6">
+   <widget class="QMenu" name="menuNakl">
     <property name="title">
      <string>Накладные</string>
     </property>
     <addaction name="actionAccNaklEl"/>
     <addaction name="actionAccNaklWire"/>
    </widget>
-   <widget class="QMenu" name="menu_7">
+   <widget class="QMenu" name="menuMark">
     <property name="title">
      <string>Маркировка</string>
     </property>
     <addaction name="actionLblEl"/>
     <addaction name="actionLblWire"/>
    </widget>
-   <widget class="QMenu" name="menu_8">
+   <widget class="QMenu" name="menuService">
     <property name="title">
      <string>Сервис</string>
     </property>
@@ -104,22 +104,22 @@
     <addaction name="actionAllRefresh"/>
     <addaction name="actionCells"/>
    </widget>
-   <widget class="QMenu" name="menu_9">
+   <widget class="QMenu" name="menuMov">
     <property name="title">
      <string>Движение партий</string>
     </property>
     <addaction name="actionMovEl"/>
     <addaction name="actionMovWire"/>
    </widget>
-   <addaction name="menu_7"/>
-   <addaction name="menu"/>
-   <addaction name="menu_2"/>
-   <addaction name="menu_9"/>
-   <addaction name="menu_6"/>
-   <addaction name="menu_3"/>
-   <addaction name="menu_4"/>
-   <addaction name="menu_5"/>
-   <addaction name="menu_8"/>
+   <addaction name="menuMark"/>
+   <addaction name="menuStock"/>
+   <addaction name="menuShip"/>
+   <addaction name="menuMov"/>
+   <addaction name="menuNakl"/>
+   <addaction name="menuSprav"/>
+   <addaction name="menuReport"/>
+   <addaction name="menuAnalit"/>
+   <addaction name="menuService"/>
   </widget>
   <action name="actionAcceptanceWire">
    <property name="text">

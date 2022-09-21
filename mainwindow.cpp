@@ -1,11 +1,21 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(bool master, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    ui->menuShip->setDisabled(master);
+    ui->menuMov->setDisabled(master);
+    ui->menuNakl->setDisabled(master);
+    ui->menuSprav->setDisabled(master);
+    ui->menuReport->setDisabled(master);
+    ui->menuAnalit->setDisabled(master);
+    ui->actionRetEl->setDisabled(master);
+    ui->actionRetWire->setDisabled(master);
+    ui->actionCells->setDisabled(master);
 
     actAction(ui->actionLblEl,&MainWindow::newFormLabelsEl);
     actAction(ui->actionLblWire,&MainWindow::newFormLabelsWire);

@@ -295,7 +295,7 @@ ModelShip::ModelShip(QObject *parent) : DbTableModel("ship_plan",parent)
     addColumn("nom_s",tr("Номер"));
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
-    addColumn("id_type",tr("Тип отгрузки"),Models::instance()->relShipType);
+    addColumn("id_type",tr("Тип отгрузки"),new DbRelation("select id, nam from sert_type where id in (1,3) order by nam",0,1,this));
     addColumn("id_drv",tr("Водитель"),Models::instance()->relDrv);
     addColumn("prim",tr("Примечание"));
     setSort("ship_plan.dat_vid, ship_plan.nom_s");
@@ -585,7 +585,7 @@ void ModelShipData::setOstControl(bool b)
 void ModelShipData::calcSum()
 {
     double sum=0;
-    QString title = info.prefix==("e")? "Электроды" : "Проволока";
+    QString title = info.prefix==("e")? tr("Электроды") : tr("Проволока");
     for (int i=0; i<rowCount(); i++){
         sum+=data(index(i,4),Qt::EditRole).toDouble();
     }

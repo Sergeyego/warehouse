@@ -10,7 +10,6 @@ Models::Models(QObject *parent) :
     relEl = newDbRelation(new DbRelationalModel("select id, marka from elrtr order by marka",this),0,1);
     relPol = newDbRelation(new DbRelationalModel("select id, short ||' "+tr("ИНН")+ " '|| COALESCE(substring(innkpp from '\\m\\d*'),'-'), naim from poluch order by short",this),0,1);
     relDrv = newDbRelation(new DbRelationalModel("select r.id, r.surname||' '||coalesce (substr(r.name,1,1)||'. ','')||coalesce (substr(r.middle_name,1,1)||'. ','')||coalesce('('||r.car_num||')','') as drv from drvs as r order by drv",this),0,1);
-    relShipType = newDbRelation(new DbRelationalModel("select id, nam from sert_type order by nam",this),0,1);
     relAccTypeEl = newDbRelation(new DbRelationalModel("select id, nam, prefix from prod_nakl_tip where en=true order by nam",this),0,1);
     relAccTypeWire = newDbRelation(new DbRelationalModel("select id, nam, prefix from wire_way_bill_type where en=true order by nam",this),0,1);
     relDocType = newDbRelation(new DbRelationalModel("select id, nam from zvd_doc_type order by nam",this),0,1);
