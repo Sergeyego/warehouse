@@ -162,7 +162,7 @@ void FormBalanceEW::setByPart()
 void FormBalanceEW::selectMark(QModelIndex index)
 {
     QString key = ui->tableViewMark->model()->data(ui->tableViewMark->model()->index(index.row(),0),Qt::EditRole).toString();
-    proxyModelPart->setFilterRegularExpression("^"+QRegularExpression::escape(key)+"$");
+    proxyModelPart->setFilterRegExp("^"+QRegularExpression::escape(key)+"$");
     ui->tableViewPart->resizeToContents();
 }
 
