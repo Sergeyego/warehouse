@@ -544,7 +544,7 @@ void ModelShipData::setFlt(QString kis)
     } else {
         pattern=kis;
     }
-    info.relPart->proxyModel()->setFilterRegularExpression(pattern);
+    info.relPart->proxyModel()->setFilterRegExp(pattern);
 }
 
 bool ModelShipData::insertRow(int row, const QModelIndex &parent)
