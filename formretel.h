@@ -31,9 +31,13 @@ public:
     explicit ModelNaklRetElData(QObject *parent = 0);
     void refresh(int id_nakl);
     bool submit();
+    void revert();
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
 
 private:
     double getStock(QModelIndex index);
+signals:
+    void sigStock(QString mes);
 };
 
 class FormRetEl : public QWidget

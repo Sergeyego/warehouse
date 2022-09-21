@@ -58,6 +58,7 @@ FormRetEl::FormRetEl(QWidget *parent) :
     connect(ui->comboBoxFlt,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
     connect(Models::instance()->relElPart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
+    connect(modelNaklData,SIGNAL(sigStock(QString)),ui->labelStock,SLOT(setText(QString)));
 
     upd();
 }
@@ -212,12 +213,30 @@ bool ModelNaklRetElData::submit()
         } else {
             if (kvo>0){
                 ok=DbTableModel::submit();
-            } else {
+            } else if (!this->data(this->index(currentEdtRow(),6),Qt::EditRole).isNull()){
                 QMessageBox::critical(NULL,tr("Ошибка"),tr("Масса должна быть больше нуля."),QMessageBox::Ok);
             }
         }
     } else {
         ok=DbTableModel::submit();
+    }
+    if (ok) {
+        emit sigStock("");
+    }
+    return ok;
+}
+
+void ModelNaklRetElData::revert()
+{
+    emit sigStock("");
+    return DbTableModel::revert();
+}
+
+bool ModelNaklRetElData::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    bool ok=DbTableModel::setData(index,value,role);
+    if (role==Qt::EditRole){
+        emit sigStock(tr("Остаток на день передачи: ")+QString::number(getStock(index))+tr(" кг"));
     }
     return ok;
 }
@@ -227,11 +246,11 @@ double ModelNaklRetElData::getStock(QModelIndex index)
     double kvo=0;
     if (index.row()>=0 && index.row()<this->rowCount()){
         int id_part = this->data(this->index(index.row(),5),Qt::EditRole).toInt();
-        QDate date = this->data(this->index(index.row(),3),Qt::EditRole).toDate();
+        int id_nakl = this->data(this->index(index.row(),1),Qt::EditRole).toInt();
         QSqlQuery query;
-        query.prepare("select kvoRs from calc_parti_one(:id_part, :date )");
+        query.prepare("select kvoRs from calc_parti_one(:id_part, (select dat from prod_nakl where id = :id_nakl) )");
         query.bindValue(":id_part",id_part);
-        query.bindValue(":date",date);
+        query.bindValue(":id_nakl",id_nakl);
         if (query.exec()){
             while (query.next()){
                 kvo = query.value(0).toDouble();

@@ -30,7 +30,13 @@ class ModelNaklRetWireData : public DbTableModel
 public:
     explicit ModelNaklRetWireData(QObject *parent = 0);
     void refresh(int id_nakl);
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
     bool submit();
+    void revert();
+private:
+    double getStock(QModelIndex index);
+signals:
+    void sigStock(QString mes);
 };
 
 class FormRetWire : public QWidget

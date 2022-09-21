@@ -3,21 +3,23 @@
 TableView::TableView(QWidget *parent) : QTableView(parent)
 {
     verticalHeader()->setDefaultSectionSize(verticalHeader()->fontMetrics().height()*1.5);
-    //verticalHeader()->setFixedWidth(verticalHeader()->fontMetrics().height()*1.2);
     verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     removeAct = new QAction(QString::fromUtf8("Удалить"),this);
+    saveAct = new QAction(QString::fromUtf8("Сохранить"),this);
 
     connect(removeAct,SIGNAL(triggered()),this,SLOT(remove()));
+    connect(saveAct,SIGNAL(triggered(bool)),this,SLOT(saveXLSX()));
 }
 
 void TableView::contextMenuEvent(QContextMenuEvent *event)
 {
     if (this->selectionModel()){
         QMenu menu(this);
+        menu.addAction(saveAct);
+        menu.addSeparator();
         QModelIndex index=this->indexAt(event->pos());
         if (index.isValid() && this->editTriggers()!=QAbstractItemView::NoEditTriggers && (model()->flags(index) & Qt::ItemIsEditable)){
             menu.addAction(removeAct);
-            menu.addSeparator();
         }
         menu.exec(event->globalPos());
     }
@@ -108,7 +110,7 @@ void TableView::save(QString fnam, int dec, bool fitToHeight, Qt::ScreenOrientat
         ws->writeString(CellReference("A1"),fnam,titleFormat);
 
         int m=2;
-        ws->setRowHeight(2,2,this->verticalHeader()->height()/14.0);
+        ws->setRowHeight(2,2,this->horizontalHeader()->height());
         for(int i=0;i<cols;i++) {
             if (!this->isColumnHidden(i)) {
                 QString hCubeell=this->model()->headerData(i,Qt::Horizontal).toString();
@@ -167,7 +169,7 @@ void TableView::save(QString fnam, int dec, bool fitToHeight, Qt::ScreenOrientat
         QSettings settings("szsm", QApplication::applicationName());
         QDir dir(settings.value("savePath",QDir::homePath()).toString());
         QString filename = QFileDialog::getSaveFileName(nullptr,QString::fromUtf8("Сохранить документ"),
-                                                        dir.path()+"/"+fnam+".xlsx",
+                                                        dir.path()+"/"+fnam,
                                                         QString::fromUtf8("Documents (*.xlsx)") );
         if (!filename.isEmpty()){
             xlsx.saveAs(filename);
@@ -195,4 +197,9 @@ void TableView::remove()
             emit sigRemove(ind.row());
         }
     }
+}
+
+void TableView::saveXLSX()
+{
+    save("");
 }

@@ -179,6 +179,15 @@ void ModelNaklRetWireData::refresh(int id_nakl)
     select();
 }
 
+bool ModelNaklRetWireData::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    bool ok=DbTableModel::setData(index,value,role);
+    if (role==Qt::EditRole){
+        emit sigStock(tr("Остаток на день передачи: ")+QString::number(getStock(index))+tr(" кг"));
+    }
+    return ok;
+}
+
 bool ModelNaklRetWireData::submit()
 {
     bool ok=false;
@@ -229,5 +238,34 @@ bool ModelNaklRetWireData::submit()
     } else {
         ok=DbTableModel::submit();
     }
+    if (ok) {
+        emit sigStock("");
+    }
     return ok;
+}
+
+void ModelNaklRetWireData::revert()
+{
+    emit sigStock("");
+    return DbTableModel::revert();
+}
+
+double ModelNaklRetWireData::getStock(QModelIndex index)
+{
+    double kvo=0;
+    int id_nakl=this->data(this->index(index.row(),1),Qt::EditRole).toInt();
+    int id_part=this->data(this->index(index.row(),2),Qt::EditRole).toInt();
+    QSqlQuery query;
+    query.prepare("select st from wire_calc_stock((select dat from wire_whs_waybill where id = :id_nakl)) where id_wparti = :id_part ");
+    query.bindValue(":id_nakl",id_nakl);
+    query.bindValue(":id_part",id_part);
+    if (query.exec()){
+        if (query.next()){
+            kvo=query.value(0).toDouble();
+        }
+
+    } else {
+        QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
+    }
+    return kvo;
 }

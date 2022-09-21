@@ -17,7 +17,6 @@ DialogCods::DialogCods(QWidget *parent) :
     modelElCods->addColumn("cod",tr("Код"));
     modelElCods->setSuffix("inner join elrtr on elrtr.id = td_keys_el.id_el inner join diam on diam.id = td_keys_el.id_diam");
     modelElCods->setSort("elrtr.marka, diam.sdim, td_keys_el.id_var");
-    modelElCods->setDefaultValue(2,1);
     modelElCods->select();
     ui->tableViewEl->setModel(modelElCods);
     ui->tableViewEl->setColumnWidth(0,180);
