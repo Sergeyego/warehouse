@@ -19,7 +19,7 @@ FormRetWire::FormRetWire(QWidget *parent) :
     ui->comboBoxFlt->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
 
     QSqlQueryModel *typeModel = new QSqlQueryModel(this);
-    typeModel->setQuery("select id, nam from wire_way_bill_type where (id=4 or id=5 or id=7) order by id");
+    typeModel->setQuery("select id, nam from wire_way_bill_type where id in (4,5,7) order by id");
     if (typeModel->lastError().isValid()){
         QMessageBox::critical(this,tr("Ошибка"),typeModel->lastError().text(),QMessageBox::Cancel);
     } else {
@@ -55,6 +55,7 @@ FormRetWire::FormRetWire(QWidget *parent) :
     connect(ui->comboBoxFlt,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
     connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
+    connect(modelNaklData,SIGNAL(sigStock(QString)),ui->labelStock,SLOT(setText(QString)));
 
     upd();
 }
@@ -177,13 +178,24 @@ void ModelNaklRetWireData::refresh(int id_nakl)
     setFilter("wire_warehouse.id_waybill = "+QString::number(id_nakl));
     setDefaultValue(1,id_nakl);
     select();
+
+    QSqlQuery query;
+    query.prepare("select id_type from wire_whs_waybill where id = :id_n");
+    query.bindValue(":id_n",id_nakl);
+    if (query.exec()){
+        if (query.next()){
+            id_type=query.value(0).toInt();
+        }
+    } else {
+        QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
+    }
 }
 
 bool ModelNaklRetWireData::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     bool ok=DbTableModel::setData(index,value,role);
     if (role==Qt::EditRole){
-        emit sigStock(tr("Остаток на день передачи: ")+QString::number(getStock(index))+tr(" кг"));
+        emit sigStock(tr("Остаток на день передачи: ")+QLocale().toString(getStock(index),'f',2)+tr(" кг"));
     }
     return ok;
 }
@@ -192,44 +204,22 @@ bool ModelNaklRetWireData::submit()
 {
     bool ok=false;
     if (this->isEdt()){
-        int id_nakl=this->data(this->index(currentEdtRow(),1),Qt::EditRole).toInt();
-        int id_part=this->data(this->index(currentEdtRow(),2),Qt::EditRole).toInt();
-        double kvo=this->data(this->index(currentEdtRow(),3),Qt::EditRole).toDouble();
-        QSqlQuery query;
-        query.prepare("select dat, id_type from wire_whs_waybill where id = :id_n");
-        query.bindValue(":id_n",id_nakl);
-        QDate date;
-        int type;
-        if (query.exec()){
-            while (query.next()){
-                date=query.value(0).toDate();
-                type=query.value(1).toInt();
-            }
-        } else {
-            QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
+        QModelIndex indKvo=this->index(currentEdtRow(),3);
+        if (this->data(indKvo,Qt::EditRole).isNull()){
+            emit sigStock("");
+            return DbTableModel::submit();
         }
-        if (type==5){
-            query.clear();
-            query.prepare("select st from wire_calc_stock(:date) where id_wparti = :id_part ");
-            query.bindValue(":date",date);
-            query.bindValue(":id_part",id_part);
-            if (query.exec()){
-                double m;
-                while (query.next()){
-                    m=query.value(0).toDouble();
-                }
-                if (kvo>0 && m>=kvo){
-                    ok=DbTableModel::submit();
-                } else {
-                    QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на ")+date.toString("dd.MM.yy")+tr(" числится ")+
-                                          QLocale().toString(m,'f',2)+tr(" кг проволоки этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Ok);
-                }
-
+        double kvo=this->data(indKvo,Qt::EditRole).toDouble();
+        if (id_type==5){
+            double m=getStock(indKvo);
+            if (kvo>0 && m>=kvo){
+                ok=DbTableModel::submit();
             } else {
-                QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
+                QMessageBox::critical(NULL,tr("Ошибка"),tr("На складе на дату передачи числится ")+
+                                      QLocale().toString(m,'f',2)+tr(" кг проволоки этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Ok);
             }
         } else {
-            if (type==7 || kvo>0){
+            if (id_type==7 || kvo>0){
                 ok=DbTableModel::submit();
             } else {
                 QMessageBox::critical(NULL,tr("Ошибка"),tr("Масса должна быть больше нуля."),QMessageBox::Ok);

@@ -114,16 +114,39 @@ double DialogShipLoad::getStockWire(int id_part)
 }
 
 bool DialogShipLoad::insertEl(int id_part, double kvo)
-{
+{    
     bool ok=false;
-    QSqlQuery query;
-    query.prepare("insert into otpusk (id_sert, id_part, massa) values (:id_sert, :id_part, :massa)");
-    query.bindValue(":id_sert",id_s);
-    query.bindValue(":id_part",id_part);
-    query.bindValue(":massa",kvo);
-    ok=query.exec();
-    if (!ok){
-        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    QSqlQuery exQuery;
+    exQuery.prepare("select o.massa from otpusk o where o.id_sert = :id_sert and o.id_part = :id_part");
+    exQuery.bindValue(":id_sert",id_s);
+    exQuery.bindValue(":id_part",id_part);
+    ok=exQuery.exec();
+    if (ok){
+        if (exQuery.size()){
+            exQuery.next();
+            double mas=exQuery.value(0).toDouble();
+            QSqlQuery query;
+            query.prepare("update otpusk set massa = :massa where id_sert = :id_sert and id_part = :id_part");
+            query.bindValue(":id_sert",id_s);
+            query.bindValue(":id_part",id_part);
+            query.bindValue(":massa",kvo+mas);
+            ok=query.exec();
+            if (!ok){
+                QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+            }
+        } else {
+            QSqlQuery query;
+            query.prepare("insert into otpusk (id_sert, id_part, massa) values (:id_sert, :id_part, :massa)");
+            query.bindValue(":id_sert",id_s);
+            query.bindValue(":id_part",id_part);
+            query.bindValue(":massa",kvo);
+            ok=query.exec();
+            if (!ok){
+                QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+            }
+        }
+    } else {
+        QMessageBox::critical(NULL,tr("Ошибка"),exQuery.lastError().text(),QMessageBox::Ok);
     }
     return ok;
 }
@@ -131,14 +154,38 @@ bool DialogShipLoad::insertEl(int id_part, double kvo)
 bool DialogShipLoad::insertWire(int id_part, double kvo)
 {
     bool ok=false;
-    QSqlQuery query;
-    query.prepare("insert into wire_shipment_consist (id_ship, id_wparti, m_netto) values (:id_sert, :id_part, :massa)");
-    query.bindValue(":id_sert",id_s);
-    query.bindValue(":id_part",id_part);
-    query.bindValue(":massa",kvo);
-    ok=query.exec();
-    if (!ok){
-        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+
+    QSqlQuery exQuery;
+    exQuery.prepare("select m_netto from wire_shipment_consist where id_ship = :id_sert and id_wparti = :id_part");
+    exQuery.bindValue(":id_sert",id_s);
+    exQuery.bindValue(":id_part",id_part);
+    ok=exQuery.exec();
+    if (ok){
+        if (exQuery.size()){
+            exQuery.next();
+            double mas=exQuery.value(0).toDouble();
+            QSqlQuery query;
+            query.prepare("update wire_shipment_consist set m_netto = :massa where id_ship = :id_sert and id_wparti = :id_part");
+            query.bindValue(":id_sert",id_s);
+            query.bindValue(":id_part",id_part);
+            query.bindValue(":massa",kvo+mas);
+            ok=query.exec();
+            if (!ok){
+                QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+            }
+        } else {
+            QSqlQuery query;
+            query.prepare("insert into wire_shipment_consist (id_ship, id_wparti, m_netto) values (:id_sert, :id_part, :massa)");
+            query.bindValue(":id_sert",id_s);
+            query.bindValue(":id_part",id_part);
+            query.bindValue(":massa",kvo);
+            ok=query.exec();
+            if (!ok){
+                QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+            }
+        }
+    } else {
+        QMessageBox::critical(NULL,tr("Ошибка"),exQuery.lastError().text(),QMessageBox::Ok);
     }
     return ok;
 }

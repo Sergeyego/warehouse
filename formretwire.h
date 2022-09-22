@@ -35,6 +35,7 @@ public:
     void revert();
 private:
     double getStock(QModelIndex index);
+    int id_type;
 signals:
     void sigStock(QString mes);
 };

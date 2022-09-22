@@ -201,9 +201,14 @@ bool ModelNaklRetElData::submit()
 {
     bool ok = false;
     if (this->isEdt()){
-        double kvo=this->data(this->index(currentEdtRow(),6),Qt::EditRole).toDouble();
+        QModelIndex indKvo=this->index(currentEdtRow(),6);
+        if (this->data(indKvo,Qt::EditRole).isNull()){
+            emit sigStock("");
+            return DbTableModel::submit();
+        }
+        double kvo=this->data(indKvo,Qt::EditRole).toDouble();
         if (defaultTmpRow.at(4)==11 || defaultTmpRow.at(4)==9){
-            double m=getStock(this->index(currentEdtRow(),6));
+            double m=getStock(indKvo);
             if (kvo>=0 && m>=kvo){
                 ok=DbTableModel::submit();
             } else {
@@ -213,7 +218,7 @@ bool ModelNaklRetElData::submit()
         } else {
             if (kvo>0){
                 ok=DbTableModel::submit();
-            } else if (!this->data(this->index(currentEdtRow(),6),Qt::EditRole).isNull()){
+            } else {
                 QMessageBox::critical(NULL,tr("Ошибка"),tr("Масса должна быть больше нуля."),QMessageBox::Ok);
             }
         }
@@ -236,7 +241,7 @@ bool ModelNaklRetElData::setData(const QModelIndex &index, const QVariant &value
 {
     bool ok=DbTableModel::setData(index,value,role);
     if (role==Qt::EditRole){
-        emit sigStock(tr("Остаток на день передачи: ")+QString::number(getStock(index))+tr(" кг"));
+        emit sigStock(tr("Остаток на день передачи: ")+QLocale().toString(getStock(index),'f',2)+tr(" кг"));
     }
     return ok;
 }
