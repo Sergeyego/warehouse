@@ -19,7 +19,7 @@ FormRetWire::FormRetWire(QWidget *parent) :
     ui->comboBoxFlt->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
 
     QSqlQueryModel *typeModel = new QSqlQueryModel(this);
-    typeModel->setQuery("select id, nam from wire_way_bill_type where id in (4,5,7) order by id");
+    typeModel->setQuery("select id, nam from wire_way_bill_type where id in (4,5,7) order by nam");
     if (typeModel->lastError().isValid()){
         QMessageBox::critical(this,tr("Ошибка"),typeModel->lastError().text(),QMessageBox::Cancel);
     } else {
