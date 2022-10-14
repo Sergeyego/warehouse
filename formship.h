@@ -6,7 +6,7 @@
 #include "db/dbmapper.h"
 #include "dialogcods.h"
 #include "models.h"
-#include "tablemodel.h"
+#include "db/tablemodel.h"
 #include "dialogprintpacklist.h"
 
 namespace Ui {
@@ -24,7 +24,7 @@ struct shipContInfo {
     QString namKvo;
     QString prefix;
     ModelBalance *modelBalence;
-    DbRelation *relPart;
+    DbSqlRelation *relPart;
 };
 
 class ModelBalance : public TableModel

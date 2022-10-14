@@ -101,7 +101,6 @@
      <string>Сервис</string>
     </property>
     <addaction name="actionCfgPrint"/>
-    <addaction name="actionAllRefresh"/>
     <addaction name="actionCells"/>
    </widget>
    <widget class="QMenu" name="menuMov">

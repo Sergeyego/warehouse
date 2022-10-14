@@ -86,7 +86,7 @@ void TableModel::setHeader(const QStringList &hdata)
     endResetModel();
 }
 
-QStringList TableModel::getHeader()
+QStringList TableModel::getHeader() const
 {
     return p_header;
 }

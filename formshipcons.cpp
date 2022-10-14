@@ -16,7 +16,7 @@ FormShipCons::FormShipCons(QWidget *parent) :
     ui->comboBoxPart->setCurrentIndex(1);
 
     ui->comboBoxPolFlt->setModel(Models::instance()->relPol->model());
-    ui->comboBoxPolFlt->setModelColumn(Models::instance()->relPol->columnDisplay());
+    ui->comboBoxPolFlt->setModelColumn(1);
     ui->comboBoxPolFlt->completer()->setCompletionMode(QCompleter::PopupCompletion);
     ui->comboBoxPolFlt->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
@@ -73,8 +73,8 @@ FormShipCons::FormShipCons(QWidget *parent) :
     connect(ui->pushButtonXML,SIGNAL(clicked(bool)),this,SLOT(goXml()));
     connect(ui->pushButtonLoad,SIGNAL(clicked(bool)),this,SLOT(loadData()));
 
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
+    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
+    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
 
     updPol();
 }
@@ -117,13 +117,14 @@ void FormShipCons::updShip()
 
 void FormShipCons::updPol()
 {
-    ui->comboBoxPolFlt->blockSignals(true);
-    Models::instance()->relPol->refreshModel();
-    ui->comboBoxPolFlt->blockSignals(false);
+    if (sender()==ui->pushButtonUpd){
+        ui->comboBoxPolFlt->blockSignals(true);
+        modelShip->refreshRelsModel();
+        ui->comboBoxPolFlt->blockSignals(false);
 
-    Models::instance()->modelElPart->setMinDate(ui->dateEditBeg->date().addYears(-4),(sender()==ui->pushButtonUpd));
-    Models::instance()->modelWirePart->setMinDate(ui->dateEditBeg->date().addYears(-4),(sender()==ui->pushButtonUpd));
-
+        modelEl->refreshRelsModel();
+        modelWire->refreshRelsModel();
+    }
     updShip();
 }
 
@@ -131,7 +132,7 @@ void FormShipCons::setCurrentShip(int index)
 {
     int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,0),Qt::EditRole).toInt();
     QString id_pol=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,3),Qt::EditRole).toString();
-    ui->lineEditPol->setText(Models::instance()->relPol->data(id_pol,2).toString());
+    ui->lineEditPol->setText(Models::instance()->relPol->getDisplayValue(id_pol,"snam"));
     modelEl->refresh(id_ship);
     modelWire->refresh(id_ship);
 }
@@ -286,7 +287,7 @@ ModelShipCons::ModelShipCons(QObject *parent) : DbTableModel("sertifikat",parent
     addColumn("nom_s",tr("Номер"));
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
-    addColumn("id_type",tr("Тип отгрузки"),new DbRelation("select id, nam from sert_type where id in (1,2) order by nam",0,1,this));
+    addColumn("id_type",tr("Тип отгрузки"),new DbSqlRelation("sert_type","id","nam",this));//("select id, nam from sert_type where id in (1,2) order by nam",0,1,this));
     setSort("sertifikat.dat_vid, sertifikat.nom_s");
     setDefaultValue(4,1);
 }

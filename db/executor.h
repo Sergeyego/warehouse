@@ -2,7 +2,6 @@
 #define EXECUTOR_H
 
 #include <QThread>
-#include "progressreportdialog.h"
 #include <QMessageBox>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -17,7 +16,7 @@ class Executor : public QThread
 {
     Q_OBJECT
 public:
-    explicit Executor(QObject *parent = 0);
+    explicit Executor(QObject *parent=nullptr);
     ~Executor();
     void run();
     void setQuery(QString qu);
@@ -25,7 +24,6 @@ public:
 
 private:
     QString query;
-    ProgressReportDialog *pprd;
     QVector<QVector<QVariant>> data;
     QString databaseName;
     QString hostName;

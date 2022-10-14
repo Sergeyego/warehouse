@@ -23,7 +23,7 @@ protected:
     
 private:
     Ui::FormPoluch *ui;
-    DbRelation *relKat;
+    DbSqlRelation *relKat;
     DbTableModel *modelPoluch;
     DbMapper *mapper;
 

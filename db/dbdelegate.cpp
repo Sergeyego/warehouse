@@ -1,5 +1,4 @@
 #include "dbdelegate.h"
-#include <QLineEdit>
 
 DbDelegate::DbDelegate(QObject *parent): QItemDelegate(parent)
 {
@@ -10,68 +9,61 @@ QWidget *DbDelegate::createEditor (QWidget * parent, const QStyleOptionViewItem 
 {
     const DbTableModel *sqlModel = qobject_cast<const DbTableModel *>(index.model());
     if (!sqlModel) return QItemDelegate::createEditor(parent, option, index);
-    QWidget *editor=NULL;
-    if (sqlModel->relation(index.column())){
-        QAbstractItemModel *childModel=sqlModel->relation(index.column())->model();
-        if (!childModel){
-            editor=QItemDelegate::createEditor(parent, option, index);
-        } else {
-            QComboBox *combo = new QComboBox(parent);
-            combo->setLineEdit(new ComboLineEdit(parent));
-            editor=combo;
-        }
+    QWidget *editor=nullptr;
+    if (sqlModel->sqlRelation(index.column())){
+        editor=new DbComboBox(parent);
     } else {
         switch (sqlModel->columnType(index.column())){
-            case QMetaType::Bool:
-            {
-                editor=NULL;
-                break;
-            }
-            case QMetaType::QString:
-            {
-                editor=new QLineEdit(parent);
-                break;
-            }
-            case QMetaType::Int:
-            {
-                editor= sqlModel->data(index,Qt::CheckStateRole).isNull() ? new QLineEdit(parent) : NULL;
-                break;
-            }
-            case QMetaType::Short:
-            {
-                editor= new QLineEdit(parent);
-                break;
-            }
-            case QMetaType::Long:
-            {
-                editor= new QLineEdit(parent);
-                break;
-            }
-            case QMetaType::LongLong:
-            {
-                editor= new QLineEdit(parent);
-                break;
-            }
-            case QMetaType::Double:
-            {
-                editor=new QLineEdit(parent);
-                break;
-            }
-            case QMetaType::Float:
-            {
-                editor= new QLineEdit(parent);
-                break;
-            }
-            case QMetaType::QDate:
-            {
-                editor= new CustomDateEdit(parent);
-                break;
-            }
-            default:
-            {
-                editor=QItemDelegate::createEditor(parent, option, index);
-                break;
-            }
+        case QMetaType::Bool:
+        {
+            editor=nullptr;
+            break;
+        }
+        case QMetaType::QString:
+        {
+            editor=new QLineEdit(parent);
+            break;
+        }
+        case QMetaType::Int:
+        {
+            editor= sqlModel->data(index,Qt::CheckStateRole).isNull() ? new QLineEdit(parent) : nullptr;
+            break;
+        }
+        case QMetaType::Short:
+        {
+            editor= new QLineEdit(parent);
+            break;
+        }
+        case QMetaType::Long:
+        {
+            editor= new QLineEdit(parent);
+            break;
+        }
+        case QMetaType::LongLong:
+        {
+            editor= new QLineEdit(parent);
+            break;
+        }
+        case QMetaType::Double:
+        {
+            editor=new QLineEdit(parent);
+            break;
+        }
+        case QMetaType::Float:
+        {
+            editor= new QLineEdit(parent);
+            break;
+        }
+        case QMetaType::QDate:
+        {
+            editor= new DbDateEdit(parent);
+            break;
+        }
+        default:
+        {
+            editor=QItemDelegate::createEditor(parent, option, index);
+            break;
+        }
         }
     }
     if (editor) {
@@ -85,26 +77,14 @@ void DbDelegate::setEditorData ( QWidget * editor, const QModelIndex & index ) c
 {
     const DbTableModel *sqlModel = qobject_cast<const DbTableModel *>(index.model());
     if (sqlModel){
-        if (sqlModel->relation(index.column())){
-            QComboBox *combo = qobject_cast<QComboBox *>(editor);
+        if (sqlModel->sqlRelation(index.column())){
+            DbComboBox *combo = qobject_cast<DbComboBox *>(editor);
             if (combo) {
-                QAbstractItemModel *childModel=sqlModel->relation(index.column())->model();
-                if (childModel){
-                    combo->setModel(sqlModel->relation(index.column())->proxyModel());
-                    combo->setModelColumn(sqlModel->relation(index.column())->columnDisplay());
-                    combo->setEditable(true);
-                    CustomCompletter *c = new CustomCompletter(combo);
-                    c->setModel(sqlModel->relation(index.column())->proxyModel());
-                    c->setCompletionColumn(sqlModel->relation(index.column())->columnDisplay());
-                    combo->setCompleter(c);
-                    int pos=combo->findText(sqlModel->data(index).toString());
-                    if (pos!=-1){
-                        combo->setCurrentIndex(pos);
-                    } else {
-                        combo->lineEdit()->setText(sqlModel->data(index).toString());
-                    }
-                    return;
+                if (combo->model()!=sqlModel->sqlRelation(index.column())->model()){
+                    connect(combo,SIGNAL(sigActionEdtRel(QModelIndex)),this,SIGNAL(sigActionEdtRel(QModelIndex)));
                 }
+                combo->setIndex(index);
+                return;
             } else {
                 QLineEdit *le = qobject_cast<QLineEdit *>(editor);
                 if (le){
@@ -115,7 +95,7 @@ void DbDelegate::setEditorData ( QWidget * editor, const QModelIndex & index ) c
         }
         QVariant dat=sqlModel->data(index,Qt::EditRole);
         if (sqlModel->columnType(index.column()==QMetaType::QDate)){
-            CustomDateEdit *dateEdit = qobject_cast<CustomDateEdit *>(editor);
+            DbDateEdit *dateEdit = qobject_cast<DbDateEdit *>(editor);
             if (dateEdit){
                 if (dat.isNull()){
                     dateEdit->setDate(dateEdit->minimumDate());
@@ -128,7 +108,9 @@ void DbDelegate::setEditorData ( QWidget * editor, const QModelIndex & index ) c
         QLineEdit *line = qobject_cast<QLineEdit *>(editor);
         if (line) {
             if (sqlModel->validator(index.column())){
-                line->setValidator(sqlModel->validator(index.column()));
+                if (line->validator()!=sqlModel->validator(index.column())){
+                    line->setValidator(sqlModel->validator(index.column()));
+                }
                 QDoubleValidator *dval = qobject_cast<QDoubleValidator *>(sqlModel->validator(index.column()));
                 if (dval){
                     if (dat.isNull()){
@@ -157,34 +139,12 @@ void DbDelegate::setModelData ( QWidget * editor, QAbstractItemModel * model, co
         return;
     DbTableModel *sqlModel = qobject_cast<DbTableModel *>(model);
     if (sqlModel) {
-        if (sqlModel->relation(index.column())){
-            QComboBox *combo = qobject_cast<QComboBox *>(editor);
+        if (sqlModel->sqlRelation(index.column())){
+            DbComboBox *combo = qobject_cast<DbComboBox *>(editor);
             if (combo) {
-                QString text=combo->currentText();
-                if (text==model->data(index,Qt::DisplayRole).toString()){
-                    return;
-                }
-                QVariant v=sqlModel->relation(index.column())->key(combo->currentText());
-                if (v.isNull() && !text.isEmpty()){
-                    QSortFilterProxyModel *fmodel = qobject_cast<QSortFilterProxyModel *>(combo->model());
-                    if (fmodel){
-                        DbTableModel *m = qobject_cast<DbTableModel *>(fmodel->sourceModel());
-                        if (m){
-                            int n=QMessageBox::information(NULL,QString::fromUtf8("Предупреждение"),QString::fromUtf8("Не найдено значение ")+text+QString::fromUtf8(". Добавить его в таблицу?"),QMessageBox::Yes,QMessageBox::No);
-                            if (n==QMessageBox::Yes){
-                                m->insertRow(m->rowCount());
-                                if (m->isAdd()){
-                                    m->setData(m->index(m->rowCount()-1,sqlModel->relation(index.column())->columnDisplay()),text,Qt::EditRole);
-                                    if (m->submit()){
-                                        v=m->data(m->index(m->rowCount()-1,sqlModel->relation(index.column())->columnKey()),Qt::EditRole);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                QVariant val = v.isNull() ? sqlModel->nullVal(index.column()) : v;
-                sqlModel->setData(index,val,Qt::EditRole);
+                colVal data=combo->getCurrentData();
+                sqlModel->setData(index,data.val,Qt::EditRole);
+                sqlModel->setData(index,data.disp,Qt::DisplayRole);
                 return;
             }
 
@@ -197,7 +157,7 @@ void DbDelegate::setModelData ( QWidget * editor, QAbstractItemModel * model, co
                 }
             }
             if (sqlModel->columnType(index.column())==QMetaType::QDate){
-                CustomDateEdit *dateEdit = qobject_cast<CustomDateEdit *>(editor);
+                DbDateEdit *dateEdit = qobject_cast<DbDateEdit *>(editor);
                 if (dateEdit){
                     if (dateEdit->date()==dateEdit->minimumDate()){
                         sqlModel->setData(index,sqlModel->nullVal(index.column()),Qt::EditRole);
@@ -231,14 +191,8 @@ bool DbDelegate::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type()== QEvent::KeyPress){
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        //qDebug()<<keyEvent;
-        if (keyEvent->text()=="\r"){
-            QWidget *editor = qobject_cast<QWidget*>(object);
-            emit commitData(editor);
-            emit closeEditor(editor);
-            return true;
-        }
-        if(keyEvent->key()==Qt::Key_Tab || keyEvent->key()==Qt::Key_Down || keyEvent->key()==Qt::Key_Up){
+
+        if(keyEvent->text()=="\r" || keyEvent->key()==Qt::Key_Tab || keyEvent->key()==Qt::Key_Down || keyEvent->key()==Qt::Key_Up){
             QWidget *editor = qobject_cast<QWidget*>(object);
             emit commitData(editor);
             emit closeEditor(editor);
@@ -257,77 +211,4 @@ bool DbDelegate::eventFilter(QObject *object, QEvent *event)
         }
     }
     return QItemDelegate::eventFilter(object,event);
-}
-
-CustomCompletter::CustomCompletter(QObject *parent):QCompleter(parent)
-{
-    setCompletionMode(QCompleter::PopupCompletion);
-    setCaseSensitivity(Qt::CaseInsensitive);
-}
-
-bool CustomCompletter::eventFilter(QObject *o, QEvent *e)
-{
-    if (e->type()==QEvent::KeyPress){
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(e);
-        //qDebug()<<keyEvent;
-        if (keyEvent->key()==Qt::Key_Tab) {
-            this->popup()->close();
-            return false;
-        }
-    }
-    return QCompleter::eventFilter(o,e);
-}
-
-ComboLineEdit::ComboLineEdit(QWidget *parent) : QLineEdit(parent)
-{
-
-}
-
-void ComboLineEdit::keyPressEvent(QKeyEvent *e)
-{
-    if (e->text()==",") {
-        insert(".");
-        return;
-    } else {
-        return QLineEdit::keyPressEvent(e);
-    }
-}
-
-CustomCalendarWidget::CustomCalendarWidget(QWidget *parent) : QCalendarWidget(parent)
-{
-    this->setFirstDayOfWeek( Qt::Monday );
-}
-
-void CustomCalendarWidget::showEvent(QShowEvent *event)
-{
-    if (event->type() == QEvent::Show){
-        emit shown();
-    }
-    QCalendarWidget::showEvent(event);
-}
-
-CustomDateEdit::CustomDateEdit(QWidget *parent) : QDateEdit(parent)
-{
-    this->setCalendarPopup(true);
-    CustomCalendarWidget * pCW = new CustomCalendarWidget(this);
-    pCW->setFirstDayOfWeek( Qt::Monday );
-    this->setCalendarWidget( pCW );
-    this->setDisplayFormat("dd.MM.yy");
-    this->setSpecialValueText("NULL");
-    connect(this->lineEdit(),SIGNAL(textChanged(QString)),this,SLOT(txtChangeSlot(QString)));
-    connect(pCW,SIGNAL(shown()),this,SLOT(shVid()));
-}
-
-void CustomDateEdit::txtChangeSlot(QString txt)
-{
-    if (txt.isEmpty()){
-        this->setDate(this->minimumDate());
-    }
-}
-
-void CustomDateEdit::shVid()
-{
-    if (QDateEdit::date()==this->minimumDate()){
-        this->setDate(QDate::currentDate());
-    }
 }

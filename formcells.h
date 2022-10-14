@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "models.h"
-#include "tablemodel.h"
+#include "db/tablemodel.h"
 #include "labelbase.h"
 #include "dialoglblsize.h"
 #include <QSortFilterProxyModel>

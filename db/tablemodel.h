@@ -21,7 +21,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     void setModelData(const QVector<QVector<QVariant>> &data, const QStringList &hdata = QStringList());
     void setHeader(const QStringList &hdata);
-    QStringList getHeader();
+    QStringList getHeader() const;
     void clear();
     void setDecimal(int dec);
 

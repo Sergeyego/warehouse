@@ -25,6 +25,7 @@ FormTurnovers::~FormTurnovers()
 
 void FormTurnovers::refresh()
 {
+    Models::instance()->relKis->refreshModel();
     turnoversModel->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
     ui->tableView->resizeToContents();
 }

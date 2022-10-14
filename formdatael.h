@@ -20,6 +20,11 @@ struct ampInfo {
     QString ceil;
 };
 
+struct picInfo {
+    int cod;
+    QByteArray data;
+};
+
 class FormDataEl : public QWidget
 {
     Q_OBJECT
@@ -64,7 +69,8 @@ private:
     ModelRo *modelPart;
     QDataWidgetMapper *mapper;
     QSqlQueryModel *modelPacker;
-    DbRelation *relPosPix;
+    QMap <int, QString> docType;
+    QMap <int, picInfo> picMap;
     QString strAdr;
     ModelRo *modelGost;
     ModelRo *modelAmp;
@@ -78,6 +84,8 @@ private slots:
     void refreshData(QModelIndex index);
     void genEan();
     void setKvoPack();
+    void refreshDocType();
+    void refreshPicMap();
 
 public slots:
     void updPart();

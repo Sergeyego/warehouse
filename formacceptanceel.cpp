@@ -15,7 +15,7 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     ui->comboBoxPart->addItem(tr("начиная с текущего года"));
     ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
     ui->comboBoxPart->addItem(tr("за всё время"));
-    ui->comboBoxPart->setCurrentIndex(Models::instance()->relElPart->currentFilter());
+    //ui->comboBoxPart->setCurrentIndex(Models::instance()->relElPart->currentFilter());
 
     actionPrintLblAll = new QAction("Напечатать все",this);
     actionPrintLblOne = new QAction("Напечатать одну",this);
@@ -55,13 +55,13 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
 
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
+    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(modelAcceptanceElData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
-    connect(Models::instance()->relElPart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
+    //connect(Models::instance()->relElPart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
 
     updAcc();
 }
@@ -86,24 +86,10 @@ void FormAcceptanceEl::savesettings()
 
 void FormAcceptanceEl::updAcc()
 {
-    QDate minDate=ui->dateEditBeg->date().addYears(-4);
-    QSqlQuery query;
-    query.prepare("select min(p2.dat_part) from prod_nakl pn "
-                  "inner join prod p on p.id_nakl = pn.id "
-                  "inner join parti p2 on p2.id = p.id_part "
-                  "where pn.dat between :d1 and :d2");
-    query.bindValue(":d1",ui->dateEditBeg->date());
-    query.bindValue(":d2",ui->dateEditEnd->date());
-    if (query.exec()){
-        query.next();
-        QDate dt=query.value(0).toDate();
-        if (dt<minDate){
-            minDate=dt;
-        }
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    if (sender()==ui->pushButtonUpd){
+        modelAcceptanceEl->refreshRelsModel();
+        modelAcceptanceElData->refreshRelsModel();
     }
-    Models::instance()->modelElPart->setMinDate(minDate,(sender()==ui->pushButtonUpd));
     modelAcceptanceEl->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 
@@ -145,7 +131,7 @@ void FormAcceptanceEl::printNakl()
     QString id_ist=modelAcceptanceEl->data(modelAcceptanceEl->index(mapper->currentIndex(),3),Qt::EditRole).toString();
     QString year=QString::number(modelAcceptanceEl->data(modelAcceptanceEl->index(mapper->currentIndex(),2),Qt::EditRole).toDate().year());
     QString num=modelAcceptanceEl->data(modelAcceptanceEl->index(mapper->currentIndex(),1),Qt::EditRole).toString();
-    QString kis=modelAcceptanceEl->relation(3)->data(id_ist,2).toString()+year+"-"+num;
+    QString kis=modelAcceptanceEl->sqlRelation(3)->getDisplayValue(id_ist,"prefix")+year+"-"+num;
 
     PackNaklDoc doc(kis);
     DialogPrintPackList d(&doc);
@@ -167,7 +153,6 @@ ModelAcceptanceEl::ModelAcceptanceEl(QWidget *parent) : DbTableModel("prod_nakl"
     addColumn("num",tr("Номер"));
     addColumn("dat",tr("Дата"));
     addColumn("id_ist",tr("Тип"),Models::instance()->relAccTypeEl);
-    setSuffix("inner join prod_nakl_tip on prod_nakl_tip.id = prod_nakl.id_ist");
     setSort("prod_nakl.dat, prod_nakl.num");
     setDefaultValue(3,1);
 }

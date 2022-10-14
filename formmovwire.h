@@ -2,9 +2,9 @@
 #define FORMMOVWIRE_H
 
 #include <QWidget>
-#include "executor.h"
+#include "db/executor.h"
 #include "modelro.h"
-#include "tablemodel.h"
+#include "db/tablemodel.h"
 
 namespace Ui {
 class FormMovWire;

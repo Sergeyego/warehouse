@@ -44,7 +44,6 @@ MainWindow::MainWindow(bool master, QWidget *parent) :
     actAction(ui->actionMovWire,&MainWindow::newFormMovWire);
 
     connect(ui->actionCfgPrint,SIGNAL(triggered(bool)),this,SLOT(cfgPrint()));
-    connect(ui->actionAllRefresh,SIGNAL(triggered(bool)),Models::instance(),SLOT(refresh()));
 
     loadSettings();
     connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));

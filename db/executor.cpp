@@ -9,16 +9,12 @@ Executor::Executor(QObject *parent) :
     port=db.port();
     userName=db.userName();
     password=db.password();
-
-    pprd = new ProgressReportDialog();
-    connect(this,SIGNAL(started()),pprd,SLOT(show()));
-    connect(this,SIGNAL(finished()),pprd,SLOT(hide()));
     connect(this,SIGNAL(sigError(QString)),this,SLOT(showError(QString)));
 }
 
 Executor::~Executor()
 {
-    delete pprd;
+
 }
 
 void Executor::run()

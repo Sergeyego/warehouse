@@ -2,8 +2,8 @@
 #define FORMMOVEL_H
 
 #include <QWidget>
-#include "tablemodel.h"
-#include "executor.h"
+#include "db/tablemodel.h"
+#include "db/executor.h"
 #include <QSqlQueryModel>
 #include <QDataWidgetMapper>
 #include "modelro.h"

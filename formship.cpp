@@ -64,7 +64,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     push->addLock(ui->comboBoxOnly);
 
     ui->comboBoxOnly->setModel(Models::instance()->relPol->model());
-    ui->comboBoxOnly->setModelColumn(Models::instance()->relPol->columnDisplay());
+    ui->comboBoxOnly->setModelColumn(1);
     ui->comboBoxOnly->completer()->setCompletionMode(QCompleter::PopupCompletion);
     ui->comboBoxOnly->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
@@ -77,7 +77,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ei.namKvo="massa";
     ei.modelBalence=modelBalance;
     ei.prefix="e";
-    ei.relPart = new RelPart(Models::instance()->modelElPart,this);
+    ei.relPart = Models::instance()->relElPart;
     modelShipEl = new ModelShipData(ei,this);
     ui->tableViewEl->setModel(modelShipEl);
     ui->tableViewEl->setColumnHidden(0,true);
@@ -95,7 +95,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     wi.namKvo="m_netto";
     wi.modelBalence=modelBalance;
     wi.prefix="w";
-    wi.relPart = new RelPart(Models::instance()->modelWirePart,this);
+    wi.relPart = Models::instance()->relWirePart;
     modelShipWire = new ModelShipData(wi, this);
     ui->tableViewWire->setModel(modelShipWire);
     ui->tableViewWire->setColumnHidden(0,true);
@@ -182,9 +182,9 @@ void FormShip::setCurrentShip(int index)
     modelBalance->clear();
 
     int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,0),Qt::EditRole).toInt();
-    QString id_pol=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,3),Qt::EditRole).toString();
+    int id_pol=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,3),Qt::EditRole).toInt();
 
-    ui->lineEditPol->setText(Models::instance()->relPol->data(id_pol,2).toString());
+    ui->lineEditPol->setText(Models::instance()->relPol->getDisplayValue(id_pol,"snam"));
 
     modelShipEl->refresh(id_ship);
     modelShipWire->refresh(id_ship);
@@ -217,13 +217,14 @@ void FormShip::setPartFilter()
 
 void FormShip::updPol()
 {
-    ui->comboBoxOnly->blockSignals(true);
-    Models::instance()->relPol->refreshModel();
-    ui->comboBoxOnly->blockSignals(false);
+    if (sender()==ui->cmdUpdShip){
+        ui->comboBoxOnly->blockSignals(true);
+        modelShip->refreshRelsModel();
+        ui->comboBoxOnly->blockSignals(false);
 
-    Models::instance()->modelElPart->setMinDate(ui->dateEditBeg->date().addYears(-4),(sender()==ui->cmdUpdShip));
-    Models::instance()->modelWirePart->setMinDate(ui->dateEditBeg->date().addYears(-4),(sender()==ui->cmdUpdShip));
-
+        modelShipEl->refreshRelsModel();
+        modelShipWire->refreshRelsModel();
+    }
     updShip();
 }
 
@@ -235,8 +236,8 @@ void FormShip::updBalance()
     ui->tableViewWire->setEditTriggers(editTrig);
     modelBalance->updData(date);
     ui->pushButtonEdt->setEnabled(false);
-    Models::instance()->modelElPart->refresh();
-    Models::instance()->modelWirePart->refresh();
+    modelShipEl->refreshRelsModel();
+    modelShipWire->refreshRelsModel();
     modelShipEl->setFlt("");
     modelShipWire->setFlt("");
 }
@@ -270,7 +271,7 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
     for (int i=0; i<modelShipData->rowCount(); i++){
         QVariant id_part=modelShipData->data(modelShipData->index(i,3),Qt::EditRole);
         if (id_part.toInt()>0){
-            QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString()+tr(" (")+modelShipData->relation(3)->data(id_part.toString(),3).toString()+tr(" кг)");
+            QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString()/*+tr(" (")+modelShipData->relation(3)->data(id_part.toString(),3).toString()+tr(" кг)")*/;
             double kvo=modelShipData->data(modelShipData->index(i,4),Qt::EditRole).toDouble();
             hash.insert(nom,kvo);
         }
@@ -291,11 +292,13 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
 
 ModelShip::ModelShip(QObject *parent) : DbTableModel("ship_plan",parent)
 {
+    DbSqlRelation *relType = new DbSqlRelation("sert_type","id","nam",this);
+    relType->setFilter("sert_type.id in (1,3)");
     addColumn("id",tr("id"));
     addColumn("nom_s",tr("Номер"));
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
-    addColumn("id_type",tr("Тип отгрузки"),new DbRelation("select id, nam from sert_type where id in (1,3) order by nam",0,1,this));
+    addColumn("id_type",tr("Тип отгрузки"),relType);
     addColumn("id_drv",tr("Водитель"),Models::instance()->relDrv);
     addColumn("prim",tr("Примечание"));
     setSort("ship_plan.dat_vid, ship_plan.nom_s");
@@ -447,7 +450,7 @@ ModelShipData::ModelShipData(shipContInfo c, QObject *parent) : DbTableModel(c.t
     info=c;
     fltind=1;
     ostControl=true;
-    info.relPart->proxyModel()->setFilterKeyColumn(2);
+    //info.relPart->proxyModel()->setFilterKeyColumn(2);
     setFlt("");
     addColumn(info.namId,tr("id"));
     addColumn(info.namIdDoc, tr("id_sert"));
@@ -475,7 +478,7 @@ QVariant ModelShipData::data(const QModelIndex &index, int role) const
 {
     if (role==Qt::BackgroundRole){
         QString id_part=this->data(this->index(index.row(),3),Qt::EditRole).toString();
-        double mas_ed=info.relPart->data(id_part,3).toDouble();
+        double mas_ed/*=info.relPart->data(id_part,3).toDouble()*/;
         if (mas_ed>0){
             double kvo=this->data(this->index(index.row(),4),Qt::EditRole).toDouble();
             double b;
@@ -544,7 +547,7 @@ void ModelShipData::setFlt(QString kis)
     } else {
         pattern=kis;
     }
-    info.relPart->proxyModel()->setFilterRegExp(pattern);
+    info.relPart->setFilterRegExp(pattern);
 }
 
 bool ModelShipData::insertRow(int row, const QModelIndex &parent)

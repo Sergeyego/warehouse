@@ -6,9 +6,9 @@ DialogCods::DialogCods(QWidget *parent) :
     ui(new Ui::DialogCods)
 {
     ui->setupUi(this);
-    relDiam = new DbRelation(new DbRelationalModel("select id, sdim from diam order by sdim",this),0,1,this);
-    relElPack = new DbRelation(new DbRelationalModel("select id, pack_ed||'/'||pack_group from el_pack order by pack_ed",this),0,1,this);
-    relElVar = new DbRelation(new DbRelationalModel("select id, nam from elrtr_vars order by id",this),0,1,this);
+    relDiam = new DbSqlRelation("diam","id","sdim",this);//new DbRelationalModel("select id, sdim from diam order by sdim",this),0,1,this);
+    relElPack = new DbSqlRelation("el_pack_view","id","nam",this);//new DbRelationalModel("select id, pack_ed||'/'||pack_group from el_pack order by pack_ed",this),0,1,this);
+    relElVar = new DbSqlRelation("elrtr_vars","id","nam",this);//new DbRelationalModel("select id, nam from elrtr_vars order by id",this),0,1,this);
     modelElCods = new DbTableModel("td_keys_el",this);
     modelElCods->addColumn("id_el",tr("Марка"),Models::instance()->relEl);
     modelElCods->addColumn("id_diam",tr("Диаметр"),relDiam);
@@ -25,9 +25,9 @@ DialogCods::DialogCods(QWidget *parent) :
     ui->tableViewEl->setColumnWidth(3,210);
     ui->tableViewEl->setColumnWidth(4,100);
 
-    relWire = new DbRelation(new DbRelationalModel("select id, nam from provol order by nam",this),0,1,this);
-    relSpool = new DbRelation(new DbRelationalModel("select id, short from wire_pack_kind order by short",this),0,1,this);
-    relPack = new DbRelation(new DbRelationalModel("select id, pack_ed as nam from wire_pack order by nam",this),0,1,this);
+    relWire = new DbSqlRelation("provol","id","nam",this);//new DbRelationalModel("select id, nam from provol order by nam",this),0,1,this);
+    relSpool = new DbSqlRelation("wire_pack_kind","id","short",this);//new DbRelationalModel("select id, short from wire_pack_kind order by short",this),0,1,this);
+    relPack = new DbSqlRelation("wire_pack","id","pack_ed",this);//new DbRelationalModel("select id, pack_ed as nam from wire_pack order by nam",this),0,1,this);
     modelWireCods = new DbTableModel("td_keys_wire",this);
     modelWireCods->addColumn("id_prov",tr("Марка"),relWire);
     modelWireCods->addColumn("id_diam",tr("Диаметр"),relDiam);

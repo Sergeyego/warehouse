@@ -15,7 +15,7 @@ class DbMapper : public QWidget
     Q_OBJECT
     
 public:
-    explicit DbMapper(QAbstractItemView *v, QWidget *parent = 0);
+    explicit DbMapper(QAbstractItemView *v, QWidget *parent = nullptr);
     ~DbMapper();
     void addLock(QWidget *widget);
     void addUnLock(QWidget *widget);
@@ -56,6 +56,7 @@ public slots:
 private slots:
     void checkEmpty();
     void lock(bool val);
+    void edtRels(QModelIndex index);
 
 signals:
     void currentIndexChanged(int index);

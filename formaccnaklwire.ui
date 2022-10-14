@@ -24,7 +24,7 @@
       </widget>
      </item>
      <item>
-      <widget class="DateEdit" name="dateEditBeg"/>
+      <widget class="DbDateEdit" name="dateEditBeg"/>
      </item>
      <item>
       <widget class="QLabel" name="label_2">
@@ -34,7 +34,7 @@
       </widget>
      </item>
      <item>
-      <widget class="DateEdit" name="dateEditEnd"/>
+      <widget class="DbDateEdit" name="dateEditEnd"/>
      </item>
      <item>
       <widget class="QLabel" name="label_3">
@@ -44,7 +44,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBoxType"/>
+      <widget class="DbComboBox" name="comboBoxType"/>
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonUpd">
@@ -117,14 +117,19 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DateEdit</class>
-   <extends>QDateEdit</extends>
-   <header>db/dbviewer.h</header>
-  </customwidget>
-  <customwidget>
    <class>TableView</class>
    <extends>QTableView</extends>
    <header>olap/tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbDateEdit</class>
+   <extends>QDateEdit</extends>
+   <header>db/dbdateedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbComboBox</class>
+   <extends>QComboBox</extends>
+   <header>db/dbcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

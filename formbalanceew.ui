@@ -24,7 +24,7 @@
       </widget>
      </item>
      <item>
-      <widget class="DateEdit" name="dateEdit"/>
+      <widget class="DbDateEdit" name="dateEdit"/>
      </item>
      <item>
       <widget class="QRadioButton" name="radioButtonMark">
@@ -123,9 +123,9 @@
    <header>olap/tableview.h</header>
   </customwidget>
   <customwidget>
-   <class>DateEdit</class>
+   <class>DbDateEdit</class>
    <extends>QDateEdit</extends>
-   <header>db/dbviewer.h</header>
+   <header>db/dbdateedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

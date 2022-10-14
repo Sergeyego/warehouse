@@ -2,11 +2,11 @@
 #define FORMBALANCEEW_H
 
 #include <QWidget>
-#include "tablemodel.h"
+#include "db/tablemodel.h"
 #include <QSqlQuery>
 #include <QSortFilterProxyModel>
 #include <QInputDialog>
-#include "executor.h"
+#include "progressexecutor.h"
 
 namespace Ui {
 class FormBalanceEW;
@@ -27,7 +27,7 @@ private:
     QSortFilterProxyModel *proxyModelPart;
     bool en_el;
     bool en_wire;
-    Executor *sqlExecutor;
+    ProgressExecutor *sqlExecutor;
 
 private slots:
     void startUpd();

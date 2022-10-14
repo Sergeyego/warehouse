@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "models.h"
-#include "tablemodel.h"
+#include "db/tablemodel.h"
 #include <QSortFilterProxyModel>
 #include "dialogprintpacklist.h"
 
@@ -17,7 +17,6 @@ class BalanceModel : public TableModel
 
 public:
     explicit BalanceModel(QObject *parent=nullptr);
-    QVariant data(const QModelIndex &index, int role) const;
     void refresh(QDate dat, bool bypart=true);
     void getPartData(QString kis, QVector<QVector<QVariant>> &data);
     QStringList getPartHeader();

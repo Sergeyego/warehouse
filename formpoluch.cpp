@@ -8,7 +8,7 @@ FormPoluch::FormPoluch(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    relKat = new DbRelation(QString("select id, nam from pol_kat order by nam"),0,1,this);
+    relKat = new DbSqlRelation("pol_kat","id","nam",this);//(QString("select id, nam from pol_kat order by nam"),0,1,this);
 
     modelPoluch = new DbTableModel("poluch",this);
     modelPoluch->addColumn(QString("id"),QString("id"));

@@ -16,7 +16,7 @@ FormRetWire::FormRetWire(QWidget *parent) :
     ui->comboBoxFlt->addItem(tr("начиная с текущего года"));
     ui->comboBoxFlt->addItem(tr("начиная с прошлого года"));
     ui->comboBoxFlt->addItem(tr("за всё время"));
-    ui->comboBoxFlt->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
+    //ui->comboBoxFlt->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
 
     QSqlQueryModel *typeModel = new QSqlQueryModel(this);
     typeModel->setQuery("select id, nam from wire_way_bill_type where id in (4,5,7) order by nam");
@@ -53,7 +53,7 @@ FormRetWire::FormRetWire(QWidget *parent) :
     connect(ui->comboBoxType,SIGNAL(currentIndexChanged(int)),this,SLOT(upd()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updData(int)));
     connect(ui->comboBoxFlt,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
-    connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
+    //connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
     connect(modelNaklData,SIGNAL(sigStock(QString)),ui->labelStock,SLOT(setText(QString)));
 
@@ -80,27 +80,9 @@ void FormRetWire::saveSettings()
 
 void FormRetWire::upd()
 {
-    QDate minDate=ui->dateEditBeg->date().addYears(-4);
-    QSqlQuery query;
-    query.prepare("select min(wpm.dat) from wire_whs_waybill www "
-                  "inner join wire_warehouse ww on ww.id_waybill = www.id "
-                  "inner join wire_parti wp on wp.id = ww.id_wparti "
-                  "inner join wire_parti_m wpm on wpm.id = wp.id_m "
-                  "where www.dat between :d1 and :d2");
-    query.bindValue(":d1",ui->dateEditBeg->date());
-    query.bindValue(":d2",ui->dateEditEnd->date());
-    if (query.exec()){
-        query.next();
-        QDate dt=query.value(0).toDate();
-        if (dt<minDate){
-            minDate=dt;
-        }
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    if (sender()==ui->pushButtonUpd){
+        modelNaklData->refreshRelsModel();
     }
-
-    Models::instance()->modelWirePart->setMinDate(minDate,(sender()==ui->pushButtonUpd));
-
     int id_type=ui->comboBoxType->model()->data(ui->comboBoxType->model()->index(ui->comboBoxType->currentIndex(),0)).toInt();
     modelNakl->refresh(id_type,ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }

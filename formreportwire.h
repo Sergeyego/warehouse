@@ -2,8 +2,8 @@
 #define FORMREPORTWIRE_H
 
 #include <QWidget>
-#include "executor.h"
-#include "tablemodel.h"
+#include "db/executor.h"
+#include "db/tablemodel.h"
 
 namespace Ui {
 class FormReportWire;

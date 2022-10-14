@@ -13,7 +13,7 @@ FormBalanceEW::FormBalanceEW(bool e, bool w, QWidget *parent) :
 
     ui->tableViewMark->setHidden(ui->radioButtonPart->isChecked());
 
-    sqlExecutor = new Executor(this);
+    sqlExecutor = new ProgressExecutor(this);
 
     modelMark = new TableModel(this);
     modelPart = new TableModel(this);

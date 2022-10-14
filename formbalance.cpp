@@ -66,6 +66,7 @@ void FormBalance::refresh()
     if (byp){
         ui->tableView->setColumnHidden(12,true);
     }
+    ui->tableView->setColumnHidden(0,!byp);
     ui->tableView->resizeToContents();
     ui->tableViewPart->setHidden(byp);
 
@@ -80,7 +81,7 @@ void FormBalance::calcSum()
 {
     bool byp = ui->radioButtonPart->isChecked();
     double sum=0;
-    int col = byp? 6 : 1;
+    int col = byp? 6 : 2;
     for (int i=0; i<proxyModel->rowCount();i++){
         sum+=proxyModel->data(proxyModel->index(i,col),Qt::EditRole).toDouble();
     }
@@ -148,16 +149,7 @@ BalanceModel::BalanceModel(QObject *parent): TableModel(parent)
 {
     byp=true;
     headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"id";
-    headerMark<<"t"<<"Номенклатура"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
-}
-
-QVariant BalanceModel::data(const QModelIndex &index, int role) const
-{
-    if (index.column()==1 && role==Qt::DisplayRole){
-        QString kis=TableModel::data(index,role).toString();
-        return Models::instance()->relKis->data(kis);
-    }
-    return TableModel::data(index,role);
+    headerMark<<"t"<<"Код кис"<<"Номенклатура"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
 }
 
 void BalanceModel::refresh(QDate dat, bool bypart)
@@ -172,8 +164,8 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             partInfo pinfo=i.value();
             contInfo cinfo = cont.value(pinfo.contKey);
             BalanceModel::pData pd=partData.value(pinfo.id_part_kis);
-            row.push_back(Models::instance()->relKis->data(pinfo.id_kis,2));
-            row.push_back(pinfo.id_kis);
+            row.push_back(pinfo.id_kis.split(":").size()==2 ? "e" : "w");
+            row.push_back(pinfo.name);
             row.push_back(pd.pack);
             row.push_back(pinfo.number);
             row.push_back(pinfo.ist);
@@ -196,9 +188,10 @@ void BalanceModel::refresh(QDate dat, bool bypart)
         setModelData(tmpd,headerPart);
     } else {
         QList<QString> mlist = part.uniqueKeys();
+        QString name;
         for (QString kis : mlist){
             QVector<QVariant> row;
-            row.push_back(Models::instance()->relKis->data(kis,2));
+            row.push_back(kis.split(":").size()==2 ? "e" : "w");
             row.push_back(kis);
             double kvo=0;
             double prich=0;
@@ -213,7 +206,9 @@ void BalanceModel::refresh(QDate dat, bool bypart)
                 kvo+=pinfo.kvo;
                 prich+=pinfo.prich;
                 rasch+=pinfo.rasch;
+                name=pinfo.name;
             }
+            row.push_back(name);
             row.push_back(kvo);
             row.push_back(prich);
             row.push_back(rasch);
@@ -295,7 +290,7 @@ void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
         BalanceModel::pData pd=partData.value(i.id_part_kis);
         QVector<QVariant> row;
         contInfo cnt = cont.value(i.contKey);
-        row.push_back(Models::instance()->relKis->data(i.id_kis,2));
+        row.push_back(kis.split(":").size()==2 ? "e" : "w");
         row.push_back(i.name);
         row.push_back(pd.pack);
         row.push_back(i.number);

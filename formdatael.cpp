@@ -11,8 +11,6 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    relPosPix = new DbRelation(QString("select id, data, dt from pics"),0,1,this);
-
     modelGost = new ModelRo(this);
     ui->listViewGost->setModel(modelGost);
 
@@ -21,7 +19,6 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->tableViewAmp->setModel(modelAmp);
 
     modelPacker = new QSqlQueryModel(this);
-    updPacker();
 
     ui->comboBoxPack->setModel(modelPacker);
     ui->comboBoxPack->setModelColumn(0);
@@ -258,7 +255,7 @@ int FormDataEl::posPix()
 {
     QModelIndex ind=mapper->model()->index(mapper->currentIndex(),18);
     int id_pix=mapper->model()->data(ind,Qt::EditRole).toInt();
-    return relPosPix->data(QString::number(id_pix),2).toInt();
+    return picMap.value(id_pix).cod;
 }
 
 bool FormDataEl::check()
@@ -332,6 +329,10 @@ bool FormDataEl::selectPart()
             ui->tableViewPart->setColumnHidden(i,true);
         }
     }
+
+    updPacker();
+    refreshDocType();
+    refreshPicMap();
 
     QSqlQuery queryAdr;
     queryAdr.prepare("select nam_lbl, adr from hoz where id=1");
@@ -411,7 +412,7 @@ QString FormDataEl::getSrtStr(int id_part)
         if (!srtStr.isEmpty()){
             srtStr+="\n";
         }
-        srtStr+=Models::instance()->relDocType->data(QString::number(keys.at(i))).toString()+":";
+        srtStr+=docType.value(keys.at(i))+":";
         QList<QString> v = srt.values(keys.at(i));
         qSort(v.begin(),v.end());
         for (QString st:v){
@@ -468,7 +469,7 @@ void FormDataEl::refreshData(QModelIndex /*index*/)
     QModelIndex ind=mapper->model()->index(mapper->currentIndex(),18);
     int id_pix=mapper->model()->data(ind,Qt::EditRole).toInt();
     QPixmap pix;
-    pix.loadFromData(relPosPix->data(QString::number(id_pix)).toByteArray());
+    pix.loadFromData(picMap.value(id_pix).data);
     if (pix.isNull()){
         ui->labelPol->setPixmap(pix);
     } else {
@@ -513,6 +514,39 @@ void FormDataEl::setKvoPack()
     ui->lineEditKvoPack->setPalette(pal);
 }
 
+void FormDataEl::refreshDocType()
+{
+    docType.clear();
+    QSqlQuery query;
+    query.prepare("select id, nam from zvd_doc_type order by nam");
+    bool ok=query.exec();
+    if (ok){
+        while(query.next()){
+            docType.insert(query.value(0).toInt(),query.value(1).toString());
+        }
+    } else {
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+}
+
+void FormDataEl::refreshPicMap()
+{
+    picMap.clear();
+    QSqlQuery query;
+    query.prepare("select id, dt, data from pics");
+    bool ok=query.exec();
+    if (ok){
+        while(query.next()){
+            picInfo pi;
+            pi.cod=query.value(1).toInt();
+            pi.data=query.value(2).toByteArray();
+            picMap.insert(query.value(0).toInt(),pi);
+        }
+    } else {
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+}
+
 void FormDataEl::updPart()
 {
     if (selectPart()){
@@ -524,6 +558,7 @@ void FormDataEl::updPart()
 
 void FormDataEl::updPacker()
 {
+    QString save_p=ui->comboBoxPack->currentText();
     QSqlQuery query;
     query.prepare("select r.snam from rab_rab r inner join rab_qual q on q.id_rab=r.id "
                   "inner join rab_prof p on q.id_prof = p.id "
@@ -531,6 +566,7 @@ void FormDataEl::updPacker()
                   "and id_rab=r.id) and p.id=65 order by r.snam");
     if (query.exec()){
         modelPacker->setQuery(query);
+        ui->comboBoxPack->setCurrentText(save_p);
     } else {
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }

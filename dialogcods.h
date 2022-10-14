@@ -21,12 +21,12 @@ private:
     Ui::DialogCods *ui;
     DbTableModel *modelElCods;
     DbTableModel *modelWireCods;
-    DbRelation *relDiam;
-    DbRelation *relWire;
-    DbRelation *relSpool;
-    DbRelation *relPack;
-    DbRelation *relElPack;
-    DbRelation *relElVar;
+    DbSqlRelation *relDiam;
+    DbSqlRelation *relWire;
+    DbSqlRelation *relSpool;
+    DbSqlRelation *relPack;
+    DbSqlRelation *relElPack;
+    DbSqlRelation *relElVar;
 };
 
 #endif // DIALOGCODS_H

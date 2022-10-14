@@ -31,7 +31,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QDateEdit" name="dateEditBeg">
+          <widget class="DbDateEdit" name="dateEditBeg">
            <property name="displayFormat">
             <string>dd.MM.yy</string>
            </property>
@@ -48,7 +48,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QDateEdit" name="dateEditEnd">
+          <widget class="DbDateEdit" name="dateEditEnd">
            <property name="displayFormat">
             <string>dd.MM.yy</string>
            </property>
@@ -273,7 +273,7 @@
           </widget>
          </item>
          <item row="4" column="3">
-          <widget class="QDateEdit" name="dateEditPart">
+          <widget class="DbDateEdit" name="dateEditPart">
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -487,7 +487,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="DateEdit" name="dateEditPack"/>
+           <widget class="DbDateEdit" name="dateEditPack"/>
           </item>
           <item row="0" column="3">
            <widget class="QLineEdit" name="lineEditKvoPack"/>
@@ -536,19 +536,19 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DateEdit</class>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbDateEdit</class>
    <extends>QDateEdit</extends>
-   <header>db/dbviewer.h</header>
+   <header>db/dbdateedit.h</header>
   </customwidget>
   <customwidget>
    <class>DoubleLineEdit</class>
    <extends>QLineEdit</extends>
    <header>doublelineedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

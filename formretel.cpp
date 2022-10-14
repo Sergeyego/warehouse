@@ -16,7 +16,7 @@ FormRetEl::FormRetEl(QWidget *parent) :
     ui->comboBoxFlt->addItem(tr("начиная с текущего года"));
     ui->comboBoxFlt->addItem(tr("начиная с прошлого года"));
     ui->comboBoxFlt->addItem(tr("за всё время"));
-    ui->comboBoxFlt->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
+    //ui->comboBoxFlt->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
 
     QSqlQueryModel *typeModel = new QSqlQueryModel(this);
     typeModel->setQuery("select id, nam from prod_nakl_tip where id in (4,5,9,11) order by nam");
@@ -56,7 +56,7 @@ FormRetEl::FormRetEl(QWidget *parent) :
     connect(ui->comboBoxType,SIGNAL(currentIndexChanged(int)),this,SLOT(upd()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updData(int)));
     connect(ui->comboBoxFlt,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
-    connect(Models::instance()->relElPart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
+    //connect(Models::instance()->relElPart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
     connect(modelNaklData,SIGNAL(sigStock(QString)),ui->labelStock,SLOT(setText(QString)));
 
@@ -83,26 +83,9 @@ void FormRetEl::saveSettings()
 
 void FormRetEl::upd()
 {
-    QDate minDate=ui->dateEditBeg->date().addYears(-4);
-    QSqlQuery query;
-    query.prepare("select min(p2.dat_part) from prod_nakl pn "
-                  "inner join prod p on p.id_nakl = pn.id "
-                  "inner join parti p2 on p2.id = p.id_part "
-                  "where pn.dat between :d1 and :d2");
-    query.bindValue(":d1",ui->dateEditBeg->date());
-    query.bindValue(":d2",ui->dateEditEnd->date());
-    if (query.exec()){
-        query.next();
-        QDate dt=query.value(0).toDate();
-        if (dt<minDate){
-            minDate=dt;
-        }
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    if (sender()==ui->pushButtonUpd){
+        modelNaklData->refreshRelsModel();
     }
-
-    Models::instance()->modelElPart->setMinDate(minDate,(sender()==ui->pushButtonUpd));
-
     int id_type=ui->comboBoxType->model()->data(ui->comboBoxType->model()->index(ui->comboBoxType->currentIndex(),0)).toInt();
     modelNakl->refresh(id_type,ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
@@ -185,7 +168,8 @@ void ModelNaklRetElData::refresh(int id_nakl)
     if (query.exec()){
         while (query.next()){
             for (int i=0; i<query.record().count(); i++){
-                defaultTmpRow[i+1]=query.value(i);
+                //defaultTmpRow[i+1]=query.value(i);
+                setDefaultValue(i+1,query.value(i));
             }
         }
         this->setFilter("prod.id_nakl = "+QString::number(id_nakl));
@@ -207,7 +191,7 @@ bool ModelNaklRetElData::submit()
             return DbTableModel::submit();
         }
         double kvo=this->data(indKvo,Qt::EditRole).toDouble();
-        if (defaultTmpRow.at(4)==11 || defaultTmpRow.at(4)==9){
+        if (/*defaultTmpRow.at(4)*/defaultValue(4).toInt()==11 || defaultValue(4).toInt()==9){
             double m=getStock(indKvo);
             if (kvo>=0 && m>=kvo){
                 ok=DbTableModel::submit();

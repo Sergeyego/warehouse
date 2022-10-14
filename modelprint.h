@@ -2,7 +2,7 @@
 #define MODELPRINT_H
 
 #include <QObject>
-#include "tablemodel.h"
+#include "db/tablemodel.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>

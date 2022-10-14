@@ -31,7 +31,7 @@
           </widget>
          </item>
          <item>
-          <widget class="DateEdit" name="dateEditBeg"/>
+          <widget class="DbDateEdit" name="dateEditBeg"/>
          </item>
          <item>
           <widget class="QLabel" name="label_2">
@@ -41,7 +41,7 @@
           </widget>
          </item>
          <item>
-          <widget class="DateEdit" name="dateEditEnd"/>
+          <widget class="DbDateEdit" name="dateEditEnd"/>
          </item>
          <item>
           <widget class="QPushButton" name="cmdUpdShip">
@@ -174,7 +174,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBoxType"/>
+          <widget class="DbComboBox" name="comboBoxType">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_3">
@@ -201,7 +208,7 @@
           </widget>
          </item>
          <item>
-          <widget class="DateEdit" name="dateEdit"/>
+          <widget class="DbDateEdit" name="dateEdit"/>
          </item>
          <item>
           <widget class="QLabel" name="label_5">
@@ -211,10 +218,10 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBoxPol">
+          <widget class="DbComboBox" name="comboBoxPol">
            <property name="minimumSize">
             <size>
-             <width>200</width>
+             <width>300</width>
              <height>0</height>
             </size>
            </property>
@@ -262,7 +269,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBoxDrv">
+          <widget class="DbComboBox" name="comboBoxDrv">
            <property name="editable">
             <bool>true</bool>
            </property>
@@ -394,19 +401,24 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DateEdit</class>
-   <extends>QDateEdit</extends>
+   <class>DbViewer</class>
+   <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbDateEdit</class>
+   <extends>QDateEdit</extends>
+   <header>db/dbdateedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbComboBox</class>
+   <extends>QComboBox</extends>
+   <header>db/dbcombobox.h</header>
   </customwidget>
   <customwidget>
    <class>TableView</class>
    <extends>QTableView</extends>
    <header>olap/tableview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DbViewer</class>
-   <extends>QTableView</extends>
-   <header>db/dbviewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

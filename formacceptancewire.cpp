@@ -17,7 +17,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->comboBoxPart->addItem(tr("начиная с текущего года"));
     ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
     ui->comboBoxPart->addItem(tr("за всё время"));
-    ui->comboBoxPart->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
+    //ui->comboBoxPart->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
 
     actionPrintLblAll = new QAction("Напечатать все",this);
     actionPrintLblOne = new QAction("Напечатать одну",this);
@@ -52,7 +52,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
-    connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
+    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
@@ -60,7 +60,7 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
-    connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
+    //connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
 
     updAcc();
 }
@@ -103,25 +103,10 @@ void FormAcceptanceWire::printPal(int id_acc, int cont)
 
 void FormAcceptanceWire::updAcc()
 {
-    QDate minDate=ui->dateEditBeg->date().addYears(-4);
-    QSqlQuery query;
-    query.prepare("select min(wpm.dat) from wire_whs_waybill www "
-                  "inner join wire_warehouse ww on ww.id_waybill = www.id "
-                  "inner join wire_parti wp on wp.id = ww.id_wparti "
-                  "inner join wire_parti_m wpm on wpm.id = wp.id_m "
-                  "where www.dat between :d1 and :d2");
-    query.bindValue(":d1",ui->dateEditBeg->date());
-    query.bindValue(":d2",ui->dateEditEnd->date());
-    if (query.exec()){
-        query.next();
-        QDate dt=query.value(0).toDate();
-        if (dt<minDate){
-            minDate=dt;
-        }
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    if (sender()==ui->pushButtonUpd){
+        modelAcceptanceWire->refreshRelsModel();
+        modelAcceptanceWireData->refreshRelsModel();
     }
-    Models::instance()->modelWirePart->setMinDate(minDate,(sender()==ui->pushButtonUpd));
     modelAcceptanceWire->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
 }
 
@@ -161,7 +146,7 @@ void FormAcceptanceWire::printNakl()
     QString id_ist=modelAcceptanceWire->data(modelAcceptanceWire->index(mapper->currentIndex(),3),Qt::EditRole).toString();
     QString year=QString::number(modelAcceptanceWire->data(modelAcceptanceWire->index(mapper->currentIndex(),2),Qt::EditRole).toDate().year());
     QString num=modelAcceptanceWire->data(modelAcceptanceWire->index(mapper->currentIndex(),1),Qt::EditRole).toString();
-    QString kis=modelAcceptanceWire->relation(3)->data(id_ist,2).toString()+year+"-"+num;
+    QString kis=modelAcceptanceWire->sqlRelation(3)->getDisplayValue(id_ist,"prefix")+year+"-"+num;
 
     PackNaklDoc doc(kis);
     DialogPrintPackList d(&doc);
@@ -183,7 +168,6 @@ ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_w
     addColumn("num",tr("Номер"));
     addColumn("dat",tr("Дата"));
     addColumn("id_type",tr("Тип"),Models::instance()->relAccTypeWire);
-    setSuffix("inner join wire_way_bill_type on wire_way_bill_type.id = wire_whs_waybill.id_type");
     setDefaultValue(3,3);
     setSort(name()+".num, "+name()+".dat");
 }

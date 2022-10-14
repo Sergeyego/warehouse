@@ -38,7 +38,6 @@ SOURCES += \
     dialogcods.cpp \
     formpoluch.cpp \
     formbalance.cpp \
-    tablemodel.cpp \
     formturnovers.cpp \
     olap/axiswidget.cpp \
     olap/cubewidget.cpp \
@@ -72,7 +71,6 @@ SOURCES += \
     code128/code128.cpp \
     formdrv.cpp \
     formbalanceew.cpp \
-    executor.cpp \
     progressreportdialog.cpp \
     formreportel.cpp \
     formreportwire.cpp \
@@ -82,7 +80,13 @@ SOURCES += \
     dialogrest.cpp \
     formmovwire.cpp \
     formshipcons.cpp \
-    dialogshipload.cpp
+    dialogshipload.cpp \
+    db/dbcombobox.cpp \
+    db/dbdateedit.cpp \
+    db/dbrelationeditdialog.cpp \
+    db/executor.cpp \
+    db/tablemodel.cpp \
+    progressexecutor.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -97,7 +101,6 @@ HEADERS += \
     dialogcods.h \
     formpoluch.h \
     formbalance.h \
-    tablemodel.h \
     formturnovers.h \
     olap/axiswidget.h \
     olap/cubewidget.h \
@@ -131,7 +134,6 @@ HEADERS += \
     code128/code128.h \
     formdrv.h \
     formbalanceew.h \
-    executor.h \
     progressreportdialog.h \
     formreportel.h \
     formreportwire.h \
@@ -141,7 +143,13 @@ HEADERS += \
     dialogrest.h \
     formmovwire.h \
     formshipcons.h \
-    dialogshipload.h
+    dialogshipload.h \
+    db/dbcombobox.h \
+    db/dbdateedit.h \
+    db/dbrelationeditdialog.h \
+    db/executor.h \
+    db/tablemodel.h \
+    progressexecutor.h
 
 FORMS += \
         mainwindow.ui \
@@ -180,7 +188,8 @@ FORMS += \
     dialogrest.ui \
     formmovwire.ui \
     formshipcons.ui \
-    dialogshipload.ui
+    dialogshipload.ui \
+    db/dbrelationeditdialog.ui
 
 RC_FILE = ico.rc
 
