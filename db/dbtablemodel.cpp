@@ -363,7 +363,7 @@ bool DbTableModel::updateDb()
     QVector<colVal> tmpRow=editor->newRow();
 
     for (int i=0; i<modelData->columnCount(); i++){
-        if(newRow[i].val!=oldRow[i].val){
+        if(newRow[i].val!=oldRow[i].val || (newRow[i].val.isNull() && !oldRow[i].val.isNull()) || (!newRow[i].val.isNull() && oldRow[i].val.isNull())){
             if (!sets.isEmpty()){
                 sets+=", ";
             }
@@ -384,7 +384,7 @@ bool DbTableModel::updateDb()
     qu="UPDATE "+tableName+" SET "+sets+" WHERE "+pkeys+" RETURNING "+rets;
     query.prepare(qu);
     for (int i=0; i<modelData->columnCount(); i++){
-        if(newRow[i].val!=oldRow[i].val){
+        if(newRow[i].val!=oldRow[i].val || (newRow[i].val.isNull() && !oldRow[i].val.isNull()) || (!newRow[i].val.isNull() && oldRow[i].val.isNull())){
             query.bindValue(":new"+modelData->column(i)->name,newRow[i].val);
         }
         if (pkList.contains(modelData->column(i)->name)) {
