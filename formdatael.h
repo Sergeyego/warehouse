@@ -25,6 +25,14 @@ struct picInfo {
     QByteArray data;
 };
 
+class ModelPart : public ModelRo{
+    Q_OBJECT
+public:
+    ModelPart(QObject *parent = nullptr);
+    bool refresh(QDate dbeg, QDate dend);
+    QVariant data(const QModelIndex &item, int role) const;
+};
+
 class FormDataEl : public QWidget
 {
     Q_OBJECT
@@ -66,7 +74,7 @@ public:
 
 private:
     Ui::FormDataEl *ui;
-    ModelRo *modelPart;
+    ModelPart *modelPart;
     QDataWidgetMapper *mapper;
     QSqlQueryModel *modelPacker;
     QMap <int, QString> docType;
@@ -74,7 +82,6 @@ private:
     QString strAdr;
     ModelRo *modelGost;
     ModelRo *modelAmp;
-    bool selectPart();
     void loadSettings();
     void saveSettings();
     QVariant currentData(int row);

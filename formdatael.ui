@@ -301,7 +301,11 @@
           </widget>
          </item>
          <item row="0" column="3">
-          <widget class="QLineEdit" name="lineEditMarkSert"/>
+          <widget class="QLineEdit" name="lineEditMarkSert">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="1" column="2">
           <widget class="QLabel" name="label_23">
@@ -314,6 +318,13 @@
           <widget class="QLineEdit" name="lineEditVar">
            <property name="readOnly">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="2">
+          <widget class="QCheckBox" name="checkBoxOk">
+           <property name="text">
+            <string>Испытания в норме</string>
            </property>
           </widget>
          </item>
@@ -346,7 +357,7 @@
             <item>
              <widget class="QPlainTextEdit" name="plainTextEditSert">
               <property name="readOnly">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -443,7 +454,7 @@
          <item>
           <widget class="QLineEdit" name="lineEditProc">
            <property name="readOnly">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
           </widget>
          </item>

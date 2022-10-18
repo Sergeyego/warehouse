@@ -11,6 +11,13 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    ui->checkBoxOk->setEnabled(false);
+    QPalette pal=ui->checkBoxOk->palette();
+    pal.setColor(QPalette::Disabled, QPalette::Text, pal.color(QPalette::Active,QPalette::Text));
+    pal.setColor(QPalette::Disabled, QPalette::WindowText, pal.color(QPalette::Active,QPalette::WindowText));
+    pal.setColor(QPalette::Disabled, QPalette::ButtonText, pal.color(QPalette::Active,QPalette::ButtonText));
+    ui->checkBoxOk->setPalette(pal);
+
     modelGost = new ModelRo(this);
     ui->listViewGost->setModel(modelGost);
 
@@ -23,7 +30,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     ui->comboBoxPack->setModel(modelPacker);
     ui->comboBoxPack->setModelColumn(0);
 
-    modelPart = new ModelRo(this);
+    modelPart = new ModelPart(this);
 
     ui->tableViewPart->setModel(modelPart);
     ui->tableViewPart->verticalHeader()->setDefaultSectionSize(ui->tableViewPart->verticalHeader()->fontMetrics().height()*1.5);
@@ -50,6 +57,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     mapper->addMapping(ui->plainTextEditDesc,17);
     mapper->addMapping(ui->lineEditMarkSert,19);
     mapper->addMapping(ui->lineEditVar,20);
+    mapper->addMapping(ui->checkBoxOk,21);
 
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),mapper,SLOT(setCurrentModelIndex(QModelIndex)));
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshData(QModelIndex)));
@@ -284,6 +292,9 @@ bool FormDataEl::check()
     if (descr().isEmpty()){
         err+=QString::fromUtf8("Отсутствует описание.\n");
     }
+    if (!currentData(21).toBool()){
+        err+=QString::fromUtf8("Отсутствует подтверждение \"Испытания в норме\".\n");
+    }
 
     bool ok=err.isEmpty();
 
@@ -297,34 +308,15 @@ bool FormDataEl::check()
 }
 
 
-bool FormDataEl::selectPart()
+void FormDataEl::updPart()
 {
-    QSqlQuery query;
-    query.prepare("select p.id, p.n_s, p.dat_part, e.marka, p.diam, i.nam, ep.pack_ed, ep.pack_group, ep.mass_ed, ep.mass_group, ee.ean_ed, ee.ean_group, "
-                  "g.nam, pu.nam, coalesce(p.ibco, ev.znam), e.vl, ev.proc, ev.descr, e.id_pic, coalesce(e.marka_sert,e.marka), elv.nam "
-                  "from parti as p "
-                  "inner join elrtr as e on p.id_el=e.id "
-                  "inner join istoch as i on p.id_ist=i.id "
-                  "inner join el_pack as ep on ep.id=p.id_pack "
-                  "inner join gost_types as g on e.id_gost_type=g.id "
-                  "inner join purpose as pu on e.id_purpose=pu.id "
-                  "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam=p.diam) and ee.id_pack = p.id_pack "
-                  "left join el_var ev on ev.id_el = p.id_el and ev.id_var = p.id_var "
-                  "inner join elrtr_vars elv on elv.id = p.id_var "
-                  "where p.dat_part between :d1 and :d2 "
-                  "order by p.dat_part, p.n_s");
-    query.bindValue(":d1",ui->dateEditBeg->date());
-    query.bindValue(":d2",ui->dateEditEnd->date());
-    bool ok=modelPart->execQuery(query);
+    int id_part = (mapper->currentIndex()>=0)? currentData(0).toInt() : -1;
+
+    bool ok = modelPart->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
+
     if (ok){
         ui->tableViewPart->setColumnHidden(0,true);
         ui->tableViewPart->resizeColumnsToContents();
-        modelPart->setHeaderData(1,Qt::Horizontal,QString::fromUtf8("Парт."));
-        modelPart->setHeaderData(2,Qt::Horizontal,QString::fromUtf8("Дата"));
-        modelPart->setHeaderData(3,Qt::Horizontal,QString::fromUtf8("Марка"));
-        modelPart->setHeaderData(4,Qt::Horizontal,QString::fromUtf8("Диам."));
-        modelPart->setHeaderData(5,Qt::Horizontal,QString::fromUtf8("Источник"));
-        modelPart->setHeaderData(6,Qt::Horizontal,QString::fromUtf8("Упаковка"));
         for (int i=7; i<modelPart->columnCount(); i++){
             ui->tableViewPart->setColumnHidden(i,true);
         }
@@ -346,7 +338,18 @@ bool FormDataEl::selectPart()
     }
 
     ui->dateEditPack->setDate(QDate::currentDate());
-    return ok;
+
+    if (id_part>0){
+        for (int i=0; i<ui->tableViewPart->model()->rowCount(); i++){
+            int id=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(i,0),Qt::EditRole).toInt();
+            if (id==id_part){
+                ui->tableViewPart->selectRow(i);
+                break;
+            }
+        }
+    } else if (ui->tableViewPart->model()->rowCount()){
+        ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
+    }
 }
 
 void FormDataEl::loadSettings()
@@ -484,14 +487,7 @@ void FormDataEl::genEan()
     query.prepare("select * from add_ean_el( :id_part )");
     query.bindValue(":id_part",id_part);
     if (query.exec()){
-        selectPart();
-        for (int i=0; i<ui->tableViewPart->model()->rowCount(); i++){
-            int id=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(i,0),Qt::EditRole).toInt();
-            if (id==id_part){
-                ui->tableViewPart->selectRow(i);
-                break;
-            }
-        }
+        updPart();
     } else {
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
@@ -547,15 +543,6 @@ void FormDataEl::refreshPicMap()
     }
 }
 
-void FormDataEl::updPart()
-{
-    if (selectPart()){
-        if (modelPart->rowCount()){
-            ui->tableViewPart->selectRow(modelPart->rowCount()-1);
-        }
-    }
-}
-
 void FormDataEl::updPacker()
 {
     QString save_p=ui->comboBoxPack->currentText();
@@ -571,3 +558,48 @@ void FormDataEl::updPacker()
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
 }
+
+ModelPart::ModelPart(QObject *parent) : ModelRo(parent)
+{
+
+}
+
+bool ModelPart::refresh(QDate dbeg, QDate dend)
+{
+    QSqlQuery query;
+    query.prepare("select p.id, p.n_s, p.dat_part, e.marka, p.diam, i.nam, ep.pack_ed, ep.pack_group, ep.mass_ed, ep.mass_group, ee.ean_ed, ee.ean_group, "
+                  "g.nam, pu.nam, coalesce(p.ibco, ev.znam), e.vl, ev.proc, ev.descr, e.id_pic, coalesce(e.marka_sert,e.marka), elv.nam, p.ok "
+                  "from parti as p "
+                  "inner join elrtr as e on p.id_el=e.id "
+                  "inner join istoch as i on p.id_ist=i.id "
+                  "inner join el_pack as ep on ep.id=p.id_pack "
+                  "inner join gost_types as g on e.id_gost_type=g.id "
+                  "inner join purpose as pu on e.id_purpose=pu.id "
+                  "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam=p.diam) and ee.id_pack = p.id_pack "
+                  "left join el_var ev on ev.id_el = p.id_el and ev.id_var = p.id_var "
+                  "inner join elrtr_vars elv on elv.id = p.id_var "
+                  "where p.dat_part between :d1 and :d2 "
+                  "order by p.dat_part, p.n_s");
+    query.bindValue(":d1",dbeg);
+    query.bindValue(":d2",dend);
+    bool ok=execQuery(query);
+    if (ok){
+        setHeaderData(1,Qt::Horizontal,QString::fromUtf8("Парт."));
+        setHeaderData(2,Qt::Horizontal,QString::fromUtf8("Дата"));
+        setHeaderData(3,Qt::Horizontal,QString::fromUtf8("Марка"));
+        setHeaderData(4,Qt::Horizontal,QString::fromUtf8("Диам."));
+        setHeaderData(5,Qt::Horizontal,QString::fromUtf8("Источник"));
+        setHeaderData(6,Qt::Horizontal,QString::fromUtf8("Упаковка"));
+    }
+    return ok;
+}
+
+QVariant ModelPart::data(const QModelIndex &item, int role) const
+{
+    if (role==Qt::BackgroundColorRole){
+        bool ok=this->data(this->index(item.row(),21),Qt::EditRole).toBool();
+        return ok ? QVariant(QColor(170,255,170)) : QVariant(QColor(255,170,170));
+    }
+    return ModelRo::data(item,role);
+}
+
