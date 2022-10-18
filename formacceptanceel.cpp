@@ -12,11 +12,6 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    ui->comboBoxPart->addItem(tr("начиная с текущего года"));
-    ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
-    ui->comboBoxPart->addItem(tr("за всё время"));
-    //ui->comboBoxPart->setCurrentIndex(Models::instance()->relElPart->currentFilter());
-
     actionPrintLblAll = new QAction("Напечатать все",this);
     actionPrintLblOne = new QAction("Напечатать одну",this);
 
@@ -55,13 +50,11 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
 
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
-    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(modelAcceptanceElData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
-    //connect(Models::instance()->relElPart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
 
     updAcc();
 }
@@ -101,7 +94,9 @@ void FormAcceptanceEl::updAccData(int index)
 
 void FormAcceptanceEl::sync()
 {
+    ui->pushButtonNakl->setEnabled(false);
     Models::instance()->sync1C->syncPriemEl(mapper->modelData(mapper->currentIndex(),0).toInt());
+    ui->pushButtonNakl->setEnabled(true);
 }
 
 void FormAcceptanceEl::printPalAll()
@@ -138,13 +133,6 @@ void FormAcceptanceEl::printNakl()
     d.setWindowTitle("Накладная "+kis);
     d.setSingle(false);
     d.exec();
-}
-
-void FormAcceptanceEl::setCurrentFilter(int ind)
-{
-    ui->comboBoxPart->blockSignals(true);
-    ui->comboBoxPart->setCurrentIndex(ind);
-    ui->comboBoxPart->blockSignals(false);
 }
 
 ModelAcceptanceEl::ModelAcceptanceEl(QWidget *parent) : DbTableModel("prod_nakl",parent)

@@ -12,7 +12,7 @@ FormReportEl::FormReportEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().day()+1));
     ui->dateEditEnd->setDate(QDate::currentDate());
 
-    sqlExecutor = new Executor(this);
+    sqlExecutor = new ProgressExecutor(this);
 
     modelReport = new TableModel(this);
     QStringList headerList;

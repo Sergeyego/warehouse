@@ -59,7 +59,6 @@ private:
 private slots:
     void upd();
     void updData(int index);
-    void setCurrentFilter(int num);
     void printNakl();
 };
 

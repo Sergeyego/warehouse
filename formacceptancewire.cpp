@@ -14,11 +14,6 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    ui->comboBoxPart->addItem(tr("начиная с текущего года"));
-    ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
-    ui->comboBoxPart->addItem(tr("за всё время"));
-    //ui->comboBoxPart->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
-
     actionPrintLblAll = new QAction("Напечатать все",this);
     actionPrintLblOne = new QAction("Напечатать одну",this);
 
@@ -52,7 +47,6 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
-    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
@@ -60,7 +54,6 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
     connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
-    //connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
 
     updAcc();
 }
@@ -118,7 +111,9 @@ void FormAcceptanceWire::updAccData(int index)
 
 void FormAcceptanceWire::sync()
 {
+    ui->pushButtonNakl->setEnabled(false);
     Models::instance()->sync1C->syncPriemWire(mapper->modelData(mapper->currentIndex(),0).toInt());
+    ui->pushButtonNakl->setEnabled(true);
 }
 
 void FormAcceptanceWire::printPalAll()
@@ -153,13 +148,6 @@ void FormAcceptanceWire::printNakl()
     d.setWindowTitle("Накладная "+kis);
     d.setSingle(false);
     d.exec();
-}
-
-void FormAcceptanceWire::setCurrentFilter(int ind)
-{
-    ui->comboBoxPart->blockSignals(true);
-    ui->comboBoxPart->setCurrentIndex(ind);
-    ui->comboBoxPart->blockSignals(false);
 }
 
 ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)

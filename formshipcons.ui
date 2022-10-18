@@ -78,7 +78,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBoxPolFlt">
+          <widget class="DbComboBox" name="comboBoxPolFlt">
            <property name="editable">
             <bool>true</bool>
            </property>
@@ -90,47 +90,6 @@
      </widget>
      <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Выбирать партии</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="comboBoxPart"/>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonLoad">
-           <property name="text">
-            <string>Загрузить</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonCods">
-           <property name="text">
-            <string>Коды 1С</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
@@ -162,6 +121,20 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonLoad">
+           <property name="text">
+            <string>Загрузить</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonCods">
+           <property name="text">
+            <string>Коды 1С</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -309,11 +282,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DbViewer</class>
-   <extends>QTableView</extends>
-   <header>db/dbviewer.h</header>
-  </customwidget>
-  <customwidget>
    <class>DbDateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbdateedit.h</header>
@@ -322,6 +290,11 @@
    <class>DbComboBox</class>
    <extends>QComboBox</extends>
    <header>db/dbcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbViewer</class>
+   <extends>QTableView</extends>
+   <header>db/dbviewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

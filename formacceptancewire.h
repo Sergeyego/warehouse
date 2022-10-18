@@ -80,7 +80,6 @@ private slots:
     void printPalAll();
     void printPalOne();
     void printNakl();
-    void setCurrentFilter(int ind);
 };
 
 #endif // FORMACCEPTANCEWIRE_H

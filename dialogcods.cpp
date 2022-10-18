@@ -6,16 +6,18 @@ DialogCods::DialogCods(QWidget *parent) :
     ui(new Ui::DialogCods)
 {
     ui->setupUi(this);
-    relDiam = new DbSqlRelation("diam","id","sdim",this);//new DbRelationalModel("select id, sdim from diam order by sdim",this),0,1,this);
-    relElPack = new DbSqlRelation("el_pack_view","id","nam",this);//new DbRelationalModel("select id, pack_ed||'/'||pack_group from el_pack order by pack_ed",this),0,1,this);
-    relElVar = new DbSqlRelation("elrtr_vars","id","nam",this);//new DbRelationalModel("select id, nam from elrtr_vars order by id",this),0,1,this);
+    relEl =new DbSqlRelation("elrtr","id","marka",this);
+    relEl->setFilter("elrtr.id<>0");
+    relDiam = new DbSqlRelation("diam","id","sdim",this);
+    relDiam->setFilter("diam.id<>0");
+    relElPack = new DbSqlRelation("el_pack_view","id","nam",this);
+    relElVar = new DbSqlRelation("elrtr_vars","id","nam",this);
     modelElCods = new DbTableModel("td_keys_el",this);
-    modelElCods->addColumn("id_el",tr("Марка"),Models::instance()->relEl);
+    modelElCods->addColumn("id_el",tr("Марка"),relEl);
     modelElCods->addColumn("id_diam",tr("Диаметр"),relDiam);
     modelElCods->addColumn("id_var",tr("Вариант"),relElVar);
     modelElCods->addColumn("id_pack",tr("Упаковка (ед./групп.)"),relElPack);
     modelElCods->addColumn("cod",tr("Код"));
-    modelElCods->setSuffix("inner join elrtr on elrtr.id = td_keys_el.id_el inner join diam on diam.id = td_keys_el.id_diam");
     modelElCods->setSort("elrtr.marka, diam.sdim, td_keys_el.id_var");
     modelElCods->select();
     ui->tableViewEl->setModel(modelElCods);
@@ -25,19 +27,17 @@ DialogCods::DialogCods(QWidget *parent) :
     ui->tableViewEl->setColumnWidth(3,210);
     ui->tableViewEl->setColumnWidth(4,100);
 
-    relWire = new DbSqlRelation("provol","id","nam",this);//new DbRelationalModel("select id, nam from provol order by nam",this),0,1,this);
-    relSpool = new DbSqlRelation("wire_pack_kind","id","short",this);//new DbRelationalModel("select id, short from wire_pack_kind order by short",this),0,1,this);
-    relPack = new DbSqlRelation("wire_pack","id","pack_ed",this);//new DbRelationalModel("select id, pack_ed as nam from wire_pack order by nam",this),0,1,this);
+    relWire = new DbSqlRelation("provol","id","nam",this);
+    relWire->setFilter("provol.id<>0");
+    relSpool = new DbSqlRelation("wire_pack_kind","id","short",this);
+    relPack = new DbSqlRelation("wire_pack","id","pack_ed",this);
     modelWireCods = new DbTableModel("td_keys_wire",this);
     modelWireCods->addColumn("id_prov",tr("Марка"),relWire);
     modelWireCods->addColumn("id_diam",tr("Диаметр"),relDiam);
     modelWireCods->addColumn("id_spool",tr("Носитель"),relSpool);
     modelWireCods->addColumn("id_pack",tr("Упаковка"),relPack);
     modelWireCods->addColumn("cod",tr("Код"));
-    modelWireCods->setSuffix("inner join provol on provol.id = td_keys_wire.id_prov "
-                             "inner join diam on diam.id = td_keys_wire.id_diam "
-                             "inner join wire_pack_kind on wire_pack_kind.id = td_keys_wire.id_spool "
-                             "inner join wire_pack on wire_pack.id = td_keys_wire.id_pack");
+
     modelWireCods->setSort("provol.nam, diam.sdim, wire_pack_kind.short, wire_pack.pack_ed");
     modelWireCods->select();
     ui->tableViewWire->setModel(modelWireCods);

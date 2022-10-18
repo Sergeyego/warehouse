@@ -63,16 +63,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Выбирать партии</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboBoxPart"/>
-     </item>
-     <item>
       <widget class="QPushButton" name="pushButton1C">
        <property name="text">
         <string>Выгрузить в 1С WMS</string>
@@ -236,11 +226,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DbViewer</class>
-   <extends>QTableView</extends>
-   <header>db/dbviewer.h</header>
-  </customwidget>
-  <customwidget>
    <class>DbDateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbdateedit.h</header>
@@ -249,6 +234,11 @@
    <class>DbComboBox</class>
    <extends>QComboBox</extends>
    <header>db/dbcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbViewer</class>
+   <extends>QTableView</extends>
+   <header>db/dbviewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

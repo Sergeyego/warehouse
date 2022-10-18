@@ -2,7 +2,7 @@
 #define FORMMOVWIRE_H
 
 #include <QWidget>
-#include "db/executor.h"
+#include "progressexecutor.h"
 #include "modelro.h"
 #include "db/tablemodel.h"
 
@@ -82,7 +82,7 @@ private:
     Ui::FormMovWire *ui;
     void loadSettings();
     void saveSettings();
-    Executor *executorPart;
+    ProgressExecutor *executorPart;
     TableModel *modelPart;
 
     ModelNamWire *modelNamWire;

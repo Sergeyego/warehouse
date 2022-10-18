@@ -2,7 +2,7 @@
 #define FORMREPORTWIRE_H
 
 #include <QWidget>
-#include "db/executor.h"
+#include "progressexecutor.h"
 #include "db/tablemodel.h"
 
 namespace Ui {
@@ -19,7 +19,7 @@ public:
 
 private:
     Ui::FormReportWire *ui;
-    Executor *sqlExecutor;
+    ProgressExecutor *sqlExecutor;
     TableModel *modelReport;
 
 private slots:

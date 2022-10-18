@@ -10,15 +10,8 @@ FormShipCons::FormShipCons(QWidget *parent) :
     ui->pushButtonUpd->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
-    ui->comboBoxPart->addItem(tr("начиная с текущего года"));
-    ui->comboBoxPart->addItem(tr("начиная с прошлого года"));
-    ui->comboBoxPart->addItem(tr("за всё время"));
-    ui->comboBoxPart->setCurrentIndex(1);
 
     ui->comboBoxPolFlt->setModel(Models::instance()->relPol->model());
-    ui->comboBoxPolFlt->setModelColumn(1);
-    ui->comboBoxPolFlt->completer()->setCompletionMode(QCompleter::PopupCompletion);
-    ui->comboBoxPolFlt->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
     modelShip = new ModelShipCons(this);
     ui->tableViewShip->setModel(modelShip);
@@ -73,9 +66,6 @@ FormShipCons::FormShipCons(QWidget *parent) :
     connect(ui->pushButtonXML,SIGNAL(clicked(bool)),this,SLOT(goXml()));
     connect(ui->pushButtonLoad,SIGNAL(clicked(bool)),this,SLOT(loadData()));
 
-    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relElPart,SLOT(setFilter(int)));
-    //connect(ui->comboBoxPart,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
-
     updPol();
 }
 
@@ -106,7 +96,7 @@ QDomElement FormShipCons::newElement(QString nam, QString val, QDomDocument *doc
 
 void FormShipCons::updShip()
 {
-    if ((this->sender()==ui->comboBoxPolFlt && ui->checkBoxOnly->isChecked()) || (this->sender()!=ui->comboBoxPolFlt)){
+    if ((this->sender()==ui->comboBoxPolFlt && ui->checkBoxOnly->isChecked() && ui->comboBoxPolFlt->currentIndex()>=0) || (this->sender()!=ui->comboBoxPolFlt)){
         int id_pol=-1;
         if (ui->checkBoxOnly->isChecked()){
             id_pol=ui->comboBoxPolFlt->model()->data(ui->comboBoxPolFlt->model()->index(ui->comboBoxPolFlt->currentIndex(),0),Qt::EditRole).toInt();
@@ -283,11 +273,13 @@ void FormShipCons::loadData()
 
 ModelShipCons::ModelShipCons(QObject *parent) : DbTableModel("sertifikat",parent)
 {
+    DbSqlRelation *relType = new DbSqlRelation("sert_type","id","nam",this);
+    relType->setFilter("sert_type.id in (1,2)");
     addColumn("id",tr("id"));
     addColumn("nom_s",tr("Номер"));
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
-    addColumn("id_type",tr("Тип отгрузки"),new DbSqlRelation("sert_type","id","nam",this));//("select id, nam from sert_type where id in (1,2) order by nam",0,1,this));
+    addColumn("id_type",tr("Тип отгрузки"),relType);
     setSort("sertifikat.dat_vid, sertifikat.nom_s");
     setDefaultValue(4,1);
 }

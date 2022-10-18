@@ -38,7 +38,7 @@ FormMovWire::FormMovWire(QWidget *parent) :
     ui->tableViewPart->setColumnHidden(0,true);
     ui->tableViewPart->resizeToContents();
 
-    executorPart = new Executor(this);
+    executorPart = new ProgressExecutor(this);
 
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(startUpd()));
     connect(executorPart,SIGNAL(finished()),this,SLOT(upd()));

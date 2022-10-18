@@ -14,7 +14,6 @@ class Models : public QObject
 public:
     static Models *instance();
     Sync1C *sync1C;
-    DbSqlRelation *relEl;
     DbSqlRelation *relPol;
     DbSqlRelation *relDrv;
     DbSqlRelation *relAccTypeEl;

@@ -13,11 +13,6 @@ FormRetWire::FormRetWire(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    ui->comboBoxFlt->addItem(tr("начиная с текущего года"));
-    ui->comboBoxFlt->addItem(tr("начиная с прошлого года"));
-    ui->comboBoxFlt->addItem(tr("за всё время"));
-    //ui->comboBoxFlt->setCurrentIndex(Models::instance()->relWirePart->currentFilter());
-
     QSqlQueryModel *typeModel = new QSqlQueryModel(this);
     typeModel->setQuery("select id, nam from wire_way_bill_type where id in (4,5,7) order by nam");
     if (typeModel->lastError().isValid()){
@@ -31,7 +26,7 @@ FormRetWire::FormRetWire(QWidget *parent) :
     ui->tableViewNaklData->setModel(modelNaklData);
     ui->tableViewNaklData->setColumnHidden(0,true);
     ui->tableViewNaklData->setColumnHidden(1,true);
-    ui->tableViewNaklData->setColumnWidth(2,300);
+    ui->tableViewNaklData->setColumnWidth(2,400);
     ui->tableViewNaklData->setColumnWidth(3,80);
 
     modelNakl = new ModelNaklRetWire(this);
@@ -52,8 +47,6 @@ FormRetWire::FormRetWire(QWidget *parent) :
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(upd()));
     connect(ui->comboBoxType,SIGNAL(currentIndexChanged(int)),this,SLOT(upd()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updData(int)));
-    connect(ui->comboBoxFlt,SIGNAL(currentIndexChanged(int)),Models::instance()->relWirePart,SLOT(setFilter(int)));
-    //connect(Models::instance()->relWirePart,SIGNAL(filterChanged(int)),this,SLOT(setCurrentFilter(int)));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
     connect(modelNaklData,SIGNAL(sigStock(QString)),ui->labelStock,SLOT(setText(QString)));
 
@@ -91,13 +84,6 @@ void FormRetWire::updData(int index)
 {
     int id_nakl = mapper->modelData(index,0).toInt();
     modelNaklData->refresh(id_nakl);
-}
-
-void FormRetWire::setCurrentFilter(int num)
-{
-    ui->comboBoxFlt->blockSignals(true);
-    ui->comboBoxFlt->setCurrentIndex(num);
-    ui->comboBoxFlt->blockSignals(false);
 }
 
 void FormRetWire::printNakl()

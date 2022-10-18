@@ -44,7 +44,14 @@
       </widget>
      </item>
      <item>
-      <widget class="DbComboBox" name="comboBoxType"/>
+      <widget class="DbComboBox" name="comboBoxType">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonUpd">

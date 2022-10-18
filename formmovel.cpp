@@ -12,8 +12,8 @@ FormMovEl::FormMovEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate(QDate::currentDate().year(),1,1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    executorPart = new Executor(this);
-    executorOst = new Executor(this);
+    executorPart = new ProgressExecutor(this);
+    executorOst = new ProgressExecutor(this);
 
     modelPartElInfo = new ModelPartElInfo(this);
     modelPartElInfo->refresh(-1);

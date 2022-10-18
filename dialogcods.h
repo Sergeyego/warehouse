@@ -21,6 +21,7 @@ private:
     Ui::DialogCods *ui;
     DbTableModel *modelElCods;
     DbTableModel *modelWireCods;
+    DbSqlRelation *relEl;
     DbSqlRelation *relDiam;
     DbSqlRelation *relWire;
     DbSqlRelation *relSpool;

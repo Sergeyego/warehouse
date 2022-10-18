@@ -64,9 +64,12 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     push->addLock(ui->comboBoxOnly);
 
     ui->comboBoxOnly->setModel(Models::instance()->relPol->model());
-    ui->comboBoxOnly->setModelColumn(1);
-    ui->comboBoxOnly->completer()->setCompletionMode(QCompleter::PopupCompletion);
-    ui->comboBoxOnly->completer()->setCaseSensitivity(Qt::CaseInsensitive);
+
+    DbSqlRelation *relElPart = new DbSqlRelation("parti","id","str",this);
+    relElPart->setSort("parti.dat_part desc, parti.n_s desc");
+    relElPart->setFilter("parti.id<>0");
+    relElPart->setFilterColumn("ids");
+    relElPart->model()->setLimit(4000);
 
     shipContInfo ei;
     ei.tablename="ship_plan_el";
@@ -77,7 +80,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ei.namKvo="massa";
     ei.modelBalence=modelBalance;
     ei.prefix="e";
-    ei.relPart = Models::instance()->relElPart;
+    ei.relPart = relElPart;
     modelShipEl = new ModelShipData(ei,this);
     ui->tableViewEl->setModel(modelShipEl);
     ui->tableViewEl->setColumnHidden(0,true);
@@ -85,6 +88,12 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->tableViewEl->setColumnWidth(2,200);
     ui->tableViewEl->setColumnWidth(3,350);
     ui->tableViewEl->setColumnWidth(4,100);
+
+    DbSqlRelation *relWirePart = new DbSqlRelation("wire_parti","id","str",this);
+    relWirePart->setSort("str desc");
+    relWirePart->setFilter("wire_parti.id<>0");
+    relWirePart->setFilterColumn("ids");
+    relWirePart->model()->setLimit(4000);
 
     shipContInfo wi;
     wi.tablename="ship_plan_wire";
@@ -95,7 +104,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     wi.namKvo="m_netto";
     wi.modelBalence=modelBalance;
     wi.prefix="w";
-    wi.relPart = Models::instance()->relWirePart;
+    wi.relPart = relWirePart;
     modelShipWire = new ModelShipData(wi, this);
     ui->tableViewWire->setModel(modelShipWire);
     ui->tableViewWire->setColumnHidden(0,true);
@@ -167,7 +176,7 @@ void FormShip::savesettings()
 
 void FormShip::updShip()
 {  
-    if ((this->sender()==ui->comboBoxOnly && ui->checkBoxOnly->isChecked()) || (this->sender()!=ui->comboBoxOnly)){
+    if ((this->sender()==ui->comboBoxOnly && ui->checkBoxOnly->isChecked() && ui->comboBoxOnly->currentIndex()>=0) || (this->sender()!=ui->comboBoxOnly)){
         int id_pol=-1;
         if (ui->checkBoxOnly->isChecked()){
             id_pol=ui->comboBoxOnly->model()->data(ui->comboBoxOnly->model()->index(ui->comboBoxOnly->currentIndex(),0),Qt::EditRole).toInt();
@@ -271,7 +280,12 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
     for (int i=0; i<modelShipData->rowCount(); i++){
         QVariant id_part=modelShipData->data(modelShipData->index(i,3),Qt::EditRole);
         if (id_part.toInt()>0){
-            QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString()/*+tr(" (")+modelShipData->relation(3)->data(id_part.toString(),3).toString()+tr(" кг)")*/;
+            QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString();
+            QString part=modelShipData->data(modelShipData->index(i,3),Qt::DisplayRole).toString();
+            QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d* кг)\\).*$"));
+            if (reg.indexIn(part)!=-1){
+                nom+=" ("+reg.cap(1)+")";
+            }
             double kvo=modelShipData->data(modelShipData->index(i,4),Qt::EditRole).toDouble();
             hash.insert(nom,kvo);
         }
@@ -450,7 +464,6 @@ ModelShipData::ModelShipData(shipContInfo c, QObject *parent) : DbTableModel(c.t
     info=c;
     fltind=1;
     ostControl=true;
-    //info.relPart->proxyModel()->setFilterKeyColumn(2);
     setFlt("");
     addColumn(info.namId,tr("id"));
     addColumn(info.namIdDoc, tr("id_sert"));
@@ -477,8 +490,14 @@ void ModelShipData::refresh(int id_ship)
 QVariant ModelShipData::data(const QModelIndex &index, int role) const
 {
     if (role==Qt::BackgroundRole){
-        QString id_part=this->data(this->index(index.row(),3),Qt::EditRole).toString();
-        double mas_ed/*=info.relPart->data(id_part,3).toDouble()*/;
+        QString s=this->data(this->index(index.row(),3),Qt::DisplayRole).toString();
+        QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d*) кг\\).*$"));
+        double mas_ed=0;
+        if (reg.indexIn(s)!=-1){
+            QString str_mas_ed = reg.cap(1);
+            str_mas_ed=str_mas_ed.replace(",",".");
+            mas_ed=str_mas_ed.toDouble();
+        }
         if (mas_ed>0){
             double kvo=this->data(this->index(index.row(),4),Qt::EditRole).toDouble();
             double b;

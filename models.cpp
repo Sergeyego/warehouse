@@ -7,8 +7,6 @@ Models::Models(QObject *parent) :
 {
     sync1C = new Sync1C(this);
 
-    relEl =new DbSqlRelation("elrtr","id","marka",this);
-    relEl->setFilter("elrtr.id<>0");
     relPol = new DbSqlRelation("pol_view","id","nam",this);
     relDrv = new DbSqlRelation("drv_view","id","drv",this);
 

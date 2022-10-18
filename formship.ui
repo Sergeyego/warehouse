@@ -88,7 +88,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBoxOnly">
+          <widget class="DbComboBox" name="comboBoxOnly">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -219,6 +219,12 @@
          </item>
          <item>
           <widget class="DbComboBox" name="comboBoxPol">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>300</width>
@@ -229,19 +235,6 @@
             <bool>true</bool>
            </property>
           </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </item>
@@ -270,6 +263,12 @@
          </item>
          <item>
           <widget class="DbComboBox" name="comboBoxDrv">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="editable">
             <bool>true</bool>
            </property>
@@ -283,7 +282,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEditPrim"/>
+          <widget class="QLineEdit" name="lineEditPrim">
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -401,9 +407,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DbViewer</class>
+   <class>TableView</class>
    <extends>QTableView</extends>
-   <header>db/dbviewer.h</header>
+   <header>olap/tableview.h</header>
   </customwidget>
   <customwidget>
    <class>DbDateEdit</class>
@@ -416,9 +422,9 @@
    <header>db/dbcombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>TableView</class>
+   <class>DbViewer</class>
    <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
+   <header>db/dbviewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

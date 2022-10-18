@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "db/tablemodel.h"
-#include "db/executor.h"
+#include "progressexecutor.h"
 #include <QSqlQueryModel>
 #include <QDataWidgetMapper>
 #include "modelro.h"
@@ -117,8 +117,8 @@ public:
 private:
     Ui::FormMovEl *ui;
     TableModel *modelPart;
-    Executor *executorPart;
-    Executor *executorOst;
+    ProgressExecutor *executorPart;
+    ProgressExecutor *executorOst;
     ModelPartElInfo *modelPartElInfo;
     QDataWidgetMapper *mapperInfo;
     ModelPressEl *modelPressEl;

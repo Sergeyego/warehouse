@@ -9,14 +9,12 @@ FormAccNaklWire::FormAccNaklWire(QWidget *parent) :
     loadsettings();
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().day()+1));
     ui->dateEditEnd->setDate(QDate::currentDate());
+    colVal defaultType;
+    defaultType.val=3;
+    ui->comboBoxType->setEditable(false);
     ui->comboBoxType->setModel(Models::instance()->relAccTypeWire->model());
-    ui->comboBoxType->setModelColumn(1);
-    for (int i=0; i<ui->comboBoxType->model()->rowCount(); i++){
-        if (ui->comboBoxType->model()->data(ui->comboBoxType->model()->index(i,0),Qt::EditRole).toInt()==3){
-            ui->comboBoxType->setCurrentIndex(i);
-            break;
-        }
-    }
+    ui->comboBoxType->setCurrentData(defaultType);
+
 
     modelNakl = new ModelRo(this);
     ui->tableViewNakl->setModel(modelNakl);
@@ -50,8 +48,14 @@ void FormAccNaklWire::savesettings()
 
 void FormAccNaklWire::refreshNakl()
 {
+    if (sender()==ui->pushButtonUpd){
+        Models::instance()->relAccTypeWire->refreshModel();
+    }
     int r=ui->comboBoxType->currentIndex();
-    int id_type=ui->comboBoxType->model()->data(ui->comboBoxType->model()->index(r,0),Qt::EditRole).toInt();
+    if (r<0){
+        return;
+    }
+    int id_type=ui->comboBoxType->getCurrentData().val.toInt();
     QSqlQuery query;
     query.prepare("select distinct date_part('doy',www.dat)::integer, www.dat, www.id_type "
                   "from wire_whs_waybill www "

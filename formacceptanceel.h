@@ -78,7 +78,6 @@ private slots:
     void printPalAll();
     void printPalOne();
     void printNakl();
-    void setCurrentFilter(int ind);
 };
 
 #endif // FORMACCEPTANCEEL_H
