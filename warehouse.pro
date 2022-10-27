@@ -86,7 +86,8 @@ SOURCES += \
     db/dbrelationeditdialog.cpp \
     db/executor.cpp \
     db/tablemodel.cpp \
-    progressexecutor.cpp
+    progressexecutor.cpp \
+    invoicemanager.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -149,7 +150,8 @@ HEADERS += \
     db/dbrelationeditdialog.h \
     db/executor.h \
     db/tablemodel.h \
-    progressexecutor.h
+    progressexecutor.h \
+    invoicemanager.h
 
 FORMS += \
         mainwindow.ui \

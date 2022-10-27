@@ -14,7 +14,7 @@ FormRetEl::FormRetEl(QWidget *parent) :
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
     QSqlQueryModel *typeModel = new QSqlQueryModel(this);
-    typeModel->setQuery("select id, nam from prod_nakl_tip where id in (4,5,9,11) order by nam");
+    typeModel->setQuery("select id, nam from prod_nakl_tip where id in (4,5,9,11,13) order by nam");
     if (typeModel->lastError().isValid()){
         QMessageBox::critical(this,tr("Ошибка"),typeModel->lastError().text(),QMessageBox::Cancel);
     } else {
@@ -92,16 +92,11 @@ void FormRetEl::updData(int index)
 void FormRetEl::printNakl()
 {
     int id_nakl=mapper->modelData(mapper->currentIndex(),0).toInt();
-    int id_type=mapper->modelData(mapper->currentIndex(),3).toInt();
-    QTcpSocket tcpSocket;
-    tcpSocket.connectToHost("127.0.0.1", 5555);
-    if (tcpSocket.waitForConnected()) {
-        tcpSocket.write((QString("%1:%2:%3:%4").arg(0).arg(1).arg(id_nakl).arg(id_type)).toLocal8Bit().data());
-        tcpSocket.waitForBytesWritten();
-        tcpSocket.disconnectFromHost();
-    } else {
-        QMessageBox::critical(this,tr("Ошибка"),tcpSocket.errorString(),QMessageBox::Ok);
-    }
+    QString vid=tr("Электроды");
+    QString type=tr("Склад");
+    QString filename=ui->comboBoxType->currentText().toUpper()+"_"+mapper->modelData(mapper->currentIndex(),1).toString();
+    int year=mapper->modelData(mapper->currentIndex(),2).toDate().year();
+    Models::instance()->invoiceManager->getInvoice("invoices/elrtr/warehouse/"+QString::number(id_nakl),vid,type,filename,year);
 }
 
 ModelNaklRetEl::ModelNaklRetEl(QObject *parent) : DbTableModel("prod_nakl",parent)
@@ -154,7 +149,6 @@ void ModelNaklRetElData::refresh(int id_nakl)
     if (query.exec()){
         while (query.next()){
             for (int i=0; i<query.record().count(); i++){
-                //defaultTmpRow[i+1]=query.value(i);
                 setDefaultValue(i+1,query.value(i));
             }
         }
@@ -177,7 +171,7 @@ bool ModelNaklRetElData::submit()
             return DbTableModel::submit();
         }
         double kvo=this->data(indKvo,Qt::EditRole).toDouble();
-        if (/*defaultTmpRow.at(4)*/defaultValue(4).toInt()==11 || defaultValue(4).toInt()==9){
+        if (defaultValue(4).toInt()==11 || defaultValue(4).toInt()==9){
             double m=getStock(indKvo);
             if (kvo>=0 && m>=kvo){
                 ok=DbTableModel::submit();

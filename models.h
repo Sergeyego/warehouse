@@ -7,6 +7,7 @@
 #include <QtSql>
 #include "db/dbtablemodel.h"
 #include "sync1c.h"
+#include "invoicemanager.h"
 
 class Models : public QObject
 {
@@ -14,6 +15,7 @@ class Models : public QObject
 public:
     static Models *instance();
     Sync1C *sync1C;
+    InvoiceManager *invoiceManager;
     DbSqlRelation *relPol;
     DbSqlRelation *relDrv;
     DbSqlRelation *relAccTypeEl;

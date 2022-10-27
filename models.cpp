@@ -6,6 +6,7 @@ Models::Models(QObject *parent) :
     QObject(parent)
 {
     sync1C = new Sync1C(this);
+    invoiceManager = new InvoiceManager(this);
 
     relPol = new DbSqlRelation("pol_view","id","nam",this);
     relDrv = new DbSqlRelation("drv_view","id","drv",this);

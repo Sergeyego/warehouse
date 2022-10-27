@@ -89,16 +89,11 @@ void FormRetWire::updData(int index)
 void FormRetWire::printNakl()
 {
     int id_nakl=mapper->modelData(mapper->currentIndex(),0).toInt();
-    int id_type=mapper->modelData(mapper->currentIndex(),3).toInt();
-    QTcpSocket tcpSocket;
-    tcpSocket.connectToHost("127.0.0.1", 5555);
-    if (tcpSocket.waitForConnected()) {
-        tcpSocket.write((QString("%1:%2:%3:%4").arg(1).arg(1).arg(id_nakl).arg(id_type)).toLocal8Bit().data());
-        tcpSocket.waitForBytesWritten();
-        tcpSocket.disconnectFromHost();
-    } else {
-        QMessageBox::critical(this,tr("Ошибка"),tcpSocket.errorString(),QMessageBox::Ok);
-    }
+    QString vid=tr("Проволока");
+    QString type=tr("Склад");
+    QString filename=ui->comboBoxType->currentText().toUpper()+"_"+mapper->modelData(mapper->currentIndex(),1).toString();
+    int year=mapper->modelData(mapper->currentIndex(),2).toDate().year();
+    Models::instance()->invoiceManager->getInvoice("invoices/wire/warehouse/"+QString::number(id_nakl),vid,type,filename,year);
 }
 
 ModelNaklRetWire::ModelNaklRetWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)

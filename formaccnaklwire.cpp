@@ -123,13 +123,9 @@ void FormAccNaklWire::printNakl()
     int row=ui->tableViewNakl->currentIndex().row();
     QDate dat=ui->tableViewNakl->model()->data(ui->tableViewNakl->model()->index(row,1),Qt::EditRole).toDate();
     int id_type=ui->tableViewNakl->model()->data(ui->tableViewNakl->model()->index(row,2),Qt::EditRole).toInt();
-    QTcpSocket tcpSocket;
-    tcpSocket.connectToHost("127.0.0.1", 5555);
-    if (tcpSocket.waitForConnected()) {
-        tcpSocket.write((QString("%1:%2:%3:%4").arg(1).arg(4).arg(dat.toString("dd.MM.yyyy")).arg(id_type)).toLocal8Bit().data());
-        tcpSocket.waitForBytesWritten();
-        tcpSocket.disconnectFromHost();
-    } else {
-        QMessageBox::critical(this,tr("Ошибка"),tcpSocket.errorString(),QMessageBox::Ok);
-    }
+    QString vid=tr("Проволока");
+    QString type=tr("Склад");
+    QString filename=ui->comboBoxType->currentText().toUpper()+"_"+QString::number(dat.dayOfYear());
+    int year=dat.year();
+    Models::instance()->invoiceManager->getInvoice("invoices/wire/warehouseday/"+QString::number(id_type)+"/"+dat.toString("yyyy-MM-dd"),vid,type,filename,year);
 }
