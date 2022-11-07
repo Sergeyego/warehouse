@@ -180,7 +180,7 @@ bool ModelNaklRetElData::submit()
                                       QLocale().toString(m,'f',2)+tr(" кг электродов этой партии. Масса передачи должна быть положительной и не больше, чем числится на складе."),QMessageBox::Ok);
             }
         } else {
-            if (kvo>0){
+            if (kvo>0 || defaultValue(4).toInt()==13){
                 ok=DbTableModel::submit();
             } else {
                 QMessageBox::critical(NULL,tr("Ошибка"),tr("Масса должна быть больше нуля."),QMessageBox::Ok);
