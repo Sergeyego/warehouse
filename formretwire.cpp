@@ -133,6 +133,7 @@ ModelNaklRetWireData::ModelNaklRetWireData(QObject *parent) : DbTableModel("wire
     addColumn("id_waybill",tr("id_waybill"));
     addColumn("id_wparti",tr("Партия"),Models::instance()->relWirePart);
     addColumn("m_netto",tr("Кол-во, кг"));
+    setDecimals(3,2);
     setSort("wire_warehouse.id");
 }
 

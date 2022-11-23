@@ -138,6 +138,7 @@ ModelNaklRetElData::ModelNaklRetElData(QObject *parent) : DbTableModel("prod",pa
     addColumn("id_ist",tr("Тип"));
     addColumn("id_part",tr("Партия"),Models::instance()->relElPart);
     addColumn("kvo",tr("Масса, кг"));
+    setDecimals(6,2);
     this->setSort("prod.id");
 }
 
