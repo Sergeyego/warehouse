@@ -3,6 +3,7 @@
 LabelBase::LabelBase(QString nam, double w, double h, double g, QObject *parent) : QObject(parent), name(nam), width(w), height(h), gap(g)
 {
     dpi=200;
+    density=12;
     printCmdMode=false;
     cutMode=true;
     cutKvo=0;
@@ -22,6 +23,11 @@ QString LabelBase::getName()
 void LabelBase::setDpi(int d)
 {
     dpi=d;
+}
+
+void LabelBase::setDensity(int d)
+{
+    density=d;
 }
 
 double LabelBase::getWidth()
@@ -51,7 +57,7 @@ QString LabelBase::getCod()
         cod.push_back(QString("BLINE %1 mm,0 mm\n").arg(gap));
     }
     cod.push_back("CODEPAGE UTF-8\n");
-    cod.push_back(QString("DENSITY %1\n").arg(12));
+    cod.push_back(QString("DENSITY %1\n").arg(density));
     return cod;
 }
 

@@ -11,6 +11,7 @@ DialogCfgPrint::DialogCfgPrint(QWidget *parent) :
     ui->tableView->setColumnWidth(0,120);
     ui->tableView->setColumnWidth(1,300);
     ui->tableView->setColumnWidth(2,70);
+    ui->tableView->setColumnWidth(3,70);
 
     connect(this,SIGNAL(accepted()),modelPrint,SLOT(save()));
     connect(ui->pushButtonNewPrint,SIGNAL(clicked(bool)),modelPrint,SLOT(newPrint()));

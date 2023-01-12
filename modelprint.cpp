@@ -3,7 +3,7 @@
 ModelPrint::ModelPrint(QObject *parent) : TableModel(parent)
 {
     QStringList head;
-    head<<"Имя"<<"URL"<<"DPI";
+    head<<"Имя"<<"URL"<<"DPI"<<"Яркость";
     setHeader(head);
     load();
 }
@@ -26,6 +26,11 @@ void ModelPrint::load()
             row.push_back(o.value("name").toString());
             row.push_back(o.value("url").toString());
             row.push_back(o.value("dpi").toInt());
+            int density = o.value("density").toInt();
+            if (density<1){
+                density=defaultDensity;
+            }
+            row.push_back(density);
             data.push_back(row);
         }
         file.close();
@@ -43,6 +48,7 @@ void ModelPrint::save()
             o.insert("name",data(index(i,0),Qt::EditRole).toString());
             o.insert("url",data(index(i,1),Qt::EditRole).toString());
             o.insert("dpi",data(index(i,2),Qt::EditRole).toInt());
+            o.insert("density",data(index(i,3),Qt::EditRole).toInt());
             array.append(o);
         }
         QJsonDocument doc;
@@ -63,6 +69,7 @@ void ModelPrint::newPrint()
     row.push_back(nam);
     row.push_back("http://localhost:631/printers/"+nam);
     row.push_back(200);
+    row.push_back(defaultDensity);
     p_d.push_back(row);
     endInsertRows();
 }

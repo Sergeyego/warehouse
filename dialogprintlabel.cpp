@@ -60,6 +60,11 @@ int DialogPrintLabel::currentDpi()
     return modelPrint->data(modelPrint->index(ui->comboBoxPrint->currentIndex(),2),Qt::EditRole).toInt();
 }
 
+int DialogPrintLabel::currentDensity()
+{
+    return modelPrint->data(modelPrint->index(ui->comboBoxPrint->currentIndex(),3),Qt::EditRole).toInt();
+}
+
 QString DialogPrintLabel::currentCmd()
 {
     QString sprint = printCmdMode ? "" : label->print(ui->spinBox->value());
@@ -82,6 +87,7 @@ void DialogPrintLabel::changedPrinter()
 {
     ui->pushButtonSave->setEnabled(label->getPrinterName()!=ui->comboBoxPrint->currentText());
     label->setDpi(currentDpi());
+    label->setDensity(currentDensity());
 }
 
 void DialogPrintLabel::calibrate()

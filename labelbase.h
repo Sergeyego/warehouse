@@ -14,6 +14,7 @@ public:
     ~LabelBase();
     QString getName();
     void setDpi(int d);
+    void setDensity(int d);
     double getWidth();
     double getHeight();
     double getGap();
@@ -39,6 +40,7 @@ private:
     bool printCmdMode;
     bool cutMode;
     int cutKvo;
+    int density;
 
 protected:
     int getDots(double mm);

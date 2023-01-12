@@ -17,15 +17,16 @@ class BalanceModel : public TableModel
 
 public:
     explicit BalanceModel(QObject *parent=nullptr);
-    void refresh(QDate dat, bool bypart=true);
-    void getPartData(QString kis, QVector<QVector<QVariant>> &data);
+    void refresh(QDate dat, bool bypart=true, bool otOnly=false);
+    void getPartData(QString kis, QVector<QVector<QVariant>> &data, bool otOnly=false);
     QStringList getPartHeader();
 
 private:
     void updData(QDate dat);
     bool byp;
     QStringList headerPart;
-    QStringList headerMark;    
+    QStringList headerMark;
+    QStringList zoneOt;
     struct pData {
         QString pack;
         QString prim;

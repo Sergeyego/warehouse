@@ -30,6 +30,7 @@ private:
     bool printCmdMode;
     QUrl currentUrl();
     int currentDpi();
+    int currentDensity();
     QString currentCmd();
 
 private slots:

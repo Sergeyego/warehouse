@@ -36,6 +36,7 @@ FormBalance::FormBalance(QWidget *parent) :
     connect(ui->checkBoxWire,SIGNAL(clicked(bool)),this,SLOT(setFilter()));
     connect(ui->radioButtonPart,SIGNAL(clicked(bool)),this,SLOT(refresh()));
     connect(ui->radioButtonMark,SIGNAL(clicked(bool)),this,SLOT(refresh()));
+    connect(ui->checkBoxOt,SIGNAL(clicked(bool)),this,SLOT(refresh()));
     connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(save()));
     connect(ui->tableView->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updPart(QModelIndex)));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(createPackList()));
@@ -62,7 +63,7 @@ void FormBalance::saveSettings()
 void FormBalance::refresh()
 {
     bool byp = ui->radioButtonPart->isChecked();
-    balanceModel->refresh(ui->dateEdit->date(),byp);
+    balanceModel->refresh(ui->dateEdit->date(),byp,ui->checkBoxOt->isChecked());
     if (byp){
         ui->tableView->setColumnHidden(12,true);
     }
@@ -104,7 +105,7 @@ void FormBalance::updPart(QModelIndex index)
     if (!ui->radioButtonPart->isChecked()){
         QString kis=ui->tableView->model()->data(ui->tableView->model()->index(index.row(),0),Qt::EditRole).toString();
         QVector<QVector<QVariant>> data;
-        balanceModel->getPartData(kis,data);
+        balanceModel->getPartData(kis,data,ui->checkBoxOt->isChecked());
         partModel->setModelData(data);
         ui->tableViewPart->setColumnHidden(12,true);
         ui->tableViewPart->resizeToContents();
@@ -148,11 +149,12 @@ void FormBalance::createPackList()
 BalanceModel::BalanceModel(QObject *parent): TableModel(parent)
 {
     byp=true;
+    zoneOt=Models::instance()->sync1C->getZoneOt();
     headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"id";
     headerMark<<"t"<<"Код кис"<<"Номенклатура"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
 }
 
-void BalanceModel::refresh(QDate dat, bool bypart)
+void BalanceModel::refresh(QDate dat, bool bypart, bool otOnly)
 {
     byp=bypart;
     updData(dat);
@@ -163,33 +165,35 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             QVector<QVariant> row;
             partInfo pinfo=i.value();
             contInfo cinfo = cont.value(pinfo.contKey);
-            BalanceModel::pData pd=partData.value(pinfo.id_part_kis);
-            row.push_back(pinfo.id_kis.split(":").size()==2 ? "e" : "w");
-            row.push_back(pinfo.name);
-            row.push_back(pd.pack);
-            row.push_back(pinfo.number);
-            row.push_back(pinfo.ist);
-            row.push_back(pinfo.rcp);
-            row.push_back(pd.prim);
-            row.push_back(pinfo.kvo);
-            row.push_back(pinfo.prich);
-            if (cinfo.rasch>0){
+            if (zoneOt.contains(cinfo.zone) || !otOnly){
+                BalanceModel::pData pd=partData.value(pinfo.id_part_kis);
+                row.push_back(pinfo.id_kis.split(":").size()==2 ? "e" : "w");
+                row.push_back(pinfo.name);
+                row.push_back(pd.pack);
+                row.push_back(pinfo.number);
+                row.push_back(pinfo.ist);
+                row.push_back(pinfo.rcp);
+                row.push_back(pd.prim);
                 row.push_back(pinfo.kvo);
-            } else {
-                row.push_back(pinfo.rasch);
+                row.push_back(pinfo.prich);
+                if (cinfo.rasch>0){
+                    row.push_back(pinfo.kvo);
+                } else {
+                    row.push_back(pinfo.rasch);
+                }
+                row.push_back(cinfo.zone);
+                row.push_back(cinfo.cell);
+                row.push_back(cinfo.name);
+                row.push_back(pinfo.id_part_kis);
+                tmpd.push_back(row);
             }
-            row.push_back(cinfo.zone);
-            row.push_back(cinfo.cell);
-            row.push_back(cinfo.name);
-            row.push_back(pinfo.id_part_kis);
-            tmpd.push_back(row);
             ++i;
         }
         setModelData(tmpd,headerPart);
     } else {
         QList<QString> mlist = part.uniqueKeys();
-        QString name;
         for (QString kis : mlist){
+            QString name;
             QVector<QVariant> row;
             row.push_back(kis.split(":").size()==2 ? "e" : "w");
             row.push_back(kis);
@@ -199,20 +203,24 @@ void BalanceModel::refresh(QDate dat, bool bypart)
             QList <partInfo> plist = part.values(kis);
             for (partInfo pinfo : plist){
                 contInfo cnt = cont.value(pinfo.contKey);
-                if (cnt.rasch>0){
-                    rasch+=pinfo.kvo;
-                }
+                if (zoneOt.contains(cnt.zone) || !otOnly){
+                    if (cnt.rasch>0){
+                        rasch+=pinfo.kvo;
+                    }
 
-                kvo+=pinfo.kvo;
-                prich+=pinfo.prich;
-                rasch+=pinfo.rasch;
-                name=pinfo.name;
+                    kvo+=pinfo.kvo;
+                    prich+=pinfo.prich;
+                    rasch+=pinfo.rasch;
+                    name=pinfo.name;
+                }
             }
-            row.push_back(name);
-            row.push_back(kvo);
-            row.push_back(prich);
-            row.push_back(rasch);
-            tmpd.push_back(row);
+            if (!name.isEmpty()){
+                row.push_back(name);
+                row.push_back(kvo);
+                row.push_back(prich);
+                row.push_back(rasch);
+                tmpd.push_back(row);
+            }
         }
         setModelData(tmpd,headerMark);
     }
@@ -282,7 +290,7 @@ void BalanceModel::updData(QDate dat)
     }
 }
 
-void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
+void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data, bool otOnly)
 {
     QList<partInfo> list = part.values(kis);
     data.clear();
@@ -290,25 +298,27 @@ void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data)
         BalanceModel::pData pd=partData.value(i.id_part_kis);
         QVector<QVariant> row;
         contInfo cnt = cont.value(i.contKey);
-        row.push_back(kis.split(":").size()==2 ? "e" : "w");
-        row.push_back(i.name);
-        row.push_back(pd.pack);
-        row.push_back(i.number);
-        row.push_back(i.ist);
-        row.push_back(i.rcp);
-        row.push_back(pd.prim);
-        row.push_back(i.kvo);
-        row.push_back(i.prich);
-        if (cnt.rasch>0){
+        if (zoneOt.contains(cnt.zone) || !otOnly){
+            row.push_back(kis.split(":").size()==2 ? "e" : "w");
+            row.push_back(i.name);
+            row.push_back(pd.pack);
+            row.push_back(i.number);
+            row.push_back(i.ist);
+            row.push_back(i.rcp);
+            row.push_back(pd.prim);
             row.push_back(i.kvo);
-        } else {
-            row.push_back(i.rasch);
+            row.push_back(i.prich);
+            if (cnt.rasch>0){
+                row.push_back(i.kvo);
+            } else {
+                row.push_back(i.rasch);
+            }
+            row.push_back(cnt.zone);
+            row.push_back(cnt.cell);
+            row.push_back(cnt.name);
+            row.push_back(i.id_part_kis);
+            data.push_back(row);
         }
-        row.push_back(cnt.zone);
-        row.push_back(cnt.cell);
-        row.push_back(cnt.name);
-        row.push_back(i.id_part_kis);
-        data.push_back(row);
     }
 }
 
