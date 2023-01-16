@@ -17,6 +17,7 @@ public:
 
 private:
     const QString fileName = "printers.json";
+    const int defaultDensity = 12;
 
 public slots:
     void load();
