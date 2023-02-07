@@ -17,9 +17,12 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButtonNewPrint">
+      <widget class="QToolButton" name="toolButtonNewPrint">
        <property name="text">
-        <string>Новый</string>
+        <string>Добавить принтер</string>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::InstantPopup</enum>
        </property>
       </widget>
      </item>

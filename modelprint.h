@@ -14,6 +14,7 @@ class ModelPrint : public TableModel
 public:
     ModelPrint(QObject *parent = 0);
     Qt::ItemFlags flags(const QModelIndex &index) const;
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
 
 private:
     const QString fileName = "printers.json";
@@ -22,7 +23,7 @@ private:
 public slots:
     void load();
     void save();
-    void newPrint();
+    void newPrint(QString adr);
 };
 
 #endif // MODELPRINT_H

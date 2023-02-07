@@ -19,9 +19,12 @@ public:
 private:
     Ui::DialogCfgPrint *ui;
     ModelPrint *modelPrint;
+    QAction *actionAddIpp;
+    QAction *actionAddSocket;
 
 private slots:
     void removePrint(int row);
+    void addPrint();
 };
 
 #endif // DIALOGCFGPRINT_H

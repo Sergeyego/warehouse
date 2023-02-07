@@ -32,7 +32,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     modelBalance = new ModelBalance(this);
     proxyModelBalance = new QSortFilterProxyModel(this);
     proxyModelBalance->setSourceModel(modelBalance);
-    proxyModelBalance->sort(2);
+    proxyModelBalance->sort(12);
     ui->tableViewBal->setModel(proxyModelBalance);
 
     modelShip = new ModelShip(this);
@@ -345,7 +345,7 @@ bool ModelShip::insertRow(int row, const QModelIndex &parent)
 ModelBalance::ModelBalance(QObject *parent) : TableModel(parent)
 {
     QStringList head;
-    head<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рец./плавка"<<"Коммент."<<"Кол-во, кг"<<"План прих., кг"<<"План расх., кг"<<"Зона"<<"Ячейка"<<"Поддон";
+    head<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рец./плавка"<<"Коммент."<<"Кол-во, кг"<<"План прих., кг"<<"План расх., кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"Год";
     setHeader(head);
 }
 
@@ -453,6 +453,7 @@ void ModelBalance::refresh(QString kis)
             row.push_back(cnt.zone);
             row.push_back(cnt.cell);
             row.push_back(cnt.name);
+            row.push_back(i.number.right(4)+'-'+i.number.left(4));
             tmpd.push_back(row);
         }
     }

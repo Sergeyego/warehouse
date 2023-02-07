@@ -13,6 +13,17 @@ Qt::ItemFlags ModelPrint::flags(const QModelIndex &index) const
     return Qt::ItemIsEditable | Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
 }
 
+bool ModelPrint::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (index.column()==3 && role==Qt::EditRole){
+        int d = value.toInt();
+        if (d<0 || d>15){
+            return false;
+        }
+    }
+    return TableModel::setData(index,value,role);
+}
+
 void ModelPrint::load()
 {
     QFile file(fileName);
@@ -27,7 +38,7 @@ void ModelPrint::load()
             row.push_back(o.value("url").toString());
             row.push_back(o.value("dpi").toInt());
             int density = o.value("density").toInt();
-            if (density<1){
+            if (density<0 || density>15){
                 density=defaultDensity;
             }
             row.push_back(density);
@@ -58,7 +69,7 @@ void ModelPrint::save()
     }
 }
 
-void ModelPrint::newPrint()
+void ModelPrint::newPrint(QString adr)
 {
     QString nam="new_Printer";
     if (rowCount()){
@@ -67,7 +78,7 @@ void ModelPrint::newPrint()
     beginInsertRows(QModelIndex(),rowCount(),rowCount());
     QVector<QVariant> row;
     row.push_back(nam);
-    row.push_back("http://localhost:631/printers/"+nam);
+    row.push_back(adr);
     row.push_back(200);
     row.push_back(defaultDensity);
     p_d.push_back(row);
