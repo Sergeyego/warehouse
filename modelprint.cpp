@@ -17,7 +17,7 @@ bool ModelPrint::setData(const QModelIndex &index, const QVariant &value, int ro
 {
     if (index.column()==3 && role==Qt::EditRole){
         int d = value.toInt();
-        if (d<0 || d>15){
+        if (d<1 || d>15){
             return false;
         }
     }
@@ -38,7 +38,7 @@ void ModelPrint::load()
             row.push_back(o.value("url").toString());
             row.push_back(o.value("dpi").toInt());
             int density = o.value("density").toInt();
-            if (density<0 || density>15){
+            if (density<1 || density>15){
                 density=defaultDensity;
             }
             row.push_back(density);

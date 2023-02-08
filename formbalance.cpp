@@ -17,13 +17,11 @@ FormBalance::FormBalance(QWidget *parent) :
     partModel = new TableModel(this);
     proxyPartModel = new ProxyModel(this);
     proxyPartModel->setSourceModel(partModel);
-    proxyPartModel->sort(0);
     ui->tableViewPart->setModel(proxyPartModel);
 
     balanceModel = new BalanceModel(this);
     proxyModel = new ProxyModel(this);
     proxyModel->setSourceModel(balanceModel);
-    proxyModel->sort(0);
 
     partModel->setHeader(balanceModel->getPartHeader());
 
@@ -66,6 +64,9 @@ void FormBalance::refresh()
     balanceModel->refresh(ui->dateEdit->date(),byp,ui->checkBoxOt->isChecked());
     if (byp){
         ui->tableView->setColumnHidden(12,true);
+        proxyModel->sort(0);
+    } else {
+        proxyModel->sort(1);
     }
     ui->tableView->setColumnHidden(0,!byp);
     ui->tableView->resizeToContents();
