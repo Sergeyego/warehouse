@@ -35,6 +35,8 @@ QString LabelG5040::getCod()
     cod.push_back(block(2,18,35,20,s,10));
     cod.push_back(dataMatrix(37,25,13,0.7,data->barCodeGr()));
 
+    cod.push_back(sign2(37,18));
+
     return cod;
 }
 

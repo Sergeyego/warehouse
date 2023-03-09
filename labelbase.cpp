@@ -215,6 +215,11 @@ QString LabelBase::sign(double x, double y)
     return QString("PUTBMP %1,%2, \"sign.BMP\",1,100\n").arg(getDots(x)).arg(getDots(y));
 }
 
+QString LabelBase::sign2(double x, double y)
+{
+    return QString("PUTBMP %1,%2, \"sign2.BMP\",1,100\n").arg(getDots(x)).arg(getDots(y));
+}
+
 QString LabelBase::text(double x, double y, QString t, int size, int rotation)
 {
     return QString("TEXT %1,%2,\"0\",%6,%3,%4,\"%5\"\n").arg(getDots(x)).arg(getDots(y)).arg(size).arg(size).arg(normalize(t)).arg(rotation);
