@@ -73,7 +73,7 @@ QString LabelE60150::getCod()
     cod.push_back(ean13(17,6,data->eanEd(),9,0.375,0));
     cod.push_back(pixPol(31,23,10,0.375,data->posPix()));
     cod.push_back(block(54,21,28,6,data->markaSert(),16,90,2));
-    cod.push_back(block(56,51,33,10,data->gost(),10,90));
+    cod.push_back(block(56,51,33,10,data->gost(),8,90));
     cod.push_back(block(54,86,18,6,QString::fromUtf8("Арт.")+data->vendorCode(),12,90,2));
     cod.push_back(block(56,106,40,4,data->numerator(),12,90,2));
     QString znam=data->znam();
@@ -146,7 +146,7 @@ QString LabelG60150::getCod()
     cod.push_back(ean13(17,6,data->eanGr(),9,0.375,0));
     cod.push_back(pixPol(31,23,10,0.375,data->posPix()));
     cod.push_back(block(54,21,28,6,data->markaSert(),16,90,2));
-    cod.push_back(block(56,51,33,10,data->gost(),10,90));
+    cod.push_back(block(56,51,33,10,data->gost(),8,90));
     cod.push_back(block(54,86,18,6,QString::fromUtf8("Арт.")+data->vendorCode(),12,90,2));
     cod.push_back(block(56,106,40,4,data->numerator(),12,90,2));
     QString znam=data->znam();
