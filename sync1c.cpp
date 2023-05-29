@@ -995,7 +995,7 @@ int Sync1C::syncPart(QString queryPart)
 
             obj.insert("КодКис",query.value(0).toString());
             obj.insert("Description",desc);
-            obj.insert("Code",query.value(2).toString());
+            obj.insert("Code",desc);
             obj.insert("Owner_Key",ownerKey);
             obj.insert("ДатаПартии",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
             obj.insert("ДатаПроизводства",query.value(3).toDate().toString("yyyy-MM-dd")+"T00:00:00");
@@ -1174,7 +1174,7 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
             obj.insert("ПартияНоменклатуры_Key",partiKey(query.value(0).toString()));
             obj.insert("Количество",query.value(6).toDouble());
             obj.insert("СтатусНоменклатуры_Key",constKeys.value(namStatus,emptyKey));
-            obj.insert("НомерПартии",query.value(2).toString());
+            obj.insert("НомерПартии",query.value(2).toString()+"-"+QString::number(query.value(3).toDate().year()));
             postSync("Document_усСтрокаЗаказаНаОтгрузку",obj);
             i++;
         }
