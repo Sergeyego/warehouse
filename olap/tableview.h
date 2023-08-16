@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QMenu>
 #include <QMessageBox>
+#include <QContextMenuEvent>
 #include "xlsx/xlsxdocument.h"
 
 using namespace QXlsx;
