@@ -2,8 +2,8 @@
 #include "ui_dialogprintlabel.h"
 
 DialogPrintLabel::DialogPrintLabel(LabelBase *l, QWidget *parent) :
-    QDialog(parent), label(l),
-    ui(new Ui::DialogPrintLabel)
+    QDialog(parent), ui(new Ui::DialogPrintLabel),
+    label(l)
 {
     ui->setupUi(this);
 
@@ -67,13 +67,19 @@ int DialogPrintLabel::currentDensity()
 
 QString DialogPrintLabel::currentCmd()
 {
-    QString sprint = printCmdMode ? "" : label->print(ui->spinBox->value());
-    return label->cut(ui->checkBoxCut->isChecked())+label->getCod()+sprint;
+    return label->cut(ui->checkBoxCut->isChecked())+label->getCod();
+}
+
+QString DialogPrintLabel::printCmd()
+{
+    return printCmdMode ? "" : label->print(ui->spinBox->value());
 }
 
 void DialogPrintLabel::print()
 {
     QByteArray data=currentCmd().toUtf8();
+    data.append(label->getImages());
+    data.append(printCmd().toUtf8());
     TPrinter::printData(currentUrl(),data);
 }
 
@@ -99,7 +105,7 @@ void DialogPrintLabel::calibrate()
 
 void DialogPrintLabel::showCmd()
 {
-    QString cmd=currentCmd();
+    QString cmd=currentCmd()+printCmd();
     DialogCmd d(cmd,currentUrl());
     d.exec();
 }

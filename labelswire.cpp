@@ -8,7 +8,7 @@ LabelE801016::LabelE801016(QString nam, double w, double h, double g, FormDataWi
 QString LabelE801016::getCod()
 {
     QString cod=LabelBase::getCod();
-    cod.push_back(logo(15,13.75));
+    //cod.push_back(logo(15,13.75));
     cod.push_back(text(6.25,50,QString::fromUtf8("Марка - ")+data->marka(),12));
     cod.push_back(text(6.25,55,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),12));
     cod.push_back(text(6.25,60,QString::fromUtf8("Плавка - ")+data->plavka(),12));
@@ -23,6 +23,11 @@ QString LabelE801016::getCod()
     return cod;
 }
 
+QByteArray LabelE801016::getImages()
+{
+    return bitmap(15,13.75,39,17,":/images/logo.BMP");
+}
+
 LabelG95110::LabelG95110(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
     setCut(false);
@@ -31,7 +36,7 @@ LabelG95110::LabelG95110(QString nam, double w, double h, double g, FormDataWire
 QString LabelG95110::getCod()
 {
     QString cod=LabelBase::getCod();
-    cod.push_back(logo(6.25,13.75));
+    //cod.push_back(logo(6.25,13.75));
     cod.push_back(text(6.25,32.5,QString::fromUtf8("Проволока сварочная"),12));
     cod.push_back(text(45,31.875,data->marka(),14));
     cod.push_back(block(6.25,37.5,86.25,10,data->gost(),12));
@@ -51,6 +56,11 @@ QString LabelG95110::getCod()
     return cod;
 }
 
+QByteArray LabelG95110::getImages()
+{
+    return bitmap(6.25,13.75,39,17,":/images/logo.BMP");
+}
+
 LabelE4570::LabelE4570(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
 
@@ -59,7 +69,7 @@ LabelE4570::LabelE4570(QString nam, double w, double h, double g, FormDataWire *
 QString LabelE4570::getCod()
 {
     QString cod=LabelBase::getCod();
-    cod.push_back(logo(2,2));
+    //cod.push_back(logo(2,2));
     cod.push_back(ean13(5,20.5,data->eanEd(),9,0.375,0));
     cod.push_back(text(2.5,35,QString::fromUtf8("Марка - ")+data->marka(),10));
     cod.push_back(text(2.5,39,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),10));
@@ -84,6 +94,11 @@ QString LabelE4570::getCod()
     return cod;
 }
 
+QByteArray LabelE4570::getImages()
+{
+    return bitmap(2,2,39,17,":/images/logo.BMP");
+}
+
 LabelG100100::LabelG100100(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
 }
@@ -91,7 +106,7 @@ LabelG100100::LabelG100100(QString nam, double w, double h, double g, FormDataWi
 QString LabelG100100::getCod()
 {
     QString cod=LabelBase::getCod();
-    cod.push_back(logo(6.25,6.25));
+    //cod.push_back(logo(6.25,6.25));
     cod.push_back(text(6.25,25,QString::fromUtf8("Проволока сварочная"),12));
     cod.push_back(text(45,24.375,data->marka(),14));
     cod.push_back(block(6.25,30,86.25,10,data->gost(),12));
@@ -111,6 +126,11 @@ QString LabelG100100::getCod()
     return cod;
 }
 
+QByteArray LabelG100100::getImages()
+{
+    return bitmap(6.25,6.25,39,17,":/images/logo.BMP");
+}
+
 LabelG100100Pal::LabelG100100Pal(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
 {
     setPrintCmdMode(true);
@@ -122,7 +142,7 @@ QString LabelG100100Pal::getCod()
     QString palBarcode=Models::instance()->createPalBarcode("W");
 
     QString cod=LabelBase::getCod();
-    cod.push_back(logo(58,4));
+    //cod.push_back(logo(58,4));
     cod.push_back(ean128(4,4,palBarcode,13));
     if (!data->eanGr().isEmpty()){
         cod.push_back(dataMatrix(70,67,20,1,data->barCodePack()+palBarcode));
@@ -150,4 +170,9 @@ QString LabelG100100Pal::getCod()
     cod.push_back(text(6.25,90,QString::fromUtf8("НЕ БРОСАТЬ!"),16));
     cod.push_back(print(1));
     return cod;
+}
+
+QByteArray LabelG100100Pal::getImages()
+{
+    return bitmap(58,4,39,17,":/images/logo.BMP");
 }

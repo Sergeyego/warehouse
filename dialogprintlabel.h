@@ -32,6 +32,7 @@ private:
     int currentDpi();
     int currentDensity();
     QString currentCmd();
+    QString printCmd();
 
 private slots:
     void print();

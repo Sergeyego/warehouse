@@ -197,7 +197,7 @@ ModelAcceptanceWireData::ModelAcceptanceWireData(QObject *parent) : DbTableModel
 
 QVariant ModelAcceptanceWireData::data(const QModelIndex &index, int role) const
 {
-    if (role==Qt::BackgroundColorRole){
+    if (role==Qt::BackgroundRole){
         if (DbTableModel::data(this->index(index.row(),6),Qt::EditRole).toBool()){
             return QColor(170,255,170);
         } else {
@@ -305,7 +305,7 @@ QString LabelWirePal::getCod()
             n++;
         }
         if (getHeight()>69){
-            lbl+=logo(2,2);
+            //lbl+=logo(2,2);
             lbl+=text(5,22,pal,11);
             lbl+=dataMatrix(16,27,15,0.85,pal);
             lbl+=block(2.5,44,40,23,str,10);

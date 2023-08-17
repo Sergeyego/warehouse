@@ -2,8 +2,8 @@
 #include "ui_formbalanceew.h"
 
 FormBalanceEW::FormBalanceEW(bool e, bool w, QWidget *parent) :
-    QWidget(parent), en_el(e), en_wire(w),
-    ui(new Ui::FormBalanceEW)
+    QWidget(parent), ui(new Ui::FormBalanceEW), en_el(e),
+    en_wire(w)
 {
     ui->setupUi(this);
     ui->pushButtonUpd->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));

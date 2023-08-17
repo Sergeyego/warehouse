@@ -1,6 +1,6 @@
 #include "labelbase.h"
 
-LabelBase::LabelBase(QString nam, double w, double h, double g, QObject *parent) : QObject(parent), name(nam), width(w), height(h), gap(g)
+LabelBase::LabelBase(QString nam, double w, double h, double g, QObject *parent) : QObject(parent), width(w), height(h), gap(g), name(nam)
 {
     dpi=200;
     density=12;
@@ -59,6 +59,11 @@ QString LabelBase::getCod()
     cod.push_back("CODEPAGE UTF-8\n");
     cod.push_back(QString("DENSITY %1\n").arg(density));
     return cod;
+}
+
+QByteArray LabelBase::getImages()
+{
+    return QByteArray();
 }
 
 QString LabelBase::getPrinterName()
@@ -205,19 +210,52 @@ QString LabelBase::cls()
     return QString("CLS\n");
 }
 
-QString LabelBase::logo(double x, double y)
+QByteArray LabelBase::bitmap(double x, double y, double w, double h, const QString &fileName, int rotation)
 {
-    return QString("PUTBMP %1,%2, \"logo.BMP\",1,100\n").arg(getDots(x)).arg(getDots(y));
-}
+    int hw = getDots(w);
+    int hd = getDots(h);
 
-QString LabelBase::sign(double x, double y)
-{
-    return QString("PUTBMP %1,%2, \"sign.BMP\",1,100\n").arg(getDots(x)).arg(getDots(y));
-}
+    if (hw<8){
+        hw=8;
+    }
+    while (hw % 8 != 0){
+        hw--;
+    }
 
-QString LabelBase::sign2(double x, double y)
-{
-    return QString("PUTBMP %1,%2, \"sign2.BMP\",1,100\n").arg(getDots(x)).arg(getDots(y));
+    int byteCount=hw/8;
+
+    QByteArray arr;
+    QImage img(fileName);
+
+    if (rotation){
+        QTransform mat;
+        mat.rotate(rotation);
+        img = img.transformed(mat);
+
+    }
+    img = img.scaled(hw,hd);
+
+    int n=0;
+    char b=0;
+    for(int x=0; x<img.height();x++){
+        for(int y=0; y<img.width(); y++){
+            QColor currentColor=img.pixelColor(y,x);
+            if (currentColor==Qt::white || currentColor.alpha()==0){
+                b |= (1 << (7-n));
+            }
+            if (n>=7){
+                arr.append(b);
+                n=0;
+                b=0;
+            } else {
+                n++;
+            }
+        }
+    }
+    QString str=QString("BITMAP %1,%2,%3,%4,0,").arg(getDots(x)).arg(getDots(y)).arg(byteCount).arg(hd);
+    arr.prepend(str.toUtf8());
+    arr.append(QString("\n").toUtf8());
+    return arr;
 }
 
 QString LabelBase::text(double x, double y, QString t, int size, int rotation)

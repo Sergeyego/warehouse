@@ -17,7 +17,7 @@ void TPrinter::printDataTcp(QString host, int port, const QByteArray &data)
         while (x < size) {
             int b= ((size-x)< bsize) ? (size-x) : bsize;
             qint64 y = tcpSocket.write(data.right(size-x),b);
-            bool wrok=tcpSocket.waitForBytesWritten();
+            tcpSocket.waitForBytesWritten();
             //qDebug()<<wrok<<QString::fromUtf8(" Отправлено %1 байт").arg(y);
             x += y;
         }

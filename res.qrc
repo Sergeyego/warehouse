@@ -10,5 +10,7 @@
         <file>fonts/DroidSerif-BoldItalic.ttf</file>
         <file>fonts/DroidSerif-Italic.ttf</file>
         <file>fonts/DroidSerif-Regular.ttf</file>
+        <file>images/sign.BMP</file>
+        <file>images/logo.BMP</file>
     </qresource>
 </RCC>

@@ -21,6 +21,7 @@ public:
     LabelG5040(QString nam, double w, double h, double g, FormDataEl *d, QObject *parent);
 protected:
     virtual QString getCod();
+    virtual QByteArray getImages();
     FormDataEl *data;
 };
 
@@ -39,7 +40,8 @@ public:
     LabelG60150(QString nam, double w, double h, double g, FormDataEl *d, QObject *parent);
 protected:
     virtual QString getCod();
-    FormDataEl *data;
+    virtual QByteArray getImages();
+    FormDataEl *data;   
 };
 
 #endif // LABELSEL_H

@@ -47,15 +47,15 @@ void TableView::resizeToContents()
         l=s.split("\n");
         max=0;
         for (int k=0; k<l.size(); k++){
-            if (max<fontMetrics().width(l.at(k)))
-                max=fontMetrics().width(l.at(k));
+            if (max<fontMetrics().horizontalAdvance(l.at(k)))
+                max=fontMetrics().horizontalAdvance(l.at(k));
         }
         for (int j=0; j<m; j++){
             s=model()->data(model()->index(j,i)).toString();
             l=s.split("\n");
             for (int k=0; k<l.size(); k++){
-                if (max<fontMetrics().width(l.at(k)))
-                    max=fontMetrics().width(l.at(k));
+                if (max<fontMetrics().horizontalAdvance(l.at(k)))
+                    max=fontMetrics().horizontalAdvance(l.at(k));
             }
         }
         if (max>300) {

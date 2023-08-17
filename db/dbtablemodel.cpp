@@ -723,7 +723,7 @@ QVector<colVal> DataEditor::newRow()
     return r;
 }
 
-DbSqlRelation::DbSqlRelation(QString tableRel, QString cKey, QString cDisplay, QObject *parent) : table(tableRel), key(cKey), display(cDisplay), QObject(parent)
+DbSqlRelation::DbSqlRelation(QString tableRel, QString cKey, QString cDisplay, QObject *parent) : QObject(parent), table(tableRel), key(cKey), display(cDisplay)
 {
     editable=false;
     alias=table;
@@ -937,7 +937,7 @@ void DbSqlLikeModel::startSearch(QString s)
             }
             origModel->setModelData(data);
         } else {
-            clear();
+            invalidate();
             QMessageBox::critical(nullptr,tr("Error"),qu.lastError().text(),QMessageBox::Cancel);
         }
         emit searchFinished(s);

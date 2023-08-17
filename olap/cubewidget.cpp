@@ -172,7 +172,7 @@ void CubeWidget::upd()
                 if (sum>0 && sumfact!=0.0){
                     s=s*(sum/sumfact);
                 }
-                l.r=dt.toDouble();
+                l.r=s;
             }
         }
         d.push_back(l);

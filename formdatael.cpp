@@ -218,11 +218,14 @@ QString FormDataEl::vendorCode()
 QString FormDataEl::gost()
 {
     QString s;
+    QString sep = (modelGost->rowCount()>4) ? QString(", ") : QString("\n");
     for (int i=0; i<modelGost->rowCount(); i++){
         if (!s.isEmpty()){
-            s+="\n";
+            s+=sep;
         }
-        s+=modelGost->data(modelGost->index(i,0),Qt::EditRole).toString();
+        QString gost = modelGost->data(modelGost->index(i,0),Qt::EditRole).toString();
+        gost = gost.replace(QChar(' '),QChar(0x00A0));
+        s+=gost;
     }
     return s;
 }
@@ -417,7 +420,7 @@ QString FormDataEl::getSrtStr(int id_part)
         }
         srtStr+=docType.value(keys.at(i))+":";
         QList<QString> v = srt.values(keys.at(i));
-        qSort(v.begin(),v.end());
+        std::sort(v.begin(),v.end());
         for (QString st:v){
             if (!srtStr.isEmpty()){
                 srtStr+="\n";
@@ -596,7 +599,7 @@ bool ModelPart::refresh(QDate dbeg, QDate dend)
 
 QVariant ModelPart::data(const QModelIndex &item, int role) const
 {
-    if (role==Qt::BackgroundColorRole){
+    if (role==Qt::BackgroundRole){
         bool ok=this->data(this->index(item.row(),21),Qt::EditRole).toBool();
         return ok ? QVariant(QColor(170,255,170)) : QVariant(QColor(255,170,170));
     }

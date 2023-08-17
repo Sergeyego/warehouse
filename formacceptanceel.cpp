@@ -185,7 +185,7 @@ ModelAcceptanceElData::ModelAcceptanceElData(QObject *parent) : DbTableModel("pr
 
 QVariant ModelAcceptanceElData::data(const QModelIndex &index, int role) const
 {
-    if (role==Qt::BackgroundColorRole){
+    if (role==Qt::BackgroundRole){
         if (DbTableModel::data(this->index(index.row(),9),Qt::EditRole).toBool()){
             return QColor(170,255,170);
         } else {

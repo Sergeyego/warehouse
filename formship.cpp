@@ -356,8 +356,8 @@ void ModelBalance::updData(QDate dat)
     QList<partInfo> list = part.values();
     int maxide=0;
     int maxidw=0;
-    int minide=10000000000;
-    int minidw=10000000000;
+    int minide=1410065408;
+    int minidw=1410065408;
     for (partInfo i : list){
         QStringList idl=i.id_part_kis.split(":");
         if (idl.size()>1){

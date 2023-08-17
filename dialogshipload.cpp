@@ -2,8 +2,8 @@
 #include "ui_dialogshipload.h"
 
 DialogShipLoad::DialogShipLoad(int id_ship, QWidget *parent) :
-    QDialog(parent), id_s(id_ship),
-    ui(new Ui::DialogShipLoad)
+    QDialog(parent), ui(new Ui::DialogShipLoad),
+    id_s(id_ship)
 {
     ui->setupUi(this);
 

@@ -39,10 +39,10 @@ void DialogPrintPackList::print()
     QPrintDialog printDialog(&printer,this);
     if (printDialog.exec()) {
         printer.setPageMargins(QMarginsF(15, 15, 15, 15));
-        printer.setPageSize(QPagedPaintDevice::A5);
-        printer.setOrientation(QPrinter::Portrait);
+        printer.setPageSize(QPageSize(QPageSize::A5));
+        printer.setPageOrientation(QPageLayout::Portrait);
         if (single) {
-            printer.setNumCopies(1);
+            printer.setCopyCount(1);
         }
         QPainter painter(&printer);
         drawDoc(&painter);
@@ -169,7 +169,7 @@ PackElDoc::PackElDoc(int id_part, double kvo, QString cont, QObject *parent) : Q
             inf.part=query.value(3).toString();
             inf.datePart=query.value(4).toDate().toString("dd.MM.yyyy");
             double mas_ed=query.value(5).toDouble();
-            int kvoP;
+            int kvoP=0;
             if (mas_ed>0){
                 kvoP=kvo/mas_ed;
             }
@@ -337,7 +337,7 @@ PackWireDoc::PackWireDoc(int id_part, double kvo, QString cont, QObject *parent)
             inf.diam=QLocale().toString(query.value(2).toDouble(),'f',1);
             inf.part=query.value(3).toString();
             double mas_ed=query.value(5).toDouble();
-            int kvoP;
+            int kvoP=0;
             if (mas_ed>0){
                 kvoP=kvo/mas_ed;
             }

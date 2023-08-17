@@ -323,7 +323,7 @@ ModelShipConsEl::ModelShipConsEl(QObject *parent) : DbTableModel("otpusk", paren
 
 QVariant ModelShipConsEl::data(const QModelIndex &index, int role) const
 {
-    if((role == Qt::BackgroundColorRole)) {
+    if(role == Qt::BackgroundRole) {
         int area = colorState.value(DbTableModel::data(this->index(index.row(),2),Qt::EditRole).toInt());
         if(area == 4) return QVariant(QColor(255,170,170)); else
             if(area == 5) return QVariant(QColor(Qt::yellow)); else
@@ -453,7 +453,7 @@ ModelShipConsWire::ModelShipConsWire(QObject *parent) : DbTableModel("wire_shipm
 
 QVariant ModelShipConsWire::data(const QModelIndex &index, int role) const
 {
-    if((role == Qt::BackgroundColorRole)) {
+    if(role == Qt::BackgroundRole) {
         int area = colorState.value(DbTableModel::data(this->index(index.row(),2),Qt::EditRole).toInt());
         if(area == 4) return QVariant(QColor(255,170,170)); else
             if(area == 5) return QVariant(QColor(Qt::yellow)); else

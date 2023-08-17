@@ -12,6 +12,7 @@ public:
     LabelE801016(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
 protected:
     virtual QString getCod();
+    virtual QByteArray getImages();
     FormDataWire *data;
 };
 
@@ -21,6 +22,7 @@ public:
     LabelG95110(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
 protected:
     virtual QString getCod();
+    virtual QByteArray getImages();
     FormDataWire *data;
 };
 
@@ -30,6 +32,7 @@ public:
     LabelE4570(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
 protected:
     virtual QString getCod();
+    virtual QByteArray getImages();
     FormDataWire *data;
 };
 
@@ -39,6 +42,7 @@ public:
     LabelG100100(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
 protected:
     virtual QString getCod();
+    virtual QByteArray getImages();
     FormDataWire *data;
 };
 
@@ -48,6 +52,7 @@ public:
     LabelG100100Pal(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
 protected:
     virtual QString getCod();
+    virtual QByteArray getImages();
     FormDataWire *data;
 };
 

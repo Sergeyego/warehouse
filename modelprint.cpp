@@ -8,7 +8,7 @@ ModelPrint::ModelPrint(QObject *parent) : TableModel(parent)
     load();
 }
 
-Qt::ItemFlags ModelPrint::flags(const QModelIndex &index) const
+Qt::ItemFlags ModelPrint::flags(const QModelIndex &/*index*/) const
 {
     return Qt::ItemIsEditable | Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
 }
