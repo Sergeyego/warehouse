@@ -78,7 +78,9 @@ QString DialogPrintLabel::printCmd()
 void DialogPrintLabel::print()
 {
     QByteArray data=currentCmd().toUtf8();
-    data.append(label->getImages());
+    if (!printCmdMode){
+        data.append(label->getImages());
+    }
     data.append(printCmd().toUtf8());
     TPrinter::printData(currentUrl(),data);
 }
@@ -105,7 +107,9 @@ void DialogPrintLabel::calibrate()
 
 void DialogPrintLabel::showCmd()
 {
-    QString cmd=currentCmd()+printCmd();
+    QString cmd=currentCmd();
     DialogCmd d(cmd,currentUrl());
+    d.setImageCmd(label->getImages());
+    d.setPrintCmd(printCmd());
     d.exec();
 }

@@ -15,10 +15,13 @@ class DialogCmd : public QDialog
 public:
     explicit DialogCmd(QString &cmd, QUrl printer, QWidget *parent = 0);
     ~DialogCmd();
+    void setPrintCmd(QString cmd);
+    void setImageCmd(const QByteArray &cmd);
 
 private:
     Ui::DialogCmd *ui;
     QUrl printerUrl;
+    QByteArray imageCmd;
 
 private slots:
     void goCmd();

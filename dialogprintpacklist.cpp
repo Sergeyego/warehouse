@@ -38,14 +38,18 @@ void DialogPrintPackList::print()
     QPrinter printer;
     QPrintDialog printDialog(&printer,this);
     if (printDialog.exec()) {
-        printer.setPageMargins(QMarginsF(15, 15, 15, 15));
+        printer.setPageMargins(QMarginsF(12, 12, 12, 12));
         printer.setPageSize(QPageSize(QPageSize::A5));
         printer.setPageOrientation(QPageLayout::Portrait);
         if (single) {
             printer.setCopyCount(1);
         }
-        QPainter painter(&printer);
-        drawDoc(&painter);
+        if (doc->size().height()<700){
+            QPainter painter(&printer);
+            drawDoc(&painter);
+        } else {
+            doc->print(&printer);
+        }
     }
     accept();
 }
@@ -606,7 +610,7 @@ void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
         this->addResource(QTextDocument::ImageResource, QUrl("code128"),code128);
         QTextImageFormat qrformat;
         qrformat.setName("code128");
-        qrformat.setHeight(55);
+        qrformat.setHeight(70);
         cursor.insertImage(qrformat);
     }
 
@@ -632,6 +636,14 @@ void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
     tableFormat.setBorderBrush(brush);
     tableFormat.setCellPadding(2);
     tableFormat.setCellSpacing(0);
+    QVector<QTextLength> v;
+    v.push_back(QTextLength(QTextLength::PercentageLength,6));
+    v.push_back(QTextLength(QTextLength::VariableLength,24));
+    v.push_back(QTextLength(QTextLength::VariableLength,15));
+    v.push_back(QTextLength(QTextLength::PercentageLength,20));
+    v.push_back(QTextLength(QTextLength::VariableLength,20));
+    v.push_back(QTextLength(QTextLength::VariableLength,15));
+    tableFormat.setColumnWidthConstraints(v);
 
     QTextTable *table = cursor.insertTable(datainfo.size()+2,6,tableFormat);
 
@@ -641,7 +653,7 @@ void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
 
     cursor=table->cellAt(0,1).firstCursorPosition();
     cursor.setBlockFormat(formatCenter);
-    cursor.insertText(QString("Наименование товара"),textTitleFormat);
+    cursor.insertText(QString("Наименование\n товара"),textTitleFormat);
 
     cursor=table->cellAt(0,2).firstCursorPosition();
     cursor.setBlockFormat(formatCenter);
@@ -649,7 +661,7 @@ void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
 
     cursor=table->cellAt(0,3).firstCursorPosition();
     cursor.setBlockFormat(formatCenter);
-    cursor.insertText(QString("Рецептура/плавка"),textTitleFormat);
+    cursor.insertText(QString("Рецептура/\nплавка"),textTitleFormat);
 
     cursor=table->cellAt(0,4).firstCursorPosition();
     cursor.setBlockFormat(formatCenter);
@@ -657,7 +669,7 @@ void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
 
     cursor=table->cellAt(0,5).firstCursorPosition();
     cursor.setBlockFormat(formatCenter);
-    cursor.insertText(QString("Количество, кг"),textTitleFormat);
+    cursor.insertText(QString("Колич.,\n кг"),textTitleFormat);
     int n=1;
     double sum=0;
 
@@ -704,7 +716,7 @@ void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
     cursor.insertBlock();
     cursor.insertBlock();
 
-    cursor.insertText(QString("Сдал  _________________  _________________    Принял _________________  _________________\n"),textNormalFormat);
+    cursor.insertText(QString("Сдал  ________________  _________________    Принял ________________  _________________\n"),textNormalFormat);
     cursor.insertText(QString("                        (подпись)             (расшифровка подписи)                                (подпись)              (расшифровка подписи)\n"),textNormalSmallFormat);
     cursor.insertBlock();
     cursor.insertText(QString("Водитель  _________________  _________________\n"),textNormalFormat);

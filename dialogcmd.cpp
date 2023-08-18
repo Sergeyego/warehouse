@@ -16,8 +16,23 @@ DialogCmd::~DialogCmd()
     delete ui;
 }
 
+void DialogCmd::setPrintCmd(QString cmd)
+{
+    ui->plainTextEditPrint->setPlainText(cmd);
+}
+
+void DialogCmd::setImageCmd(const QByteArray &cmd)
+{
+    imageCmd=cmd;
+    ui->checkBoxImage->setEnabled(!cmd.isEmpty());
+}
+
 void DialogCmd::goCmd()
 {
     QByteArray text = ui->plainTextEdit->toPlainText().toUtf8();
+    if (ui->checkBoxImage->isChecked()){
+        text.append(imageCmd);
+    }
+    text.append(ui->plainTextEditPrint->toPlainText().toUtf8());
     TPrinter::printData(printerUrl,text);
 }

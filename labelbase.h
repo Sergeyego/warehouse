@@ -4,11 +4,6 @@
 #include <QObject>
 #include <QSettings>
 #include <QApplication>
-#include <QBitmap>
-#include <QBuffer>
-#include <QImageReader>
-#include <QRgb>
-#include <QBitArray>
 #include "dialogprintlabel.h"
 
 class LabelBase : public QObject
