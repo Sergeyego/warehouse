@@ -716,9 +716,9 @@ void PackNaklDoc::createDoc(naklInfo &info, QVector<naklDataInfo> &datainfo)
     cursor.insertBlock();
     cursor.insertBlock();
 
-    cursor.insertText(QString("Сдал  ________________  _________________    Принял ________________  _________________\n"),textNormalFormat);
-    cursor.insertText(QString("                        (подпись)             (расшифровка подписи)                                (подпись)              (расшифровка подписи)\n"),textNormalSmallFormat);
+    cursor.insertText(QString("Сдал  _______________  _________________    Принял _______________  _________________\n"),textNormalFormat);
+    cursor.insertText(QString("                        (подпись)               (расшифровка подписи)                                   (подпись)                (расшифровка подписи)\n"),textNormalSmallFormat);
     cursor.insertBlock();
     cursor.insertText(QString("Водитель  _________________  _________________\n"),textNormalFormat);
-    cursor.insertText(QString("                                      (подпись)           (расшифровка подписи)"),textNormalSmallFormat);
+    cursor.insertText(QString("                                           (подпись)             (расшифровка подписи)"),textNormalSmallFormat);
 }
