@@ -10,6 +10,31 @@ Models::Models(QObject *parent) :
 
     relPol = new DbSqlRelation("pol_view","id","nam",this);
     relDrv = new DbSqlRelation("drv_view","id","drv",this);
+    relKat = new DbSqlRelation("pol_kat","id","nam",this);
+
+    relElrtr = new DbSqlRelation("elrtr","id","marka",this);
+    relElrtr->setSort("marka");
+
+    relDiam = new DbSqlRelation("diam","id","sdim",this);
+    relDiam->setSort("diam");
+
+    relProvol = new DbSqlRelation("provol","id","nam",this);
+    relProvol->setSort("nam");
+
+    relSpool = new DbSqlRelation("wire_pack_kind","id","short",this);
+    relSpool->setSort("short");
+
+    relWirePack = new DbSqlRelation("wire_pack","id","pack_ed",this);
+    relWirePack->setSort("pack_ed");
+
+    relReqCause = new DbSqlRelation("requests_adj_cause","id","nam",this);
+    relReqCause->setSort("nam");
+
+    relElPack = new DbSqlRelation("el_pack_view","id","nam",this);
+    relElPack->setSort("nam");
+
+    relVars = new DbSqlRelation("elrtr_vars","id","nam",this);
+    relVars->setSort("id");
 
     relAccTypeEl = new DbSqlRelation("prod_nakl_tip","id","nam",this);
     relAccTypeEl->setFilter("prod_nakl_tip.en=true");

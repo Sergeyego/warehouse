@@ -24,8 +24,7 @@ void InvoiceManager::getInvoice(QString path, QString vid, QString type, QString
 void InvoiceManager::onResult(QNetworkReply *reply)
 {
     if (reply->error()){
-        QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString(),QMessageBox::Cancel);
-        qDebug()<<QString(reply->readAll());
+        QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString()+"\n"+reply->readAll(),QMessageBox::Cancel);
     } else {
         QString vid=reply->property("invoice_vid").toString();
         QString type=reply->property("invoice_type").toString();

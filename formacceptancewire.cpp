@@ -14,12 +14,6 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    actionPrintLblAll = new QAction("Напечатать все",this);
-    actionPrintLblOne = new QAction("Напечатать одну",this);
-
-    ui->toolButtonPal->addAction(actionPrintLblAll);
-    ui->toolButtonPal->addAction(actionPrintLblOne);
-
     modelAcceptanceWire = new ModelAcceptanceWire(this);
     ui->tableViewAcc->setModel(modelAcceptanceWire);
     ui->tableViewAcc->setColumnHidden(0,true);
@@ -43,7 +37,6 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     mapper->addMapping(ui->dateEdit,2);
     mapper->addMapping(ui->comboBoxType,3);
     mapper->addEmptyLock(ui->tableViewAccData);
-    mapper->addEmptyLock(ui->toolButtonPal);
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
@@ -51,8 +44,6 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updAcc()));
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
     connect(modelAcceptanceWireData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
-    connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
-    connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
 
     updAcc();
@@ -78,22 +69,6 @@ void FormAcceptanceWire::savesettings()
     settings.setValue("wire_cont_lbl_type",ui->comboBoxLblType->currentIndex());
 }
 
-void FormAcceptanceWire::printPal(int id_acc, int cont)
-{
-    double w,h,g;
-    if (ui->comboBoxLblType->currentIndex()==0){
-        w=45;
-        h=70;
-        g=2;
-    } else {
-        w=50;
-        h=40;
-        g=2.5;
-    }
-    LabelWirePal l(id_acc,cont,w,h,g);
-    l.printLabel();
-}
-
 void FormAcceptanceWire::updAcc()
 {
     if (sender()==ui->pushButtonUpd){
@@ -114,26 +89,6 @@ void FormAcceptanceWire::sync()
     ui->pushButtonNakl->setEnabled(false);
     Models::instance()->sync1C->syncPriemWire(mapper->modelData(mapper->currentIndex(),0).toInt());
     ui->pushButtonNakl->setEnabled(true);
-}
-
-void FormAcceptanceWire::printPalAll()
-{
-    if (!modelAcceptanceWireData->isEmpty()){
-        int id_acc=mapper->modelData(mapper->currentIndex(),0).toInt();
-        printPal(id_acc,-1);
-    }
-}
-
-void FormAcceptanceWire::printPalOne()
-{
-    if (!modelAcceptanceWireData->isEmpty()){
-        int id_acc=mapper->modelData(mapper->currentIndex(),0).toInt();
-        bool ok=false;
-        int n=QInputDialog::getInt(this,tr("Ввод номера поддона"),tr("Введите номер поддона"),1,1,100,1,&ok);
-        if (ok){
-            printPal(id_acc,n);
-        }
-    }
 }
 
 void FormAcceptanceWire::printNakl()
@@ -242,79 +197,4 @@ void ModelAcceptanceWireData::caclSum()
     QString s;
     s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг")) : title;
     emit sigSum(s);
-}
-
-LabelWirePal::LabelWirePal(int id_acc, int cont, double w, double h, double g, QObject *parent) : LabelBase("Этикетка_пров_поддон",w,h,g,parent)
-{
-    setPrintCmdMode(true);
-    QSqlQuery query;
-    QString filter="ww.id_waybill = :id_acc";
-    if (cont>0){
-        filter+=QString(" and ww.numcont = %1").arg(cont);
-    }
-    query.prepare("select 'EUR-'||wwbt.prefix||date_part('year',www.dat)||'-'||www.num ||'-'||numcont, "
-                  "p.nam ||' ф '||d.sdim ||' '||wpk.short, wpm.n_s||' '||date_part('year',wpm.dat), ww.m_netto, ww.barcodecont "
-                  "from wire_warehouse ww "
-                  "inner join wire_whs_waybill www on www.id = ww.id_waybill "
-                  "inner join wire_way_bill_type wwbt on wwbt.id = www.id_type "
-                  "inner join wire_parti wp on wp.id = ww.id_wparti "
-                  "inner join wire_parti_m wpm on wpm.id = wp.id_m "
-                  "inner join provol p on p.id = wpm.id_provol "
-                  "inner join diam d on d.id = wpm.id_diam "
-                  "inner join wire_pack_kind wpk on wpk.id = wp.id_pack "
-                  "where "+filter+" order by ww.id");
-    query.bindValue(":id_acc",id_acc);
-    if (query.exec()){
-        while (query.next()){
-            QString cnam=query.value(4).toString().isEmpty() ? query.value(0).toString() : query.value(4).toString();
-            accInfo info;
-            info.nameNom=query.value(1).toString();
-            info.namePart=query.value(2).toString();
-            info.kvo=query.value(3).toDouble();
-            hash.insert(cnam,info);
-        }
-        setCutKvo(hash.uniqueKeys().size());
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-    }
-}
-
-QString LabelWirePal::getCod()
-{
-    QString lbl=LabelBase::getCod();
-    QStringList pals=hash.uniqueKeys();
-    bool first=true;
-    for (QString pal : pals){
-        if (!first){
-            lbl+=cls();
-        } else {
-            first=false;
-        }
-        QList<accInfo> list = hash.values(pal);
-        QString str;
-        int n=1;
-        for (accInfo a : list){
-            if (!str.isEmpty()){
-                str+="\n";
-            }
-            if (n>3){
-                str+="...";
-                break;
-            }
-            str+=a.nameNom+"\n п."+a.namePart+" - "+QLocale().toString(a.kvo,'f',1)+" кг";
-            n++;
-        }
-        if (getHeight()>69){
-            //lbl+=logo(2,2);
-            lbl+=text(5,22,pal,11);
-            lbl+=dataMatrix(16,27,15,0.85,pal);
-            lbl+=block(2.5,44,40,23,str,10);
-        } else {
-            lbl+=text(9,3,pal,11);
-            lbl+=dataMatrix(17,9,15,0.85,pal);
-            lbl+=block(2.5,25,45,14,str,10);
-        }
-        lbl+=print(1);
-    }
-    return lbl;
 }

@@ -42,6 +42,7 @@ MainWindow::MainWindow(bool master, QWidget *parent) :
     actAction(ui->actionCells,&MainWindow::newFormCells);
     actAction(ui->actionMovEl,&MainWindow::newFormMovEl);
     actAction(ui->actionMovWire,&MainWindow::newFormMovWire);
+    actAction(ui->actionRequests,&MainWindow::newFormRequests);
 
     connect(ui->actionCfgPrint,SIGNAL(triggered(bool)),this,SLOT(cfgPrint()));
 
@@ -272,6 +273,13 @@ void MainWindow::newFormMovWire()
 {
     if (!exist(sender())){
         addSubWindow(new FormMovWire(),sender());
+    }
+}
+
+void MainWindow::newFormRequests()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormRequests(),sender());
     }
 }
 

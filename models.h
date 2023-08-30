@@ -17,12 +17,21 @@ public:
     Sync1C *sync1C;
     InvoiceManager *invoiceManager;
     DbSqlRelation *relPol;
+    DbSqlRelation *relKat;
     DbSqlRelation *relDrv;
     DbSqlRelation *relAccTypeEl;
     DbSqlRelation *relAccTypeWire;
     DbSqlRelation *relKis;
     DbSqlRelation *relWirePart;
     DbSqlRelation *relElPart;
+    DbSqlRelation *relElrtr;
+    DbSqlRelation *relElPack;
+    DbSqlRelation *relVars;
+    DbSqlRelation *relDiam;
+    DbSqlRelation *relProvol;
+    DbSqlRelation *relSpool;
+    DbSqlRelation *relWirePack;
+    DbSqlRelation *relReqCause;
     QString createPalBarcode(QString prefix);
 
 protected:

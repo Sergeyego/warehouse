@@ -38,21 +38,6 @@ signals:
     void sigSum(QString s);
 };
 
-class LabelElPal : public LabelBase
-{
-public:
-    LabelElPal(int id_acc, int cont=-1, QObject *parent=0);
-protected:
-    virtual QString getCod();
-private:
-    struct accInfo {
-        QString nameNom;
-        QString namePart;
-        double kvo;
-    };
-    QMultiMap<QString,accInfo> hash;
-};
-
 class FormAcceptanceEl : public QWidget
 {
     Q_OBJECT
@@ -66,8 +51,6 @@ private:
     ModelAcceptanceEl *modelAcceptanceEl;
     ModelAcceptanceElData *modelAcceptanceElData;
     DbMapper *mapper;
-    QAction *actionPrintLblAll;
-    QAction *actionPrintLblOne;
     void loadsettings();
     void savesettings();
 
@@ -75,8 +58,6 @@ private slots:
     void updAcc();
     void updAccData(int index);
     void sync();
-    void printPalAll();
-    void printPalOne();
     void printNakl();
 };
 

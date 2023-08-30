@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1051</width>
-    <height>662</height>
+    <width>1049</width>
+    <height>660</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,8 +35,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1051</width>
-     <height>22</height>
+     <width>1049</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuStock">
@@ -110,6 +110,13 @@
     <addaction name="actionMovEl"/>
     <addaction name="actionMovWire"/>
    </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Заявки</string>
+    </property>
+    <addaction name="actionRequests"/>
+   </widget>
+   <addaction name="menu"/>
    <addaction name="menuMark"/>
    <addaction name="menuStock"/>
    <addaction name="menuShip"/>
@@ -253,6 +260,11 @@
   <action name="actionShipCons">
    <property name="text">
     <string>Отгрузка</string>
+   </property>
+  </action>
+  <action name="actionRequests">
+   <property name="text">
+    <string>Заявки на производство</string>
    </property>
   </action>
  </widget>

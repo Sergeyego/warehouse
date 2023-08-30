@@ -18,7 +18,7 @@ FormShipCons::FormShipCons(QWidget *parent) :
     ui->tableViewShip->setColumnHidden(0,true);
     ui->tableViewShip->setColumnWidth(1,55);
     ui->tableViewShip->setColumnWidth(2,70);
-    ui->tableViewShip->setColumnWidth(3,400);
+    ui->tableViewShip->setColumnWidth(3,300);
     for (int i=4; i<modelShip->columnCount(); i++){
         ui->tableViewShip->setColumnHidden(i,true);
     }

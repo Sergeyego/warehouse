@@ -8,8 +8,6 @@ FormPoluch::FormPoluch(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    relKat = new DbSqlRelation("pol_kat","id","nam",this);//(QString("select id, nam from pol_kat order by nam"),0,1,this);
-
     modelPoluch = new DbTableModel("poluch",this);
     modelPoluch->addColumn(QString("id"),QString("id"));
     modelPoluch->addColumn(QString("short"),QString::fromUtf8("Крат. наименование"));
@@ -17,7 +15,7 @@ FormPoluch::FormPoluch(QWidget *parent) :
     modelPoluch->addColumn(QString("adres"),QString::fromUtf8("adres"));
     modelPoluch->addColumn(QString("telef"),QString::fromUtf8("telef"));
     modelPoluch->addColumn(QString("innkpp"),QString::fromUtf8("innkpp"));
-    modelPoluch->addColumn(QString("id_kat"),QString::fromUtf8("id_kat"),relKat);
+    modelPoluch->addColumn(QString("id_kat"),QString::fromUtf8("id_kat"),Models::instance()->relKat);
     modelPoluch->addColumn(QString("bank"),QString::fromUtf8("bank"));
     modelPoluch->addColumn(QString("city"),QString::fromUtf8("city"));
     modelPoluch->addColumn(QString("rs"),QString::fromUtf8("rs"));

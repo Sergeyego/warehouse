@@ -12,12 +12,6 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
-    actionPrintLblAll = new QAction("Напечатать все",this);
-    actionPrintLblOne = new QAction("Напечатать одну",this);
-
-    ui->toolButtonPal->addAction(actionPrintLblAll);
-    ui->toolButtonPal->addAction(actionPrintLblOne);
-
     modelAcceptanceElData = new ModelAcceptanceElData(this);
     ui->tableViewAccData->setModel(modelAcceptanceElData);
     for (int i=0; i<5; i++){
@@ -44,7 +38,6 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     mapper->addMapping(ui->comboBoxType,3);
     mapper->addEmptyLock(ui->tableViewAccData);
     mapper->addEmptyLock(ui->pushButton1C);
-    mapper->addEmptyLock(ui->toolButtonPal);
     mapper->addEmptyLock(ui->pushButtonNakl);
     mapper->addLock(ui->pushButtonUpd);
 
@@ -52,8 +45,6 @@ FormAcceptanceEl::FormAcceptanceEl(QWidget *parent) :
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(updAccData(int)));
     connect(ui->pushButton1C,SIGNAL(clicked(bool)),this,SLOT(sync()));
     connect(modelAcceptanceElData,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
-    connect(actionPrintLblAll,SIGNAL(triggered(bool)),this,SLOT(printPalAll()));
-    connect(actionPrintLblOne,SIGNAL(triggered(bool)),this,SLOT(printPalOne()));
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
 
     updAcc();
@@ -97,28 +88,6 @@ void FormAcceptanceEl::sync()
     ui->pushButtonNakl->setEnabled(false);
     Models::instance()->sync1C->syncPriemEl(mapper->modelData(mapper->currentIndex(),0).toInt());
     ui->pushButtonNakl->setEnabled(true);
-}
-
-void FormAcceptanceEl::printPalAll()
-{
-    if (!modelAcceptanceElData->isEmpty()){
-        int id_acc=mapper->modelData(mapper->currentIndex(),0).toInt();
-        LabelElPal l(id_acc);
-        l.printLabel();
-    }
-}
-
-void FormAcceptanceEl::printPalOne()
-{
-    if (!modelAcceptanceElData->isEmpty()){
-        int id_acc=mapper->modelData(mapper->currentIndex(),0).toInt();
-        bool ok=false;
-        int n=QInputDialog::getInt(this,tr("Ввод номера поддона"),tr("Введите номер поддона"),1,1,100,1,&ok);
-        if (ok){
-            LabelElPal l(id_acc,n);
-            l.printLabel();
-        }
-    }
 }
 
 void FormAcceptanceEl::printNakl()
@@ -243,70 +212,4 @@ void ModelAcceptanceElData::caclSum()
     QString s;
     s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг")) : title;
     emit sigSum(s);
-}
-
-LabelElPal::LabelElPal(int id_acc, int cont, QObject *parent) : LabelBase("Этикетка_50*40_электр_поддон",50,40,2.5,parent)
-{
-    setPrintCmdMode(true);
-    QSqlQuery query;
-    QString filter="p.id_nakl = :id_acc";
-    if (cont>0){
-        filter+=QString(" and p.numcont = %1").arg(cont);
-    }
-    query.prepare("select 'EUR-'||pnt.prefix||date_part('year',p.dat)||'-'||p.docs||'-'||p.numcont, e.marka||' ф'||p2.diam::numeric(2,1), "
-                  "p2.n_s||'-'|| date_part('year',p2.dat_part), p.kvo, p.barcodecont "
-                  "from prod p "
-                  "inner join parti p2 on p2.id = p.id_part "
-                  "inner join elrtr e on e.id = p2.id_el "
-                  "inner join prod_nakl_tip pnt on pnt.id = p.id_ist "
-                  "where "+filter+" order by p.id ");
-    query.bindValue(":id_acc",id_acc);
-    if (query.exec()){
-        while (query.next()){
-            QString cnam=query.value(4).toString().isEmpty() ? query.value(0).toString() : query.value(4).toString();
-            accInfo info;
-            info.nameNom=query.value(1).toString();
-            info.namePart=query.value(2).toString();
-            info.kvo=query.value(3).toDouble();
-            hash.insert(cnam,info);
-        }
-        setCutKvo(hash.uniqueKeys().size());
-    } else {
-        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
-    }
-
-}
-
-QString LabelElPal::getCod()
-{
-    QString lbl=LabelBase::getCod();
-    QStringList pals=hash.uniqueKeys();
-    bool first=true;
-    for (QString pal : pals){
-        if (!first){
-            lbl+=cls();
-        }
-        lbl+=text(9,3,pal,11);
-        lbl+=dataMatrix(17,9,15,0.85,pal);
-        QList<accInfo> list = hash.values(pal);
-        QString str;
-        int n=1;
-        for (accInfo a : list){
-            if (!str.isEmpty()){
-                str+="\n";
-            }
-            if (n>2){
-                str+="...";
-                break;
-            }
-            str+=a.nameNom+"\n п."+a.namePart+" - "+QLocale().toString(a.kvo,'f',1)+" кг";
-            n++;
-        }
-        lbl+=block(2.5,25,45,14,str,10);
-        lbl+=print(1);
-        if (first){
-            first=false;
-        }
-    }
-    return lbl;
 }

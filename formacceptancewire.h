@@ -67,8 +67,6 @@ private:
     ModelAcceptanceWire *modelAcceptanceWire;
     ModelAcceptanceWireData *modelAcceptanceWireData;
     DbMapper *mapper;
-    QAction *actionPrintLblAll;
-    QAction *actionPrintLblOne;
     void loadsettings();
     void savesettings();
     void printPal(int id_acc, int cont);
@@ -77,8 +75,6 @@ private slots:
     void updAcc();
     void updAccData(int index);
     void sync();
-    void printPalAll();
-    void printPalOne();
     void printNakl();
 };
 

@@ -26,6 +26,7 @@
 #include "formbalanceew.h"
 #include "formmovel.h"
 #include "formmovwire.h"
+#include "formrequests.h"
 
 namespace Ui {
 class MainWindow;
@@ -71,6 +72,7 @@ private slots:
     void newFormCells();
     void newFormMovEl();
     void newFormMovWire();
+    void newFormRequests();
     void cfgPrint();
 
 private:

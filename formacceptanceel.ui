@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1062</width>
-    <height>648</height>
+    <width>1060</width>
+    <height>646</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -149,22 +149,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QToolButton" name="toolButtonPal">
-           <property name="text">
-            <string>Этикетки на поддоны</string>
-           </property>
-           <property name="popupMode">
-            <enum>QToolButton::InstantPopup</enum>
-           </property>
-           <property name="toolButtonStyle">
-            <enum>Qt::ToolButtonTextUnderIcon</enum>
-           </property>
-           <property name="arrowType">
-            <enum>Qt::NoArrow</enum>
-           </property>
-          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonNakl">
