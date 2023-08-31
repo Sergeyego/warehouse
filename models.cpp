@@ -58,6 +58,10 @@ Models::Models(QObject *parent) :
     relElPart->setFilterColumn("ids");
     relElPart->model()->setLimit(4000);
 
+    relReq = new DbSqlRelation("requests","id","str",this);
+    relReq->setSort("requests.dat desc, requests.num desc");
+    relReq->model()->setLimit(4000);
+
 }
 
 Models *Models::instance()

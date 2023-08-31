@@ -32,6 +32,7 @@ public:
     DbSqlRelation *relSpool;
     DbSqlRelation *relWirePack;
     DbSqlRelation *relReqCause;
+    DbSqlRelation *relReq;
     QString createPalBarcode(QString prefix);
 
 protected:

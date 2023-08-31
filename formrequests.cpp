@@ -11,6 +11,12 @@ FormRequests::FormRequests(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    for (int i=1; i<=12; i++){
+        ui->comboBoxMonth->addItem(QLocale().standaloneMonthName(i));
+    }
+    ui->comboBoxMonth->setCurrentIndex(QDate::currentDate().month()-1);
+    ui->spinBoxYear->setValue(QDate::currentDate().year());
+
     modelChanges = new DbTableModel("requests_changes",this);
     modelChanges->addColumn("id",tr("id"));
     modelChanges->addColumn("id_req",tr("id_req"));
@@ -74,10 +80,14 @@ FormRequests::FormRequests(QWidget *parent) :
     mapper->addEmptyLock(ui->pushButtonLoad);
     mapper->addLock(ui->pushButtonUpd);
 
+    connect(ui->comboBoxMonth,SIGNAL(currentIndexChanged(int)),this,SLOT(updReq()));
+    connect(ui->spinBoxYear,SIGNAL(valueChanged(int)),this,SLOT(updReq()));
+
     connect(ui->pushButtonUpd,&QPushButton::clicked,this,&FormRequests::updReq);
     connect(mapper,&DbMapper::currentIndexChanged,this,&FormRequests::updData);
     connect(modelReqEl,&ModelReqEl::sigSum,ui->labelElSum,&QLabel::setText);
     connect(modelReqWire,&ModelReqWire::sigSum,ui->labelWireSum,&QLabel::setText);
+    connect(ui->checkBoxMonth,&QCheckBox::clicked,this,&FormRequests::switchFlt);
 
     updReq();
 }
@@ -104,7 +114,11 @@ void FormRequests::saveSettings()
 
 void FormRequests::updReq()
 {
-    modelReq->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
+    if (ui->checkBoxMonth->isChecked()){
+        modelReq->refresh(ui->comboBoxMonth->currentIndex()+1,ui->spinBoxYear->value());
+    } else {
+        modelReq->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
+    }
 }
 
 void FormRequests::updData(int index)
@@ -116,6 +130,15 @@ void FormRequests::updData(int index)
     modelChanges->setFilter("requests_changes.id_req="+QString::number(id_req));
     modelChanges->setDefaultValue(1,id_req);
     modelChanges->select();
+}
+
+void FormRequests::switchFlt(bool b)
+{
+    ui->dateEditBeg->setEnabled(!b);
+    ui->dateEditEnd->setEnabled(!b);
+    ui->comboBoxMonth->setEnabled(b);
+    ui->spinBoxYear->setEnabled(b);
+    updReq();
 }
 
 ModelReq::ModelReq(QWidget *parent) : DbTableModel("requests",parent)
@@ -132,6 +155,17 @@ ModelReq::ModelReq(QWidget *parent) : DbTableModel("requests",parent)
 void ModelReq::refresh(QDate beg, QDate end)
 {
     QString filter=name()+".dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
+    setFilter(filter);
+    select();
+}
+
+void ModelReq::refresh(int month, int year)
+{
+    QString filter=name()+QString(".id in (select distinct re.id_req from requests_el re "
+                                  "where date_part('month',re.dat_term) = %1 and date_part('year',re.dat_term) = %2 "
+                                  "union "
+                                  "select distinct rw.id_req  from requests_wire rw "
+                                  "where date_part('month',rw.dat_term) = %1 and date_part('year',rw.dat_term) = %2 )").arg(month).arg(year);
     setFilter(filter);
     select();
 }

@@ -13,6 +13,18 @@ FormShipCons::FormShipCons(QWidget *parent) :
 
     ui->comboBoxPolFlt->setModel(Models::instance()->relPol->model());
 
+    modelReqEl = new ModelReqShipEl(this);
+    ui->tableViewReqEl->setModel(modelReqEl);
+    ui->tableViewReqEl->setColumnHidden(0,true);
+    ui->tableViewReqEl->setColumnWidth(1,300);
+    ui->tableViewReqEl->setColumnWidth(2,80);
+
+    modelReqWire = new ModelReqShipWire(this);
+    ui->tableViewReqWire->setModel(modelReqWire);
+    ui->tableViewReqWire->setColumnHidden(0,true);
+    ui->tableViewReqWire->setColumnWidth(1,300);
+    ui->tableViewReqWire->setColumnWidth(2,80);
+
     modelShip = new ModelShipCons(this);
     ui->tableViewShip->setModel(modelShip);
     ui->tableViewShip->setColumnHidden(0,true);
@@ -65,6 +77,12 @@ FormShipCons::FormShipCons(QWidget *parent) :
     connect(ui->pushButtonCods,SIGNAL(clicked(bool)),this,SLOT(edtCods()));
     connect(ui->pushButtonXML,SIGNAL(clicked(bool)),this,SLOT(goXml()));
     connect(ui->pushButtonLoad,SIGNAL(clicked(bool)),this,SLOT(loadData()));
+    connect(ui->tableViewEl->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(setCurrentShipDataEl(QModelIndex)));
+    connect(modelReqEl,SIGNAL(sigSum(QString)),ui->labelStatReqEl,SLOT(setText(QString)));
+    connect(ui->tableViewWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(setCurrentShipDataWire(QModelIndex)));
+    connect(modelReqWire,SIGNAL(sigSum(QString)),ui->labelStatReqWire,SLOT(setText(QString)));
+
+    connect(modelReqEl,SIGNAL(sigUpd()),modelEl,SLOT(calcSum()));
 
     updPol();
 }
@@ -122,6 +140,38 @@ void FormShipCons::setCurrentShip(int index)
     ui->lineEditPol->setText(Models::instance()->relPol->getDisplayValue(id_pol,"snam"));
     modelEl->refresh(id_ship);
     modelWire->refresh(id_ship);
+
+    if (ui->tableViewEl->model()->rowCount()){
+        ui->tableViewEl->setCurrentIndex(ui->tableViewEl->model()->index(0,2));
+    }
+
+    if (ui->tableViewWire->model()->rowCount()){
+        ui->tableViewWire->setCurrentIndex(ui->tableViewWire->model()->index(0,2));
+    }
+}
+
+void FormShipCons::setCurrentShipDataEl(QModelIndex index)
+{
+    int id_ship_data=ui->tableViewEl->model()->data(ui->tableViewEl->model()->index(index.row(),0),Qt::EditRole).toInt();
+    QString strpart=ui->tableViewEl->model()->data(ui->tableViewEl->model()->index(index.row(),2),Qt::DisplayRole).toString();
+    double kvo=ui->tableViewEl->model()->data(ui->tableViewEl->model()->index(index.row(),3),Qt::EditRole).toDouble();
+    if (!strpart.isEmpty()){
+        strpart+=":";
+    }
+    ui->labelPartEl->setText(strpart);
+    modelReqEl->refresh(id_ship_data,kvo);
+}
+
+void FormShipCons::setCurrentShipDataWire(QModelIndex index)
+{
+    int id_ship_data=ui->tableViewWire->model()->data(ui->tableViewWire->model()->index(index.row(),0),Qt::EditRole).toInt();
+    QString strpart=ui->tableViewWire->model()->data(ui->tableViewWire->model()->index(index.row(),2),Qt::DisplayRole).toString();
+    double kvo=ui->tableViewWire->model()->data(ui->tableViewWire->model()->index(index.row(),3),Qt::EditRole).toDouble();
+    if (!strpart.isEmpty()){
+        strpart+=":";
+    }
+    ui->labelPartWire->setText(strpart);
+    modelReqWire->refresh(id_ship_data,kvo);
 }
 
 void FormShipCons::edtCods()
@@ -424,13 +474,32 @@ void ModelShipConsEl::refreshState()
 
 void ModelShipConsEl::calcSum()
 {
+    double sumReq=0.0;
+    QSqlQuery query;
+    query.prepare("select sum(rse.kvo) from requests_ship_el rse "
+                  "inner join otpusk o on o.id = rse.id_ship_data "
+                  "where o.id_sert = :id_ship ");
+    query.bindValue(":id_ship",currentIdShip);
+    if (query.exec()){
+        if (query.next()){
+            sumReq=query.value(0).toDouble();
+        }
+    } else {
+        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+
     double sum=0;
     QString title = tr("Электроды");
     for (int i=0; i<rowCount(); i++){
         sum+=data(index(i,3),Qt::EditRole).toDouble();
     }
     QString s;
-    s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг")) : title;
+    s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',1)+tr(" кг; По заявкам: ")+QLocale().toString(sumReq,'f',1)+tr(" кг;") ) : title;
+
+    if (sum>0 && sumReq==sum){
+        s="<font color='green'>"+s+"</font>";
+    }
+
     emit sigSum(s);
 }
 
@@ -564,5 +633,148 @@ void ModelShipConsWire::calcSum()
     }
     QString s;
     s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг")) : title;
+    emit sigSum(s);
+}
+
+ModelReqShipEl::ModelReqShipEl(QObject *parent) : DbTableModel("requests_ship_el",parent)
+{
+    addColumn("id_ship_data",tr("id_ship_data"));
+    addColumn("id_req",tr("Заявка"),Models::instance()->relReq);
+    addColumn("kvo",tr("Кол-во, кг"));
+    setSort("requests.num, requests.dat");
+
+    connect(this,SIGNAL(sigUpd()),this,SLOT(calcSum()));
+    connect(this,SIGNAL(sigRefresh()),this,SLOT(calcSum()));
+}
+
+void ModelReqShipEl::refresh(int id_ship_data, double kvo)
+{
+    kvoShip=kvo;
+    setFilter("requests_ship_el.id_ship_data = "+QString::number(id_ship_data));
+    setDefaultValue(0,id_ship_data);
+    select();
+}
+
+bool ModelReqShipEl::submit()
+{
+    int id_ship_data=this->data(this->index(currentEdtRow(),0),Qt::EditRole).toInt();
+    int id_req=this->data(this->index(currentEdtRow(),1),Qt::EditRole).toInt();
+
+    int count=0;
+    QSqlQuery query;
+    query.prepare("select count(*) "
+                  "from requests_el re "
+                  "where re.id_req = :id_req "
+                  "and re.id_el = (select p.id_el from otpusk o inner join parti p on o.id_part=p.id where o.id = :id_ship_data1 ) "
+                  "and re.id_diam = (select d.id from otpusk o inner join parti p on o.id_part=p.id inner join diam d on d.diam = p.diam where o.id = :id_ship_data2 ) "
+                  "and re.id_pack = (select p.id_pack from otpusk o inner join parti p on o.id_part=p.id where o.id = :id_ship_data3 )");
+    query.bindValue(":id_req",id_req);
+    query.bindValue(":id_ship_data1",id_ship_data);
+    query.bindValue(":id_ship_data2",id_ship_data);
+    query.bindValue(":id_ship_data3",id_ship_data);
+    if (query.exec()){
+        if (query.next()){
+            count=query.value(0).toInt();
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Error"),query.lastError().text(),QMessageBox::Ok);
+    }
+
+    bool ok = false;
+    if (this->isEdt()){
+        if (count>0){
+            ok=DbTableModel::submit();
+        } else {
+            QMessageBox::critical(nullptr,tr("Ошибка"),tr("В этой заявке отсутствуют электроды данной марки, диаметра и типа упаковки"),QMessageBox::Cancel);
+        }
+    } else {
+        ok=DbTableModel::submit();
+    }
+    return ok;
+}
+
+void ModelReqShipEl::calcSum()
+{
+    double sum=0;
+    QString title = tr("Отгружено: ")+QLocale().toString(kvoShip,'f',1)+tr(" кг; По заявкам: ");
+    for (int i=0; i<rowCount(); i++){
+        sum+=data(index(i,2),Qt::EditRole).toDouble();
+    }
+    QString s;
+    s = title+QLocale().toString(sum,'f',1)+tr(" кг;");
+    if (kvoShip>0 && kvoShip==sum){
+        s="<font color='green'>"+s+"</font>";
+    }
+    emit sigSum(s);
+}
+
+ModelReqShipWire::ModelReqShipWire(QObject *parent) : DbTableModel("requests_ship_wire",parent)
+{
+    addColumn("id_ship_data",tr("id_ship_data"));
+    addColumn("id_req",tr("Заявка"),Models::instance()->relReq);
+    addColumn("kvo",tr("Кол-во, кг"));
+    setSort("requests.num, requests.dat");
+
+    connect(this,SIGNAL(sigUpd()),this,SLOT(calcSum()));
+    connect(this,SIGNAL(sigRefresh()),this,SLOT(calcSum()));
+}
+
+void ModelReqShipWire::refresh(int id_ship_data, double kvo)
+{
+    kvoShip=kvo;
+    setFilter("requests_ship_wire.id_ship_data = "+QString::number(id_ship_data));
+    setDefaultValue(0,id_ship_data);
+    select();
+}
+
+bool ModelReqShipWire::submit()
+{
+    int id_ship_data=this->data(this->index(currentEdtRow(),0),Qt::EditRole).toInt();
+    int id_req=this->data(this->index(currentEdtRow(),1),Qt::EditRole).toInt();
+
+    int count=0;
+    QSqlQuery query;
+    query.prepare("select count(*) from requests_wire rw "
+                  "where rw.id_req = :id_req "
+                  "and rw.id_provol = (select wpm.id_provol from wire_shipment_consist wsc inner join wire_parti wp on wp.id = wsc.id_wparti inner join wire_parti_m wpm on wpm.id = wp.id_m  where wsc.id = :id_ship_data1 ) "
+                  "and rw.id_diam = (select wpm.id_diam from wire_shipment_consist wsc inner join wire_parti wp on wp.id = wsc.id_wparti inner join wire_parti_m wpm on wpm.id = wp.id_m  where wsc.id = :id_ship_data2 ) "
+                  "and rw.id_spool = (select wp.id_pack from wire_shipment_consist wsc inner join wire_parti wp on wp.id = wsc.id_wparti  where wsc.id = :id_ship_data3 )");
+    query.bindValue(":id_req",id_req);
+    query.bindValue(":id_ship_data1",id_ship_data);
+    query.bindValue(":id_ship_data2",id_ship_data);
+    query.bindValue(":id_ship_data3",id_ship_data);
+    if (query.exec()){
+        if (query.next()){
+            count=query.value(0).toInt();
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Error"),query.lastError().text(),QMessageBox::Ok);
+    }
+
+    bool ok = false;
+    if (this->isEdt()){
+        if (count>0){
+            ok=DbTableModel::submit();
+        } else {
+            QMessageBox::critical(nullptr,tr("Ошибка"),tr("В этой заявке отсутствует проволока данной марки, диаметра и типом носителя"),QMessageBox::Cancel);
+        }
+    } else {
+        ok=DbTableModel::submit();
+    }
+    return ok;
+}
+
+void ModelReqShipWire::calcSum()
+{
+    double sum=0;
+    QString title = tr("Отгружено: ")+QLocale().toString(kvoShip,'f',1)+tr(" кг; По заявкам: ");
+    for (int i=0; i<rowCount(); i++){
+        sum+=data(index(i,2),Qt::EditRole).toDouble();
+    }
+    QString s;
+    s = title+QLocale().toString(sum,'f',1)+tr(" кг;");
+    if (kvoShip>0 && kvoShip==sum){
+        s="<font color='green'>"+s+"</font>";
+    }
     emit sigSum(s);
 }

@@ -35,7 +35,7 @@ public:
 public slots:
     double getStock(QModelIndex index);
     void refreshState();
-private slots:
+public slots:
     void calcSum();
 private:
     QMap <int,int> colorState;
@@ -68,6 +68,42 @@ signals:
     void sigSum(QString s);
 };
 
+class ModelReqShipEl : public DbTableModel
+{
+    Q_OBJECT
+public:
+    ModelReqShipEl(QObject *parent=0);
+    void refresh(int id_ship_data, double kvo=0);
+    bool submit();
+private:
+    double kvoShip;
+
+private slots:
+    void calcSum();
+
+signals:
+    void sigSum(QString s);
+
+};
+
+class ModelReqShipWire : public DbTableModel
+{
+    Q_OBJECT
+public:
+    ModelReqShipWire(QObject *parent=0);
+    void refresh(int id_ship_data, double kvo=0);
+    bool submit();
+private:
+    double kvoShip;
+
+private slots:
+    void calcSum();
+
+signals:
+    void sigSum(QString s);
+
+};
+
 class FormShipCons : public QWidget
 {
     Q_OBJECT
@@ -84,12 +120,16 @@ private:
     DbMapper *mapper;
     ModelShipConsEl *modelEl;
     ModelShipConsWire *modelWire;
+    ModelReqShipEl *modelReqEl;
+    ModelReqShipWire *modelReqWire;
     QDomElement newElement(QString nam, QString val, QDomDocument *doc);
 
 private slots:
     void updShip();
     void updPol();
     void setCurrentShip(int index);
+    void setCurrentShipDataEl(QModelIndex index);
+    void setCurrentShipDataWire(QModelIndex index);
     void edtCods();
     void goXml();
     void loadData();

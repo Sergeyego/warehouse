@@ -17,6 +17,7 @@ class ModelReq : public DbTableModel
  public:
     explicit ModelReq(QWidget *parent = nullptr);
     void refresh(QDate beg, QDate end);
+    void refresh(int moonth, int year);
     bool insertRow(int row, const QModelIndex &parent = QModelIndex());
 };
 
@@ -78,6 +79,7 @@ private slots:
     void saveSettings();
     void updReq();
     void updData(int index);
+    void switchFlt(bool b);
 };
 
 #endif // FORMREQUESTS_H
