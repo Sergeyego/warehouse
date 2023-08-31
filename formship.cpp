@@ -227,10 +227,7 @@ void FormShip::setPartFilter()
 void FormShip::updPol()
 {
     if (sender()==ui->cmdUpdShip){
-        ui->comboBoxOnly->blockSignals(true);
         modelShip->refreshRelsModel();
-        ui->comboBoxOnly->blockSignals(false);
-
         modelShipEl->refreshRelsModel();
         modelShipWire->refreshRelsModel();
     }

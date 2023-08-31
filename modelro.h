@@ -18,8 +18,10 @@ public:
     bool execQuery(QSqlQuery &query);
     void setQuery(const QSqlQuery &query);
     void setDecimal(int d);
+    void setDecimalForColumn(int section, int d);
 protected:
     int dec;
+    QMap<int,int> mdecimal;
 public slots:
     void select();
 signals:

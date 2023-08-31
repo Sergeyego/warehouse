@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1049</width>
-    <height>660</height>
+    <width>1047</width>
+    <height>658</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1049</width>
+     <width>1047</width>
      <height>25</height>
     </rect>
    </property>
@@ -110,13 +110,13 @@
     <addaction name="actionMovEl"/>
     <addaction name="actionMovWire"/>
    </widget>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="menuRequests">
     <property name="title">
      <string>Заявки</string>
     </property>
     <addaction name="actionRequests"/>
    </widget>
-   <addaction name="menu"/>
+   <addaction name="menuRequests"/>
    <addaction name="menuMark"/>
    <addaction name="menuStock"/>
    <addaction name="menuShip"/>

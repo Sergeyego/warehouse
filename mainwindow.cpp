@@ -16,6 +16,7 @@ MainWindow::MainWindow(bool master, QWidget *parent) :
     ui->actionRetEl->setDisabled(master);
     ui->actionRetWire->setDisabled(master);
     ui->actionCells->setDisabled(master);
+    ui->menuRequests->setDisabled(master);
 
     actAction(ui->actionLblEl,&MainWindow::newFormLabelsEl);
     actAction(ui->actionLblWire,&MainWindow::newFormLabelsWire);

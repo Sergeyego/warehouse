@@ -108,10 +108,7 @@ void FormShipCons::updShip()
 void FormShipCons::updPol()
 {
     if (sender()==ui->pushButtonUpd){
-        ui->comboBoxPolFlt->blockSignals(true);
         modelShip->refreshRelsModel();
-        ui->comboBoxPolFlt->blockSignals(false);
-
         modelEl->refreshRelsModel();
         modelWire->refreshRelsModel();
     }
