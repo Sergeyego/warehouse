@@ -58,7 +58,7 @@ public:
 public slots:
     double getStock(QModelIndex index);
     void refreshState();
-private slots:
+public slots:
     void calcSum();
 private:
     QMap <int,int> colorState;

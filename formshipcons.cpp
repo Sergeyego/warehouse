@@ -83,6 +83,7 @@ FormShipCons::FormShipCons(QWidget *parent) :
     connect(modelReqWire,SIGNAL(sigSum(QString)),ui->labelStatReqWire,SLOT(setText(QString)));
 
     connect(modelReqEl,SIGNAL(sigUpd()),modelEl,SLOT(calcSum()));
+    connect(modelReqWire,SIGNAL(sigUpd()),modelWire,SLOT(calcSum()));
 
     updPol();
 }
@@ -626,13 +627,32 @@ void ModelShipConsWire::refreshState()
 
 void ModelShipConsWire::calcSum()
 {
+    double sumReq=0.0;
+    QSqlQuery query;
+    query.prepare("select sum(rsw.kvo) from requests_ship_wire rsw "
+                  "inner join wire_shipment_consist o on o.id = rsw.id_ship_data "
+                  "where o.id_ship = :id_ship ");
+    query.bindValue(":id_ship",currentIdShip);
+    if (query.exec()){
+        if (query.next()){
+            sumReq=query.value(0).toDouble();
+        }
+    } else {
+        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+
     double sum=0;
     QString title = tr("Проволока");
     for (int i=0; i<rowCount(); i++){
         sum+=data(index(i,3),Qt::EditRole).toDouble();
     }
+
     QString s;
-    s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг")) : title;
+    s = (sum>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',1)+tr(" кг; По заявкам: ")+QLocale().toString(sumReq,'f',1)+tr(" кг;") ) : title;
+
+    if (sum>0 && sumReq==sum){
+        s="<font color='green'>"+s+"</font>";
+    }
     emit sigSum(s);
 }
 

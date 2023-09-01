@@ -17,6 +17,64 @@ FormRequests::FormRequests(QWidget *parent) :
     ui->comboBoxMonth->setCurrentIndex(QDate::currentDate().month()-1);
     ui->spinBoxYear->setValue(QDate::currentDate().year());
 
+    modelStatEl = new ModelStat(this);
+    modelStatEl->setQuery("select z.nam, z.plan, z.cor, s.itogo, "
+                          "coalesce(z.id_el, s.id_el), coalesce(z.diam,s.diam), coalesce(z.id_pack, s.id_pack) from ( "
+                          "select e.marka ||' ф '||d.sdim || ' ('||ep.pack_ed||')' as nam, sum(re.itogo) as plan, sum(re.cor) as cor, "
+                          "re.id_el as id_el, d.diam as diam, re.id_pack as id_pack, e.marka as marka "
+                          "from requests_el re "
+                          "inner join elrtr e on e.id = re.id_el "
+                          "inner join diam d on d.id = re.id_diam "
+                          "inner join elrtr_vars ev on ev.id = re.id_var "
+                          "inner join el_pack ep on ep.id = re.id_pack "
+                          "where re.id_req = :id_req "
+                          "group by e.marka, d.sdim, ep.pack_ed, re.id_el, d.diam, re.id_pack "
+                          ") as z "
+                          "full join "
+                          "( "
+                          "select p.id_el as id_el, p.diam as diam, p.id_pack as id_pack, sum(rse.kvo) as itogo "
+                          "from requests_ship_el rse "
+                          "inner join otpusk o on o.id = rse.id_ship_data "
+                          "inner join parti p on p.id = o.id_part "
+                          "where rse.id_req = :id_req "
+                          "group by p.id_el, p.diam, p.id_pack "
+                          ") as s on s.id_el=z.id_el and s.diam = z.diam and s.id_pack = z.id_pack "
+                          "order by z.marka, z.diam");
+    ui->tableViewStatEl->setModel(modelStatEl);
+
+    modelStatWire = new ModelStat(this);
+    modelStatWire->setQuery("select z.nam, z.plan, z.cor, s.itogo, "
+                            "coalesce(z.id_provol, s.id_provol), coalesce(z.id_diam,s.id_diam), coalesce(z.id_spool, s.id_spool) from ( "
+                            "select p.nam || ' ф ' || d.sdim ||' '|| wpk.short as nam, sum(rw.itogo) as plan, sum(rw.cor) as cor, "
+                            "rw.id_provol as id_provol, rw.id_diam as id_diam, rw.id_spool as id_spool "
+                            "from requests_wire rw "
+                            "inner join provol p on p.id = rw.id_provol "
+                            "inner join diam d on d.id = rw.id_diam "
+                            "inner join wire_pack_kind wpk on wpk.id = rw.id_spool "
+                            "where rw.id_req = :id_req "
+                            "group by p.nam, d.sdim, wpk.short, rw.id_provol, rw.id_diam, rw.id_spool "
+                            ") as z "
+                            "full join "
+                            "( "
+                            "select wpm.id_provol as id_provol, wpm.id_diam as id_diam, wp.id_pack as id_spool, sum(rsw.kvo) as itogo "
+                            "from requests_ship_wire rsw "
+                            "inner join wire_shipment_consist wsc on wsc.id = rsw.id_ship_data "
+                            "inner join wire_parti wp on wp.id = wsc.id_wparti "
+                            "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                            "where rsw.id_req = :id_req "
+                            "group by wpm.id_provol, wpm.id_diam, wp.id_pack "
+                            ") as s on s.id_provol=z.id_provol and s.id_diam = z.id_diam and s.id_spool = z.id_spool "
+                            "order by z.nam");
+    ui->tableViewStatWire->setModel(modelStatWire);
+
+    modelStatElData = new ModelRo(this);
+    modelStatElData->setDecimal(1);
+    ui->tableViewStatElData->setModel(modelStatElData);
+
+    modelStatWireData = new ModelRo(this);
+    modelStatWireData->setDecimal(1);
+    ui->tableViewStatWireData->setModel(modelStatWireData);
+
     modelChanges = new DbTableModel("requests_changes",this);
     modelChanges->addColumn("id",tr("id"));
     modelChanges->addColumn("id_req",tr("id_req"));
@@ -89,6 +147,14 @@ FormRequests::FormRequests(QWidget *parent) :
     connect(modelReqWire,&ModelReqWire::sigSum,ui->labelWireSum,&QLabel::setText);
     connect(ui->checkBoxMonth,&QCheckBox::clicked,this,&FormRequests::switchFlt);
 
+    connect(ui->tableViewStatEl->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updStatDataEl(QModelIndex)));
+    connect(modelReqEl,SIGNAL(sigUpd()),modelStatEl,SLOT(select()));
+    connect(modelStatEl,SIGNAL(sigUpd()),ui->tableViewStatEl,SLOT(resizeToContents()));
+
+    connect(ui->tableViewStatWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updStatDataWire(QModelIndex)));
+    connect(modelReqWire,SIGNAL(sigUpd()),modelStatWire,SLOT(select()));
+    connect(modelStatWire,SIGNAL(sigUpd()),ui->tableViewStatWire,SLOT(resizeToContents()));
+
     updReq();
 }
 
@@ -130,6 +196,85 @@ void FormRequests::updData(int index)
     modelChanges->setFilter("requests_changes.id_req="+QString::number(id_req));
     modelChanges->setDefaultValue(1,id_req);
     modelChanges->select();
+
+    modelStatEl->refresh(id_req);
+    for (int i=4; i<ui->tableViewStatEl->model()->columnCount(); i++){
+        ui->tableViewStatEl->setColumnHidden(i,true);
+    }
+    if (ui->tableViewStatEl->model()->rowCount()){
+        ui->tableViewStatEl->selectRow(0);
+    } else {
+        modelStatElData->clear();
+    }
+
+    modelStatWire->refresh(id_req);
+    for (int i=4; i<ui->tableViewStatWire->model()->columnCount(); i++){
+        ui->tableViewStatWire->setColumnHidden(i,true);
+    }
+    if (ui->tableViewStatWire->model()->rowCount()){
+        ui->tableViewStatWire->selectRow(0);
+    } else {
+        modelStatWireData->clear();
+    }
+}
+
+void FormRequests::updStatDataEl(QModelIndex index)
+{
+    int id_el=ui->tableViewStatEl->model()->data(ui->tableViewStatEl->model()->index(index.row(),4),Qt::EditRole).toInt();
+    double diam=ui->tableViewStatEl->model()->data(ui->tableViewStatEl->model()->index(index.row(),5),Qt::EditRole).toDouble();
+    int id_pack=ui->tableViewStatEl->model()->data(ui->tableViewStatEl->model()->index(index.row(),6),Qt::EditRole).toInt();
+    int id_req=mapper->modelData(mapper->currentIndex(),0).toInt();
+
+    QSqlQuery query;
+    query.prepare("select s.dat_vid, s.nom_s||' '||p2.short as srt, p.str, rse.kvo "
+                  "from requests_ship_el rse "
+                  "inner join otpusk o on o.id = rse.id_ship_data "
+                  "inner join sertifikat s on s.id = o.id_sert "
+                  "inner join poluch p2 on p2.id = s.id_pol "
+                  "inner join parti p on p.id = o.id_part "
+                  "where rse.id_req = :id_req and p.id_el = :id_el and p.diam = :diam and p.id_pack = :id_pack "
+                  "order by s.dat_vid");
+    query.bindValue(":id_req",id_req);
+    query.bindValue(":id_el",id_el);
+    query.bindValue(":diam",diam);
+    query.bindValue(":id_pack",id_pack);
+    if (modelStatElData->execQuery(query)){
+        modelStatElData->setHeaderData(0,Qt::Horizontal,tr("Дата"));
+        modelStatElData->setHeaderData(1,Qt::Horizontal,tr("Отгрузка"));
+        modelStatElData->setHeaderData(2,Qt::Horizontal,tr("Партия"));
+        modelStatElData->setHeaderData(3,Qt::Horizontal,tr("Масса, кг"));
+        ui->tableViewStatElData->resizeToContents();
+    }
+}
+
+void FormRequests::updStatDataWire(QModelIndex index)
+{
+    int id_provol=ui->tableViewStatWire->model()->data(ui->tableViewStatWire->model()->index(index.row(),4),Qt::EditRole).toInt();
+    int id_diam=ui->tableViewStatWire->model()->data(ui->tableViewStatWire->model()->index(index.row(),5),Qt::EditRole).toInt();
+    int id_pack=ui->tableViewStatWire->model()->data(ui->tableViewStatWire->model()->index(index.row(),6),Qt::EditRole).toInt();
+    int id_req=mapper->modelData(mapper->currentIndex(),0).toInt();
+
+    QSqlQuery query;
+    query.prepare("select s.dat_vid, s.nom_s||' '||p.short as srt, wp.str, rsw.kvo "
+                  "from requests_ship_wire rsw "
+                  "inner join wire_shipment_consist wsc on wsc.id = rsw.id_ship_data "
+                  "inner join sertifikat s on s.id = wsc.id_ship "
+                  "inner join poluch p on p.id = s.id_pol "
+                  "inner join wire_parti wp on wp.id = wsc.id_wparti "
+                  "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                  "where rsw.id_req  = :id_req and wpm.id_provol = :id_provol and wpm.id_diam  = :id_diam and wp.id_pack = :id_pack "
+                  "order by s.dat_vid");
+    query.bindValue(":id_req",id_req);
+    query.bindValue(":id_provol",id_provol);
+    query.bindValue(":id_diam",id_diam);
+    query.bindValue(":id_pack",id_pack);
+    if (modelStatWireData->execQuery(query)){
+        modelStatWireData->setHeaderData(0,Qt::Horizontal,tr("Дата"));
+        modelStatWireData->setHeaderData(1,Qt::Horizontal,tr("Отгрузка"));
+        modelStatWireData->setHeaderData(2,Qt::Horizontal,tr("Партия"));
+        modelStatWireData->setHeaderData(3,Qt::Horizontal,tr("Масса, кг"));
+        ui->tableViewStatWireData->resizeToContents();
+    }
 }
 
 void FormRequests::switchFlt(bool b)
@@ -152,21 +297,34 @@ ModelReq::ModelReq(QWidget *parent) : DbTableModel("requests",parent)
     setSort(QString("%1.dat, %2.num").arg(name()).arg(name()));
 }
 
+QVariant ModelReq::data(const QModelIndex &index, int role) const
+{
+    if (role==Qt::BackgroundRole){
+        int id=this->data(this->index(index.row(),0),Qt::EditRole).toInt();
+        return status.value(id,QColor(255,255,255));
+    }
+    return DbTableModel::data(index,role);
+}
+
 void ModelReq::refresh(QDate beg, QDate end)
 {
-    QString filter=name()+".dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
+    flt=".dat between '"+beg.toString("yyyy-MM-dd")+"' and '"+end.toString("yyyy-MM-dd")+"'";
+    QString filter=name()+flt;
     setFilter(filter);
+    refreshState();
     select();
 }
 
 void ModelReq::refresh(int month, int year)
 {
-    QString filter=name()+QString(".id in (select distinct re.id_req from requests_el re "
-                                  "where date_part('month',re.dat_term) = %1 and date_part('year',re.dat_term) = %2 "
-                                  "union "
-                                  "select distinct rw.id_req  from requests_wire rw "
-                                  "where date_part('month',rw.dat_term) = %1 and date_part('year',rw.dat_term) = %2 )").arg(month).arg(year);
+    flt=QString(".id in (select distinct re.id_req from requests_el re "
+                "where date_part('month',re.dat_term) = %1 and date_part('year',re.dat_term) = %2 "
+                "union "
+                "select distinct rw.id_req  from requests_wire rw "
+                "where date_part('month',rw.dat_term) = %1 and date_part('year',rw.dat_term) = %2 )").arg(month).arg(year);
+    QString filter=name()+flt;
     setFilter(filter);
+    refreshState();
     select();
 }
 
@@ -182,6 +340,39 @@ bool ModelReq::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
+void ModelReq::refreshState()
+{
+    QString qu("select r.id, (select coalesce(sum(re.itogo),0) from requests_el re where re.id_req = r.id)+ "
+                  "(select coalesce(sum(rw.itogo),0) from requests_wire rw where rw.id_req = r.id) as plan, "
+                  "(select coalesce(sum(rse.kvo),0) from requests_ship_el rse where rse.id_req = r.id)+ "
+                  "(select coalesce(sum(rsw.kvo),0) from requests_ship_wire rsw where rsw.id_req = r.id) as ship "
+                  "from requests r");
+    if (!flt.isEmpty()){
+        qu+=" where r"+flt;
+    }
+    QSqlQuery query;
+    query.prepare(qu);
+    if (query.exec()){
+        status.clear();
+        while (query.next()){
+            double plan=query.value(1).toDouble();
+            double ship=query.value(2).toDouble();
+            QColor color = QColor(255,255,255);
+            if (plan==ship){
+                color = QColor(170,255,170);
+            } else if (ship>0){
+                color = QColor(255,200,100);
+            }
+            status.insert(query.value(0).toInt(),color);
+        }
+        if (this->rowCount()){
+            emit dataChanged(this->index(0,0),this->index(this->rowCount()-1,this->columnCount()-1));
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+}
+
 ModelReqEl::ModelReqEl(QWidget *parent) : DbTableModel("requests_el",parent)
 {
     addColumn("id_req",tr("id_req"));
@@ -191,7 +382,7 @@ ModelReqEl::ModelReqEl(QWidget *parent) : DbTableModel("requests_el",parent)
     addColumn("id_var",tr("Вариант"),Models::instance()->relVars);
     addColumn("dat_term",tr("Срок"));
     addColumn("plan",tr("План"));
-    addColumn("corr",tr("Коррект."));
+    addColumn("cor",tr("Коррект."));
     addColumn("itogo",tr("Итого"));
     addColumn("id_cause",tr("Причина коррект."),Models::instance()->relReqCause);
     addColumn("comment",tr("Примечание"));
@@ -284,7 +475,7 @@ ModelReqWire::ModelReqWire(QWidget *parent) : DbTableModel("requests_wire",paren
     addColumn("id_pack",tr("Упаковка"),Models::instance()->relWirePack);
     addColumn("dat_term",tr("Срок"));
     addColumn("plan",tr("План"));
-    addColumn("corr",tr("Коррект."));
+    addColumn("cor",tr("Коррект."));
     addColumn("itogo",tr("Итого"));
     addColumn("id_cause",tr("Причина коррект."),Models::instance()->relReqCause);
     addColumn("comment",tr("Примечание"));
@@ -342,4 +533,68 @@ void ModelReqWire::calcSum()
     QString s;
     s = (sum>0 || sumCorr>0)? (title + tr(" итого: ")+QLocale().toString(sum,'f',2)+tr(" кг; Корректировка итого: ")+QLocale().toString(sumCorr,'f',2)+tr(" кг")) : title;
     emit sigSum(s);
+}
+
+ModelStat::ModelStat(QWidget *parent) : TableModel(parent)
+{
+    setDecimal(1);
+    QStringList header;
+    header<<tr("Номенклатура")<<tr("План, кг")<<tr("Корр., кг")<<tr("Отгруж., кг")<<tr("id_prod")<<tr("id_diam")<<tr("id_pack");
+    setHeader(header);
+}
+
+void ModelStat::refresh(int id_req)
+{
+    currentIdReq=id_req;
+    QVector<QVector<QVariant>> dt;
+    QSqlQuery query;
+    QString strQu=strQuery;
+    strQu=strQu.replace(":id_req",QString::number(id_req));
+
+    query.prepare(strQu);
+    if (query.exec()){
+        int colCount=query.record().count();
+        QVector<QVariant> sums;
+        sums.resize(colCount);
+        while (query.next()){
+            QVector<QVariant> st;
+            for (int i=0; i<colCount; i++){
+                st.push_back(query.value(i));
+                if (i>=1 && i<=3){
+                    sums[i]=sums[i].toDouble()+query.value(i).toDouble();
+                }
+            }
+            dt.push_back(st);
+        }
+        sums[0]=tr("ИТОГО");
+        if (!dt.isEmpty()){
+            dt.push_back(sums);
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
+    }
+    setModelData(dt);
+}
+
+QVariant ModelStat::data(const QModelIndex &item, int role) const
+{
+    if (role==Qt::BackgroundRole){
+        double plan=this->data(this->index(item.row(),1),Qt::EditRole).toDouble();
+        double ship=this->data(this->index(item.row(),3),Qt::EditRole).toDouble();
+        if (plan==ship){
+            return QVariant(QColor(170,255,170));
+        } else if (ship>0){
+            return QVariant(QColor(255,200,100));
+        }
+    }
+    return TableModel::data(item,role);
+}
+
+void ModelStat::select()
+{
+    refresh(currentIdReq);
+}
+void ModelStat::setQuery(QString q)
+{
+    strQuery=q;
 }

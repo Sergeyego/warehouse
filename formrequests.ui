@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1158</width>
-    <height>588</height>
+    <width>1156</width>
+    <height>586</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -325,10 +325,17 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
              <item>
-              <widget class="QTableView" name="tableView_2"/>
+              <widget class="TableView" name="tableViewStatEl">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+               <property name="selectionBehavior">
+                <enum>QAbstractItemView::SelectRows</enum>
+               </property>
+              </widget>
              </item>
              <item>
-              <widget class="QTableView" name="tableView_4"/>
+              <widget class="TableView" name="tableViewStatElData"/>
              </item>
             </layout>
            </item>
@@ -342,10 +349,17 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
              <item>
-              <widget class="QTableView" name="tableView_3"/>
+              <widget class="TableView" name="tableViewStatWire">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+               <property name="selectionBehavior">
+                <enum>QAbstractItemView::SelectRows</enum>
+               </property>
+              </widget>
              </item>
              <item>
-              <widget class="QTableView" name="tableView_5"/>
+              <widget class="TableView" name="tableViewStatWireData"/>
              </item>
             </layout>
            </item>
@@ -391,6 +405,11 @@
    <class>DbViewer</class>
    <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

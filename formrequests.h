@@ -5,20 +5,45 @@
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
 #include "models.h"
+#include "modelro.h"
+#include "db/tablemodel.h"
 
 namespace Ui {
 class FormRequests;
 }
 
+class ModelStat : public TableModel {
+    Q_OBJECT
+
+ public:
+    explicit ModelStat(QWidget *parent = nullptr);
+    void refresh(int id_req);
+    QVariant data(const QModelIndex &item, int role) const;
+    void setQuery(QString q);
+
+private:
+    int currentIdReq;
+    QString strQuery;
+
+public slots:
+    void select();
+};
+
 class ModelReq : public DbTableModel
 {
     Q_OBJECT
 
- public:
+public:
     explicit ModelReq(QWidget *parent = nullptr);
+    QVariant data(const QModelIndex &index, int role) const;
     void refresh(QDate beg, QDate end);
     void refresh(int moonth, int year);
     bool insertRow(int row, const QModelIndex &parent = QModelIndex());
+public slots:
+    void refreshState();
+private:
+    QMap<int,QColor> status;
+    QString flt;
 };
 
 class ModelReqEl : public DbTableModel
@@ -73,12 +98,18 @@ private:
     ModelReqEl *modelReqEl;
     ModelReqWire *modelReqWire;
     DbTableModel *modelChanges;
+    ModelStat *modelStatEl;
+    ModelStat *modelStatWire;
+    ModelRo *modelStatElData;
+    ModelRo *modelStatWireData;
 
 private slots:
     void loadSettings();
     void saveSettings();
     void updReq();
     void updData(int index);
+    void updStatDataEl(QModelIndex index);
+    void updStatDataWire(QModelIndex index);
     void switchFlt(bool b);
 };
 
