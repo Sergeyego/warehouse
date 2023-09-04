@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1047</width>
-    <height>658</height>
+    <width>1045</width>
+    <height>656</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1047</width>
+     <width>1045</width>
      <height>25</height>
     </rect>
    </property>
@@ -115,6 +115,7 @@
      <string>Заявки</string>
     </property>
     <addaction name="actionRequests"/>
+    <addaction name="actionReqReport"/>
    </widget>
    <addaction name="menuRequests"/>
    <addaction name="menuMark"/>
@@ -265,6 +266,11 @@
   <action name="actionRequests">
    <property name="text">
     <string>Заявки на производство</string>
+   </property>
+  </action>
+  <action name="actionReqReport">
+   <property name="text">
+    <string>Отчет по заявкам</string>
    </property>
   </action>
  </widget>

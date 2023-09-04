@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FormReqReport</class>
+ <widget class="QWidget" name="FormReqReport">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>966</width>
+    <height>652</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_5">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayoutHead">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>По</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButtonUpd">
+         <property name="text">
+          <string>Обновить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="DbDateEdit" name="dateEditBeg"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>С</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="DbDateEdit" name="dateEditEnd"/>
+       </item>
+       <item row="3" column="0">
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="2">
+        <widget class="QRadioButton" name="radioButtonProvol">
+         <property name="text">
+          <string>Проволока</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QRadioButton" name="radioButtonElrtr">
+         <property name="text">
+          <string>Электороды</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QRadioButton" name="radioButtonAll">
+         <property name="text">
+          <string>Все</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <property name="maximumSize">
+        <size>
+         <width>180</width>
+         <height>150</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonUp">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset theme="go-up"/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonDown">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset theme="go-down"/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonSave">
+       <property name="text">
+        <string>Сохранить</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="TableView" name="tableView">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbDateEdit</class>
+   <extends>QDateEdit</extends>
+   <header>db/dbdateedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

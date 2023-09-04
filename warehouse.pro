@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 include(xlsx/qtxlsx.pri)
 
 SOURCES += \
+    formreqreport.cpp \
     formrequests.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -91,6 +92,7 @@ SOURCES += \
     invoicemanager.cpp
 
 HEADERS += \
+    formreqreport.h \
     formrequests.h \
         mainwindow.h \
     db/dbdelegate.h \
@@ -156,6 +158,7 @@ HEADERS += \
     invoicemanager.h
 
 FORMS += \
+    formreqreport.ui \
     formrequests.ui \
         mainwindow.ui \
     db/dblogin.ui \
