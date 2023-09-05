@@ -52,7 +52,6 @@ public:
     LabelG100100Pal(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
 protected:
     virtual QString getCod();
-    virtual QByteArray getImages();
     FormDataWire *data;
 };
 

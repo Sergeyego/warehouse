@@ -109,7 +109,9 @@ void DialogPrintLabel::showCmd()
 {
     QString cmd=currentCmd();
     DialogCmd d(cmd,currentUrl());
-    d.setImageCmd(label->getImages());
-    d.setPrintCmd(printCmd());
+    if (!printCmdMode){
+        d.setImageCmd(label->getImages());
+        d.setPrintCmd(printCmd());
+    }
     d.exec();
 }

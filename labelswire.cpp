@@ -110,7 +110,7 @@ QString LabelG100100::getCod()
     cod.push_back(text(6.25,25,QString::fromUtf8("Проволока сварочная"),12));
     cod.push_back(text(45,24.375,data->marka(),14));
     cod.push_back(block(6.25,30,86.25,10,data->gost(),12));
-    cod.push_back(block(6.25,40,86.25,15,data->description(),10));
+    cod.push_back(block(6.25,40,/*86.25*/70,15,data->description(),10));
     cod.push_back(text(6.25,55,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),12));
     cod.push_back(text(6.25,60,QString::fromUtf8("Плавка - ")+data->plavka(),12));
     cod.push_back(text(6.25,65,QString::fromUtf8("Партия № ")+data->part(),12));
@@ -128,7 +128,10 @@ QString LabelG100100::getCod()
 
 QByteArray LabelG100100::getImages()
 {
-    return bitmap(6.25,6.25,39,17,":/images/logo.BMP");
+    QByteArray arr;
+    arr.push_back(bitmap(6.25,6.25,39,17,":/images/logo.BMP"));
+    arr.push_back(bitmap(76.25,40,20,12,":/images/sign.BMP",270));
+    return arr;
 }
 
 LabelG100100Pal::LabelG100100Pal(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
@@ -170,9 +173,4 @@ QString LabelG100100Pal::getCod()
     cod.push_back(text(6.25,90,QString::fromUtf8("НЕ БРОСАТЬ!"),16));
     cod.push_back(print(1));
     return cod;
-}
-
-QByteArray LabelG100100Pal::getImages()
-{
-    return bitmap(58,4,39,17,":/images/logo.BMP");
 }
