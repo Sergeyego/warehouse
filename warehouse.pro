@@ -34,6 +34,8 @@ SOURCES += \
     db/dbmapper.cpp \
     db/dbtablemodel.cpp \
     db/dbviewer.cpp \
+    qftp/qftp.cpp \
+    qftp/qurlinfo.cpp \
     sync1c.cpp \
     models.cpp \
     formship.cpp \
@@ -100,6 +102,8 @@ HEADERS += \
     db/dbmapper.h \
     db/dbtablemodel.h \
     db/dbviewer.h \
+    qftp/qftp.h \
+    qftp/qurlinfo.h \
     sync1c.h \
     models.h \
     formship.h \

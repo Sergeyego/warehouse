@@ -6,8 +6,6 @@ FormAcceptanceWire::FormAcceptanceWire(QWidget *parent) :
     ui(new Ui::FormAcceptanceWire)
 {
     ui->setupUi(this);
-    ui->comboBoxLblType->addItem(tr("Этикетка 45*70"));
-    ui->comboBoxLblType->addItem(tr("Этикетка 50*40"));
 
     loadsettings();
 
@@ -59,14 +57,12 @@ void FormAcceptanceWire::loadsettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     ui->splitter->restoreState(settings.value("accwire_splitter_width").toByteArray());
-    ui->comboBoxLblType->setCurrentIndex(settings.value("wire_cont_lbl_type",0).toInt());
 }
 
 void FormAcceptanceWire::savesettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     settings.setValue("accwire_splitter_width",ui->splitter->saveState());
-    settings.setValue("wire_cont_lbl_type",ui->comboBoxLblType->currentIndex());
 }
 
 void FormAcceptanceWire::updAcc()

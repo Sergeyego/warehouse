@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1076</width>
-    <height>629</height>
+    <width>1074</width>
+    <height>627</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -189,16 +189,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Тип этикетки</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="comboBoxLblType"/>
          </item>
         </layout>
        </item>

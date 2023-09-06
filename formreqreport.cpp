@@ -64,7 +64,7 @@ void FormReqReport::upd()
     if (!strNamCols.isEmpty()){
         query+=", ";
     }
-    query+="sum(plan) as \"Запланировано, кг\", sum(cor) as \"Скорректировано, кг\", sum(ost) as \"Осталось отгрузить, кг\"";
+    query+="sum(plan) as \"Запланировано, кг\", sum(cor) as \"Скорректировано, кг\", sum(ship) as \"Отгружено, кг\", sum(ost) as \"Осталось отгрузить, кг\"";
     query+=QString(" from calc_request('%1','%2')" ).arg(ui->dateEditBeg->date().toString("yyyy-MM-dd")).arg(ui->dateEditEnd->date().toString("yyyy-MM-dd"));
 
     if (ui->radioButtonElrtr->isChecked() ^ ui->radioButtonProvol->isChecked()){
@@ -89,15 +89,15 @@ void FormReqReport::execFinished()
     QVector<QVariant> sums;
     int colCount= titles.size();
     sums.resize(colCount);
-    if (colCount>3){
+    if (colCount>4){
         sums[0]=tr("ИТОГО");
     }
     for (QVector<QVariant> dt : data){
-        for (int i=colCount-3; i<colCount; i++){
+        for (int i=colCount-4; i<colCount; i++){
             sums[i]=sums[i].toDouble()+dt[i].toDouble();
         }
     }
-    if (data.size()){
+    if (data.size()>1){
         data.push_back(sums);
     }
     modelReport->setModelData(data,titles);
