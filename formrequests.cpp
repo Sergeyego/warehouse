@@ -155,6 +155,8 @@ FormRequests::FormRequests(QWidget *parent) :
     connect(modelReqWire,SIGNAL(sigUpd()),modelStatWire,SLOT(select()));
     connect(modelStatWire,SIGNAL(sigUpd()),ui->tableViewStatWire,SLOT(resizeToContents()));
 
+    connect(ui->pushButtonLoad,SIGNAL(clicked(bool)),this,SLOT(loadReq()));
+
     updReq();
 }
 
@@ -284,6 +286,12 @@ void FormRequests::switchFlt(bool b)
     ui->comboBoxMonth->setEnabled(b);
     ui->spinBoxYear->setEnabled(b);
     updReq();
+}
+
+void FormRequests::loadReq()
+{
+    DialogReqLoad d;
+    d.exec();
 }
 
 ModelReq::ModelReq(QWidget *parent) : DbTableModel("requests",parent)

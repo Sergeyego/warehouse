@@ -620,7 +620,7 @@ bool QFtpDTP::parseDir(const QByteArray &buffer, const QString &userName, QUrlIn
     if (buffer.isEmpty())
         return false;
 
-    QString bufferStr = QString::fromLatin1(buffer).trimmed();
+    QString bufferStr = QString::fromLocal8Bit(buffer).trimmed();
 
     // Unix style FTP servers
     QRegExp unixPattern(QLatin1String("^([\\-dl])([a-zA-Z\\-]{9,9})\\s+\\d+\\s+(\\S*)\\s+"
@@ -1212,7 +1212,7 @@ bool QFtpPI::startNextCmd()
     qDebug("QFtpPI send: %s", currentCmd.left(currentCmd.length()-2).toLatin1().constData());
 #endif
     state = Waiting;
-    commandSocket.write(currentCmd.toLatin1());
+    commandSocket.write(currentCmd.toLocal8Bit());
     return true;
 }
 

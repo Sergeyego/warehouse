@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogReqLoad</class>
+ <widget class="QDialog" name="DialogReqLoad">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Загрузить заявку</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="TableView" name="tableViewFiles">
+      <property name="minimumSize">
+       <size>
+        <width>350</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="6">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Номер 1С</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="3" colspan="2">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Дата изменений</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Дата</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="6" colspan="2">
+          <widget class="QLineEdit" name="lineEditKpp"/>
+         </item>
+         <item row="0" column="9">
+          <widget class="DbDateEdit" name="dateEditTer"/>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Изменения</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="9">
+          <widget class="QLineEdit" name="lineEditOkpo"/>
+         </item>
+         <item row="5" column="5" colspan="2">
+          <widget class="DbDateEdit" name="dateEditChange"/>
+         </item>
+         <item row="0" column="8">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Срок</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Номер</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="9">
+          <widget class="QPushButton" name="pushButtonCrePol">
+           <property name="text">
+            <string>Создать</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4" colspan="2">
+          <widget class="DbDateEdit" name="dateEditReq"/>
+         </item>
+         <item row="0" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEditNum">
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2" colspan="3">
+          <widget class="QLineEdit" name="lineEditInn"/>
+         </item>
+         <item row="1" column="1" colspan="9">
+          <widget class="QLineEdit" name="lineEditPol"/>
+         </item>
+         <item row="2" column="8">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>ОКПО</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="7" colspan="3">
+          <widget class="QLineEdit" name="lineEditComment"/>
+         </item>
+         <item row="2" column="5">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>КПП</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEditChange"/>
+         </item>
+         <item row="3" column="1" colspan="8">
+          <widget class="DbComboBox" name="comboBoxPol"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Получатель</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="7">
+          <widget class="QLineEdit" name="lineEditNum1C">
+           <property name="minimumSize">
+            <size>
+             <width>110</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>ИНН</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>Адрес</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="9">
+          <widget class="QLineEdit" name="lineEditAdr"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="DbViewer" name="tableViewCont"/>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="buttonBox">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbDateEdit</class>
+   <extends>QDateEdit</extends>
+   <header>db/dbdateedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbViewer</class>
+   <extends>QTableView</extends>
+   <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbComboBox</class>
+   <extends>QComboBox</extends>
+   <header>db/dbcombobox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>DialogReqLoad</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogReqLoad</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
