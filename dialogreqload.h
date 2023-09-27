@@ -10,6 +10,16 @@ namespace Ui {
 class DialogReqLoad;
 }
 
+class ModelEl : public DbTableModel {
+    Q_OBJECT
+public:
+    ModelEl(QWidget *parent = nullptr);
+    QVariant data(const QModelIndex &index, int role) const;
+    bool insertRow(int row, const QModelIndex &parent);
+    void addData(QString code, QString nom, double kvo, QString comment);
+    void clearData();
+};
+
 class DialogReqLoad : public QDialog
 {
     Q_OBJECT
@@ -27,13 +37,15 @@ private:
     QString ftppath;
     int delay=0;
     bool ftpGet(QString name);
-    QBuffer buffer;
+    QMap<int, QBuffer*> mapBuffer;
     TableModel *filesModel;
     void parceXml(QIODevice *dev);
+    ModelEl *modelEl;
 
 private slots:
     void updData(QModelIndex index);
     void updateFtpInfo();
+    void createTmpTables();
     void ftpConnect();
     void updateList();
     void ftpCommandFinished(int commandId, bool error);
