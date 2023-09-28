@@ -8,7 +8,7 @@ Models::Models(QObject *parent) :
     sync1C = new Sync1C(this);
     invoiceManager = new InvoiceManager(this);
 
-    relPol = new DbSqlRelation("pol_view","id","nam",this);
+    relPol = new DbSqlRelation("poluch","id","str",this);
     relDrv = new DbSqlRelation("drv_view","id","drv",this);
     relKat = new DbSqlRelation("pol_kat","id","nam",this);
 

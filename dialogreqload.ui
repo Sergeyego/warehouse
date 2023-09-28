@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1198</width>
-    <height>696</height>
+    <width>1196</width>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,7 +45,11 @@
           </widget>
          </item>
          <item row="4" column="1" colspan="9">
-          <widget class="QLineEdit" name="lineEditAdr"/>
+          <widget class="QLineEdit" name="lineEditAdr">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="0" column="6">
           <widget class="QLabel" name="label_4">
@@ -86,7 +90,11 @@
           </widget>
          </item>
          <item row="1" column="1" colspan="9">
-          <widget class="QLineEdit" name="lineEditPol"/>
+          <widget class="QLineEdit" name="lineEditPol">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="0" column="7">
           <widget class="QLineEdit" name="lineEditNum1C">
@@ -96,13 +104,24 @@
              <height>0</height>
             </size>
            </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item row="0" column="4" colspan="2">
-          <widget class="DbDateEdit" name="dateEditReq"/>
+          <widget class="DbDateEdit" name="dateEditReq">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="5" column="1" colspan="2">
-          <widget class="QLineEdit" name="lineEditChange"/>
+          <widget class="QLineEdit" name="lineEditChange">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="2" column="1">
           <widget class="QLabel" name="label_8">
@@ -113,13 +132,20 @@
          </item>
          <item row="3" column="9">
           <widget class="QPushButton" name="pushButtonCrePol">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Создать</string>
            </property>
           </widget>
          </item>
          <item row="2" column="9">
-          <widget class="QLineEdit" name="lineEditOkpo"/>
+          <widget class="QLineEdit" name="lineEditOkpo">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="3" column="1" colspan="8">
           <widget class="DbComboBox" name="comboBoxPol"/>
@@ -139,6 +165,9 @@
              <height>0</height>
             </size>
            </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item row="0" column="8">
@@ -149,10 +178,18 @@
           </widget>
          </item>
          <item row="2" column="2" colspan="3">
-          <widget class="QLineEdit" name="lineEditInn"/>
+          <widget class="QLineEdit" name="lineEditInn">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="2" column="6" colspan="2">
-          <widget class="QLineEdit" name="lineEditKpp"/>
+          <widget class="QLineEdit" name="lineEditKpp">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="5" column="7" colspan="3">
           <widget class="QLineEdit" name="lineEditComment"/>
@@ -172,7 +209,11 @@
           </widget>
          </item>
          <item row="5" column="5" colspan="2">
-          <widget class="DbDateEdit" name="dateEditChange"/>
+          <widget class="DbDateEdit" name="dateEditChange">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="6" column="0">
           <widget class="QLabel" name="label_12">
@@ -182,7 +223,11 @@
           </widget>
          </item>
          <item row="6" column="1" colspan="5">
-          <widget class="QLineEdit" name="lineEditCat"/>
+          <widget class="QLineEdit" name="lineEditCat">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="6" column="6" colspan="4">
           <widget class="DbComboBox" name="comboBoxCat"/>

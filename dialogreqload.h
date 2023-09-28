@@ -5,6 +5,7 @@
 #include "qftp/qftp.h"
 #include "db/dbtablemodel.h"
 #include "models.h"
+#include <QInputDialog>
 
 namespace Ui {
 class DialogReqLoad;
@@ -52,6 +53,9 @@ private:
     void parceXml(QIODevice *dev);
     ModelEl *modelEl;
     ModelWire *modelWire;
+    void setCurrentPol(QString inn);
+    void setCurrentCat(QString cat);
+    void HighlightComboBox(QComboBox *combo);
 
 private slots:
     void updData(QModelIndex index);
@@ -63,6 +67,9 @@ private slots:
     void ftpCommandStart(int commandId);
     void addToList(const QUrlInfo &urlInfo);
     void clearData();
+    void setHighPalette();
+    void createPol();
+    void loadReq();
 };
 
 #endif // DIALOGREQLOAD_H

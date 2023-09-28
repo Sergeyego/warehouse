@@ -132,6 +132,7 @@ FormRequests::FormRequests(QWidget *parent) :
     mapper->addMapping(ui->comboBoxPol,3);
     mapper->addMapping(ui->comboBoxCat,4);
     mapper->addMapping(ui->lineEditComment,5);
+    mapper->addMapping(ui->lineEditTdNum,6);
     mapper->addEmptyLock(ui->tableViewEl);
     mapper->addEmptyLock(ui->tableViewWire);
     mapper->addEmptyLock(ui->tableViewChanges);
@@ -302,6 +303,7 @@ ModelReq::ModelReq(QWidget *parent) : DbTableModel("requests",parent)
     addColumn("id_rec",tr("Получатель"),Models::instance()->relPol);
     addColumn("id_cat",tr("Представительство"),Models::instance()->relKat);
     addColumn("comment",tr("Комментарий"));
+    addColumn("tdnum",tr("Номер 1С"));
     setSort(QString("%1.dat, %2.num").arg(name()).arg(name()));
 }
 

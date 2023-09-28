@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1156</width>
-    <height>586</height>
+    <width>1154</width>
+    <height>584</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -162,6 +162,23 @@
              </item>
              <item>
               <widget class="DbDateEdit" name="dateEditReq"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>Номер 1С</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditTdNum">
+               <property name="maximumSize">
+                <size>
+                 <width>120</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
              </item>
              <item>
               <spacer name="horizontalSpacer_2">
@@ -392,14 +409,14 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
+  <customwidget>
    <class>DbDateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbdateedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DbComboBox</class>
-   <extends>QComboBox</extends>
-   <header>db/dbcombobox.h</header>
   </customwidget>
   <customwidget>
    <class>DbViewer</class>
@@ -407,9 +424,9 @@
    <header>db/dbviewer.h</header>
   </customwidget>
   <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
+   <class>DbComboBox</class>
+   <extends>QComboBox</extends>
+   <header>db/dbcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

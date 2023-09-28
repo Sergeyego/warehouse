@@ -30,6 +30,12 @@ DialogReqLoad::DialogReqLoad(QWidget *parent) :
     ui->tableViewWire->setColumnWidth(6,80);
     ui->tableViewWire->setColumnWidth(7,80);
 
+    ui->comboBoxPol->setModel(Models::instance()->relPol->model());
+    ui->comboBoxPol->setModelColumn(1);
+
+    ui->comboBoxCat->setModel(Models::instance()->relKat->model());
+    ui->comboBoxCat->setModelColumn(1);
+
     QStringList headerLabels;
     headerLabels<<tr("Имя файла")<<tr("Изменен");
 
@@ -45,6 +51,10 @@ DialogReqLoad::DialogReqLoad(QWidget *parent) :
     connect(ftpClient,SIGNAL(commandStarted(int)),this,SLOT(ftpCommandStart(int)));
     connect(ftpClient, SIGNAL(commandFinished(int,bool)),this, SLOT(ftpCommandFinished(int,bool)));
     connect(ftpClient, SIGNAL(listInfo(QUrlInfo)),this, SLOT(addToList(QUrlInfo)));
+    connect(ui->comboBoxPol,SIGNAL(currentIndexChanged(int)),this,SLOT(setHighPalette()));
+    connect(ui->comboBoxCat,SIGNAL(currentIndexChanged(int)),this,SLOT(setHighPalette()));
+    connect(ui->pushButtonCrePol,SIGNAL(clicked(bool)),this,SLOT(createPol()));
+    connect(ui->pushButtonLoad,SIGNAL(clicked(bool)),this,SLOT(loadReq()));
 
     connect(ui->tableViewFiles->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updData(QModelIndex)));
 
@@ -106,6 +116,7 @@ void DialogReqLoad::parceXml(QIODevice *dev)
                     ui->dateEditTer->setDate(QDateTime::fromString(ter,"yyyy-MM-ddThh:mm:ss").date());
                 }
                 ui->lineEditCat->setText(attr.value(QString("Подразделение")).toString());
+                setCurrentCat(attr.value(QString("Подразделение")).toString());
             } else if (xml.name()==QString("Грузополучатель")){
                 QXmlStreamAttributes attr=xml.attributes();
                 ui->lineEditPol->setText(attr.value(QString("ПолноеНаименование")).toString());
@@ -113,6 +124,7 @@ void DialogReqLoad::parceXml(QIODevice *dev)
                 ui->lineEditKpp->setText(attr.value(QString("КПП")).toString());
                 ui->lineEditOkpo->setText(attr.value(QString("ОКПО")).toString());
                 ui->lineEditAdr->setText(attr.value(QString("ФактическийАдрес")).toString());
+                setCurrentPol(attr.value(QString("ИНН")).toString());
             } else if (xml.name()==QString("Строки")){
                 QXmlStreamAttributes attr=xml.attributes();
                 QString type = attr.value(QString("Тип")).toString();
@@ -132,6 +144,56 @@ void DialogReqLoad::parceXml(QIODevice *dev)
     ui->labelItogo->setText(tr("ИТОГО: ")+QLocale().toString(sum,'f',2)+tr(" кг"));
     modelEl->select();
     modelWire->select();
+}
+
+void DialogReqLoad::setCurrentPol(QString inn)
+{
+    colVal val;
+    val.val=-1;
+    if (!inn.isEmpty()){
+        QSqlQuery query;
+        query.prepare("select p.id, p.str from poluch p where substring(p.innkpp::text, '\\m\\d*'::text) = :inn order by p.id desc");
+        query.bindValue(":inn",inn);
+        if (query.exec()){
+            if (query.next()){
+                val.val=query.value(0).toInt();
+                val.disp=query.value(1).toString();
+            }
+        } else {
+            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+        }
+    }
+    ui->comboBoxPol->setCurrentData(val);
+    ui->pushButtonCrePol->setEnabled(val.val==-1 && !inn.isEmpty());
+    HighlightComboBox(ui->comboBoxPol);
+}
+
+void DialogReqLoad::setCurrentCat(QString cat)
+{
+    colVal val;
+    val.val=-1;
+    if (!cat.isEmpty()){
+        QSqlQuery query;
+        query.prepare("select p.id, p.nam from pol_kat p where p.tdnam = :cat");
+        query.bindValue(":cat",cat);
+        if (query.exec()){
+            if (query.next()){
+                val.val=query.value(0).toInt();
+                val.disp=query.value(1).toString();
+            }
+        } else {
+            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+        }
+    }
+    ui->comboBoxCat->setCurrentData(val);
+}
+
+void DialogReqLoad::HighlightComboBox(QComboBox *combo)
+{
+    QPalette pal=combo->palette();
+    QColor col = !combo->currentText().isEmpty() ? QColor(255,255,255): QColor(255,170,170);
+    pal.setColor(QPalette::Normal, QPalette::Base, col);
+    combo->setPalette(pal);
 }
 
 void DialogReqLoad::updData(QModelIndex index)
@@ -182,9 +244,9 @@ void DialogReqLoad::ftpCommandFinished(int commandId, bool error)
             ftpClient->login(ftpuser,ftppassword);
         } else if (ftpClient->currentCommand() == QFtp::Login){
             ftpClient->cd(ftppath);
-        } else if (ftpClient->currentCommand() == QFtp::List) {
+        } /*else if (ftpClient->currentCommand() == QFtp::List) {
             //qDebug()<<"list finished";
-        } else if (ftpClient->currentCommand()==QFtp::Cd){
+        }*/ else if (ftpClient->currentCommand()==QFtp::Cd){
             ftpClient->list();
         } else if (ftpClient->currentCommand()==QFtp::Remove){
             ftpClient->list();
@@ -233,6 +295,48 @@ void DialogReqLoad::clearData()
     modelEl->clearData();
     modelWire->clearData();
     ui->labelItogo->setText(tr("ИТОГО: "));
+}
+
+void DialogReqLoad::setHighPalette()
+{
+    DbComboBox *combo = qobject_cast<DbComboBox *>(sender());
+    if (combo){
+        HighlightComboBox(combo);
+    }
+}
+
+void DialogReqLoad::createPol()
+{
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("Добавить получателя"),
+                                         tr("Введите краткое наименование получателя:"), QLineEdit::Normal,
+                                         ui->lineEditPol->text(), &ok);
+    if (ok && !text.isEmpty()){
+        QString innkpp=ui->lineEditInn->text();
+        QString kpp=ui->lineEditKpp->text();
+        if (!innkpp.isEmpty() && !kpp.isEmpty()){
+            innkpp+="/"+kpp;
+        }
+        QSqlQuery query;
+        query.prepare("insert into poluch (naim, short, adres, id_kat, innkpp, okpo) values (:naim, :short, :adres, :id_kat, :innkpp, :okpo)");
+        query.bindValue(":naim",ui->lineEditPol->text());
+        query.bindValue(":short",text);
+        query.bindValue(":adres",ui->lineEditAdr->text());
+        query.bindValue(":id_kat",ui->comboBoxCat->getCurrentData().val);
+        query.bindValue(":innkpp",innkpp);
+        query.bindValue(":okpo",ui->lineEditOkpo->text());
+        if (query.exec()){
+            Models::instance()->relPol->refreshModel();
+            setCurrentPol(ui->lineEditInn->text());
+        } else {
+            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+        }
+    }
+}
+
+void DialogReqLoad::loadReq()
+{
+
 }
 
 void DialogReqLoad::updateFtpInfo()
