@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>698</height>
+    <width>1198</width>
+    <height>696</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -194,6 +194,19 @@
        </item>
        <item>
         <widget class="DbViewer" name="tableViewWire"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelItogo">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>ИТОГО:</string>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">

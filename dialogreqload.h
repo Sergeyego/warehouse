@@ -20,6 +20,16 @@ public:
     void clearData();
 };
 
+class ModelWire : public DbTableModel {
+    Q_OBJECT
+public:
+    ModelWire(QWidget *parent = nullptr);
+    QVariant data(const QModelIndex &index, int role) const;
+    bool insertRow(int row, const QModelIndex &parent);
+    void addData(QString code, QString nom, double kvo, QString comment);
+    void clearData();
+};
+
 class DialogReqLoad : public QDialog
 {
     Q_OBJECT
@@ -41,6 +51,7 @@ private:
     TableModel *filesModel;
     void parceXml(QIODevice *dev);
     ModelEl *modelEl;
+    ModelWire *modelWire;
 
 private slots:
     void updData(QModelIndex index);

@@ -19,6 +19,17 @@ DialogReqLoad::DialogReqLoad(QWidget *parent) :
     ui->tableViewEl->setColumnWidth(6,80);
     ui->tableViewEl->setColumnWidth(7,80);
 
+    modelWire = new ModelWire(this);
+    ui->tableViewWire->setModel(modelWire);
+    ui->tableViewWire->setColumnWidth(0,50);
+    ui->tableViewWire->setColumnWidth(1,200);
+    ui->tableViewWire->setColumnWidth(2,100);
+    ui->tableViewWire->setColumnWidth(3,50);
+    ui->tableViewWire->setColumnWidth(4,120);
+    ui->tableViewWire->setColumnWidth(5,100);
+    ui->tableViewWire->setColumnWidth(6,80);
+    ui->tableViewWire->setColumnWidth(7,80);
+
     QStringList headerLabels;
     headerLabels<<tr("Имя файла")<<tr("Изменен");
 
@@ -68,6 +79,8 @@ bool DialogReqLoad::ftpGet(QString name)
 void DialogReqLoad::parceXml(QIODevice *dev)
 {
     modelEl->clearData();
+    modelWire->clearData();
+    double sum=0.0;
     QXmlStreamReader xml(dev);
     while (!xml.atEnd() && !xml.hasError()){
         xml.readNextStartElement();
@@ -107,15 +120,18 @@ void DialogReqLoad::parceXml(QIODevice *dev)
                 QString nom = attr.value(QString("Номенклатура")).toString();
                 QString comment = attr.value(QString("Комментарий")).toString();
                 double kvo = attr.value(QString("Количество")).toDouble();
-                //qDebug()<<type<<code<<nom<<kvo<<comment;
+                sum+=kvo;
                 if (type!=QString("ПРОВОЛОКА")){
                     modelEl->addData(code,nom,kvo,comment);
+                } else {
+                    modelWire->addData(code,nom,kvo,comment);
                 }
             }
-            //qDebug()<<xml.name();
         }
     }
+    ui->labelItogo->setText(tr("ИТОГО: ")+QLocale().toString(sum,'f',2)+tr(" кг"));
     modelEl->select();
+    modelWire->select();
 }
 
 void DialogReqLoad::updData(QModelIndex index)
@@ -215,6 +231,8 @@ void DialogReqLoad::clearData()
     ui->lineEditCat->clear();
     ui->comboBoxCat->setCurrentIndex(-1);
     modelEl->clearData();
+    modelWire->clearData();
+    ui->labelItogo->setText(tr("ИТОГО: "));
 }
 
 void DialogReqLoad::updateFtpInfo()
@@ -257,6 +275,7 @@ ModelEl::ModelEl(QWidget *parent) : DbTableModel("tmp_req_el",parent)
 
     setColumnFlags(0,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     setColumnFlags(1,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 
     select();
 }
@@ -268,7 +287,7 @@ QVariant ModelEl::data(const QModelIndex &index, int role) const
         for (int i=2; i<=5; i++){
             ok = ok && (!this->data(this->index(index.row(),i),Qt::EditRole).isNull());
         }
-        if (!ok){
+        if (!ok && !this->data(this->index(index.row(),0),Qt::EditRole).isNull()){
             return QColor(255,170,170);
         }
     }
@@ -316,6 +335,87 @@ void ModelEl::clearData()
 {
     QSqlQuery query;
     query.prepare("delete from tmp_req_el");
+    if (!query.exec()){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+    } else {
+        select();
+    }
+}
+
+ModelWire::ModelWire(QWidget *parent) : DbTableModel("tmp_req_wire",parent)
+{
+    addColumn("cod",tr("Код"));
+    addColumn("nam",tr("Номенклатура"));
+    addColumn("id_prov",tr("Марка"),Models::instance()->relProvol);
+    addColumn("id_diam",tr("Диам."),Models::instance()->relDiam);
+    addColumn("id_spool",tr("Носитель"),Models::instance()->relSpool);
+    addColumn("id_pack",tr("Упаковка"),Models::instance()->relWirePack);
+    addColumn("kvo",tr("Кол-во"));
+    addColumn("comm",tr("Коммент."));
+    setSort("tmp_req_wire.nam");
+
+    setColumnFlags(0,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    setColumnFlags(1,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+
+    select();
+}
+
+QVariant ModelWire::data(const QModelIndex &index, int role) const
+{
+    if (role==Qt::BackgroundRole){
+        bool ok=true;
+        for (int i=2; i<=5; i++){
+            ok = ok && (!this->data(this->index(index.row(),i),Qt::EditRole).isNull());
+        }
+        if (!ok && !this->data(this->index(index.row(),0),Qt::EditRole).isNull()){
+            return QColor(255,170,170);
+        }
+    }
+    return DbTableModel::data(index,role);
+}
+
+bool ModelWire::insertRow(int /*row*/, const QModelIndex &/*parent*/)
+{
+    return false;
+}
+
+void ModelWire::addData(QString code, QString nom, double kvo, QString comment)
+{
+    QVariant id_prov, id_diam, id_spool, id_pack;
+    QSqlQuery queryVar;
+    queryVar.prepare("select id_prov, id_diam, id_spool, id_pack from td_keys_wire where ltrim(cod,'0') = ltrim(:cod,'0') ");
+    queryVar.bindValue(":cod",code);
+    if (queryVar.exec()){
+        if (queryVar.next()){
+            id_prov=queryVar.value(0);
+            id_diam=queryVar.value(1);
+            id_spool=queryVar.value(2);
+            id_pack=queryVar.value(3);
+        }
+    } else {
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryVar.lastError().text());
+    }
+
+    QSqlQuery query;
+    query.prepare("insert into tmp_req_wire (cod, nam, kvo, comm, id_prov, id_diam, id_spool, id_pack) values (:cod, :nam, :kvo, :comm, :id_prov, :id_diam, :id_spool, :id_pack )");
+    query.bindValue(":cod",code);
+    query.bindValue(":nam",nom);
+    query.bindValue(":kvo",kvo);
+    query.bindValue(":comm",comment);
+    query.bindValue(":id_prov",id_prov);
+    query.bindValue(":id_diam",id_diam);
+    query.bindValue(":id_spool",id_spool);
+    query.bindValue(":id_pack",id_pack);
+    if (!query.exec()){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+    }
+}
+
+void ModelWire::clearData()
+{
+    QSqlQuery query;
+    query.prepare("delete from tmp_req_wire");
     if (!query.exec()){
         QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
     } else {
