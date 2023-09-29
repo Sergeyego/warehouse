@@ -292,7 +292,9 @@ void FormRequests::switchFlt(bool b)
 void FormRequests::loadReq()
 {
     DialogReqLoad d;
-    d.exec();
+    if (d.exec()==QDialog::Accepted){
+        updReq();
+    }
 }
 
 ModelReq::ModelReq(QWidget *parent) : DbTableModel("requests",parent)

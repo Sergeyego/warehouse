@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1196</width>
-    <height>694</height>
+    <width>1194</width>
+    <height>692</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -136,7 +136,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>Создать</string>
+            <string>Создать получателя</string>
            </property>
           </widget>
          </item>
@@ -191,9 +191,6 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="7" colspan="3">
-          <widget class="QLineEdit" name="lineEditComment"/>
-         </item>
          <item row="5" column="3" colspan="2">
           <widget class="QLabel" name="label_6">
            <property name="text">
@@ -231,6 +228,16 @@
          </item>
          <item row="6" column="6" colspan="4">
           <widget class="DbComboBox" name="comboBoxCat"/>
+         </item>
+         <item row="5" column="8" colspan="2">
+          <widget class="QLineEdit" name="lineEditComment"/>
+         </item>
+         <item row="5" column="7">
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>Комментарий к измен.</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -270,6 +277,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonLoad">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Загрузить</string>
            </property>

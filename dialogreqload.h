@@ -19,6 +19,7 @@ public:
     bool insertRow(int row, const QModelIndex &parent);
     void addData(QString code, QString nom, double kvo, QString comment);
     void clearData();
+    bool check();
 };
 
 class ModelWire : public DbTableModel {
@@ -29,6 +30,7 @@ public:
     bool insertRow(int row, const QModelIndex &parent);
     void addData(QString code, QString nom, double kvo, QString comment);
     void clearData();
+    bool check();
 };
 
 class DialogReqLoad : public QDialog
@@ -56,6 +58,11 @@ private:
     void setCurrentPol(QString inn);
     void setCurrentCat(QString cat);
     void HighlightComboBox(QComboBox *combo);
+    bool check();
+    bool insertNewRequest();
+    bool updateRequest(int id);
+    void insertChange(int id);
+    bool updateRequestEl(int id);
 
 private slots:
     void updData(QModelIndex index);

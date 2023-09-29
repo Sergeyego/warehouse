@@ -144,6 +144,7 @@ void DialogReqLoad::parceXml(QIODevice *dev)
     ui->labelItogo->setText(tr("ИТОГО: ")+QLocale().toString(sum,'f',2)+tr(" кг"));
     modelEl->select();
     modelWire->select();
+    ui->pushButtonLoad->setEnabled(true);
 }
 
 void DialogReqLoad::setCurrentPol(QString inn)
@@ -194,6 +195,153 @@ void DialogReqLoad::HighlightComboBox(QComboBox *combo)
     QColor col = !combo->currentText().isEmpty() ? QColor(255,255,255): QColor(255,170,170);
     pal.setColor(QPalette::Normal, QPalette::Base, col);
     combo->setPalette(pal);
+}
+
+bool DialogReqLoad::check()
+{
+    QString err;
+    if (ui->lineEditNum->text().isEmpty()){
+        err+=QString::fromUtf8("Отсутствует номер заявки.\n");
+    }
+    if (ui->lineEditNum1C->text().isEmpty()){
+        err+=QString::fromUtf8("Отсутствует номер 1С заявки.\n");
+    }
+    if (ui->dateEditReq->date()==ui->dateEditReq->minimumDate()){
+        err+=QString::fromUtf8("Отсутствует дата заявки.\n");
+    }
+    if (ui->dateEditTer->date()==ui->dateEditTer->minimumDate()){
+        err+=QString::fromUtf8("Отсутствует срок отгрузки.\n");
+    }
+    if (ui->comboBoxPol->currentText().isEmpty() || ui->comboBoxPol->getCurrentData().val.toInt()<0){
+        err+=QString::fromUtf8("Отсутствует получатель. Нажмите кнопку \"Создать получателя\" или выберите получателя из списка.\n");
+    }
+    if (ui->comboBoxCat->currentText().isEmpty() || ui->comboBoxCat->getCurrentData().val.toInt()<0){
+        err+=QString::fromUtf8("Не выбрано представительство.\n");
+    }
+    if (!modelEl->check()){
+        err+=QString::fromUtf8("Не все соответствия кодов электродов.\n");
+    }
+    if (!modelWire->check()){
+        err+=QString::fromUtf8("Не все соответствия кодов проволоки.\n");
+    }
+
+    bool ok=err.isEmpty();
+
+    if (!ok){
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),err,QMessageBox::Ok);
+    }
+    return ok;
+}
+
+bool DialogReqLoad::insertNewRequest()
+{
+    QSqlQuery query;
+    query.prepare("insert into requests (num, dat, id_rec, id_cat, comment, tdnum) values (:num, :dat, :id_rec, :id_cat, :comment, :tdnum) returning id");
+    query.bindValue(":num",ui->lineEditNum->text());
+    query.bindValue(":dat",ui->dateEditReq->date());
+    query.bindValue(":id_rec",ui->comboBoxPol->getCurrentData().val);
+    query.bindValue(":id_cat",ui->comboBoxCat->getCurrentData().val);
+    query.bindValue(":comment",ui->lineEditComment->text());
+    query.bindValue(":tdnum",ui->lineEditNum1C->text());
+    bool ok = query.exec();
+    if (ok){
+        if (query.next()){
+            int id = query.value(0).toInt();
+            QSqlQuery queryEl;
+            queryEl.prepare("insert into requests_el (id_req, id_el, id_diam, id_var, id_pack, plan, comment, dat_term) (select :id_req, id_el, id_diam, id_var, id_pack, kvo, comm, :dat from tmp_req_el)");
+            queryEl.bindValue(":id_req",id);
+            queryEl.bindValue(":dat",ui->dateEditTer->date());
+            if (!queryEl.exec()){
+                ok=false;
+                QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryEl.lastError().text());
+            }
+            QSqlQuery queryWire;
+            queryWire.prepare("insert into requests_wire (id_req, id_provol, id_diam, id_spool, id_pack, plan, comment, dat_term) (select :id_req, id_prov, id_diam, id_spool, id_pack, kvo, comm, :dat from tmp_req_wire)");
+            queryWire.bindValue(":id_req",id);
+            queryWire.bindValue(":dat",ui->dateEditTer->date());
+            if (!queryWire.exec()){
+                ok=false;
+                QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryWire.lastError().text());
+            }
+            insertChange(id);
+        }
+    } else {
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+    }
+    return ok;
+}
+
+bool DialogReqLoad::updateRequest(int id)
+{
+    insertChange(id);
+    bool ok1 = updateRequestEl(id);
+
+    return ok1;
+}
+
+void DialogReqLoad::insertChange(int id)
+{
+    if (ui->dateEditChange->date()!=ui->dateEditChange->minimumDate()){
+        QSqlQuery query;
+        query.prepare("insert into requests_changes (id_req, nam, dat) values (:id_req, :nam, :dat )");
+        query.bindValue(":id_req",id);
+        query.bindValue(":nam",ui->lineEditChange->text());
+        query.bindValue(":dat",ui->dateEditChange->date());
+        if (!query.exec()){
+            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+        }
+    }
+    QSqlQuery queryComm;
+    queryComm.prepare("update requests set comment = comment || (CASE WHEN comment = '' THEN '' ELSE '; ' END) || :comm1 where id = :id and comment <> :comm2");
+    queryComm.bindValue(":id",id);
+    queryComm.bindValue(":comm1",ui->lineEditComment->text());
+    queryComm.bindValue(":comm2",ui->lineEditComment->text());
+    if (!queryComm.exec()){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryComm.lastError().text());
+    }
+}
+
+bool DialogReqLoad::updateRequestEl(int id)
+{
+    bool ok=true;
+    if (modelEl->isEmpty()){
+        return ok;
+    }
+    for (int i=0; i<modelEl->rowCount(); i++){
+        int id_el = modelEl->data(modelEl->index(i,2),Qt::EditRole).toInt();
+        int id_diam = modelEl->data(modelEl->index(i,3),Qt::EditRole).toInt();
+        int id_pack = modelEl->data(modelEl->index(i,4),Qt::EditRole).toInt();
+        int id_var = modelEl->data(modelEl->index(i,5),Qt::EditRole).toInt();
+        double kvo = modelEl->data(modelEl->index(i,6),Qt::EditRole).toDouble();
+        QString comm = modelEl->data(modelEl->index(i,7),Qt::EditRole).toString();
+        QSqlQuery queryUpd;
+        queryUpd.prepare("update requests_el set cor = :kvo-plan, comment = :comm where id_req=:id_req and id_el=:id_el and id_diam=:id_diam and id_var=:id_var and id_pack=:id_pack and dat_term=:dat_term");
+        queryUpd.bindValue(":kvo",kvo);
+        queryUpd.bindValue(":comm",comm);
+        queryUpd.bindValue(":id_req",id);
+        queryUpd.bindValue(":id_el",id_el);
+        queryUpd.bindValue(":id_diam",id_diam);
+        queryUpd.bindValue(":id_pack",id_pack);
+        queryUpd.bindValue(":id_var",id_var);
+        queryUpd.bindValue(":dat_term",ui->dateEditTer->date());
+        ok=queryUpd.exec();
+        if (!ok){
+            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryUpd.lastError().text());
+        }
+
+        QSqlQuery queryDel;
+        queryDel.prepare("update requests_el set cor = -plan where id_req = :id_req and (id_el||'#'||id_diam||'#'||id_var||'#'||id_pack||'#'||dat_term) not in "
+                         "(select (id_el||'#'||id_diam||'#'||id_var||'#'||id_pack||'#'||:dat_term) from tmp_req_el)");
+        queryDel.bindValue(":id_req",id);
+        queryDel.bindValue(":dat_term",ui->dateEditTer->date());
+        bool ok2 = queryDel.exec();
+        if (!ok2){
+            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryDel.lastError().text());
+        }
+        ok = ok && ok2;
+    }
+
+    return ok;
 }
 
 void DialogReqLoad::updData(QModelIndex index)
@@ -249,7 +397,8 @@ void DialogReqLoad::ftpCommandFinished(int commandId, bool error)
         }*/ else if (ftpClient->currentCommand()==QFtp::Cd){
             ftpClient->list();
         } else if (ftpClient->currentCommand()==QFtp::Remove){
-            ftpClient->list();
+            //ftpClient->list();
+            accept();
         }
     }
 }
@@ -295,6 +444,7 @@ void DialogReqLoad::clearData()
     modelEl->clearData();
     modelWire->clearData();
     ui->labelItogo->setText(tr("ИТОГО: "));
+    ui->pushButtonLoad->setEnabled(false);
 }
 
 void DialogReqLoad::setHighPalette()
@@ -336,7 +486,32 @@ void DialogReqLoad::createPol()
 
 void DialogReqLoad::loadReq()
 {
-
+    if (!check()){
+        return;
+    }
+    QSqlQuery query;
+    query.prepare("select id from requests where num = :num and tdnum = :tdnum and date_part('year',dat) = :year ");
+    query.bindValue(":num",ui->lineEditNum->text());
+    query.bindValue(":tdnum",ui->lineEditNum1C->text());
+    query.bindValue(":year",ui->dateEditReq->date().year());
+    if (query.exec()){
+        bool exist = query.size() > 0;
+        if (!exist){
+            if (insertNewRequest()){
+                accept();
+            }
+        } else {
+            int n = QMessageBox::question(this,tr("Подтвердите корректировку"),tr("Заявка с таким номером уже существует. Заявка будет скорректирована. Продолжить?"),QMessageBox::Yes,QMessageBox::No);
+            if (n==QMessageBox::Yes && query.next()){
+                int id=query.value(0).toInt();
+                if (updateRequest(id)){
+                    accept();
+                }
+            }
+        }
+    } else {
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+    }
 }
 
 void DialogReqLoad::updateFtpInfo()
@@ -379,7 +554,7 @@ ModelEl::ModelEl(QWidget *parent) : DbTableModel("tmp_req_el",parent)
 
     setColumnFlags(0,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     setColumnFlags(1,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-    setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    //setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 
     select();
 }
@@ -446,6 +621,17 @@ void ModelEl::clearData()
     }
 }
 
+bool ModelEl::check()
+{
+    bool ok=true;
+    for (int i=0; i<this->rowCount(); i++){
+        for (int j=2; j<=5; j++){
+            ok = ok && (!this->data(this->index(i,j),Qt::EditRole).isNull());
+        }
+    }
+    return ok || this->isEmpty();
+}
+
 ModelWire::ModelWire(QWidget *parent) : DbTableModel("tmp_req_wire",parent)
 {
     addColumn("cod",tr("Код"));
@@ -460,7 +646,7 @@ ModelWire::ModelWire(QWidget *parent) : DbTableModel("tmp_req_wire",parent)
 
     setColumnFlags(0,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     setColumnFlags(1,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-    setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    //setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 
     select();
 }
@@ -525,4 +711,15 @@ void ModelWire::clearData()
     } else {
         select();
     }
+}
+
+bool ModelWire::check()
+{
+    bool ok=true;
+    for (int i=0; i<this->rowCount(); i++){
+        for (int j=2; j<=5; j++){
+            ok = ok && (!this->data(this->index(i,j),Qt::EditRole).isNull());
+        }
+    }
+    return ok || this->isEmpty();
 }

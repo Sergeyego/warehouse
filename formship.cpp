@@ -193,7 +193,7 @@ void FormShip::setCurrentShip(int index)
     int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,0),Qt::EditRole).toInt();
     int id_pol=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index,3),Qt::EditRole).toInt();
 
-    ui->lineEditPol->setText(Models::instance()->relPol->getDisplayValue(id_pol,"snam"));
+    ui->lineEditPol->setText(Models::instance()->relPol->getDisplayValue(id_pol,"naim"));
 
     modelShipEl->refresh(id_ship);
     modelShipWire->refresh(id_ship);
