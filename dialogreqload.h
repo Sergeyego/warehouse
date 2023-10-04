@@ -50,6 +50,7 @@ private:
     QString ftppath;
     int delay=0;
     bool ftpGet(QString name);
+    bool ftpDel(QString name);
     QMap<int, QBuffer*> mapBuffer;
     TableModel *filesModel;
     void parceXml(QIODevice *dev);
@@ -63,6 +64,7 @@ private:
     bool updateRequest(int id);
     void insertChange(int id);
     bool updateRequestEl(int id);
+    bool updateRequestWire(int id);
 
 private slots:
     void updData(QModelIndex index);

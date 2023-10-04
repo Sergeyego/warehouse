@@ -86,6 +86,21 @@ bool DialogReqLoad::ftpGet(QString name)
     return ok;
 }
 
+bool DialogReqLoad::ftpDel(QString name)
+{
+    bool ok=(ftpClient->state()==QFtp::LoggedIn);
+    if (!ok){
+        ftpConnect();
+    }
+    int interval= ok ? 0 : delay;
+    QTimer::singleShot(interval, [this, name]() {
+        if (ftpClient->state()==QFtp::LoggedIn){
+            ftpClient->remove(name);
+        }
+    } );
+    return ok;
+}
+
 void DialogReqLoad::parceXml(QIODevice *dev)
 {
     modelEl->clearData();
@@ -275,8 +290,8 @@ bool DialogReqLoad::updateRequest(int id)
 {
     insertChange(id);
     bool ok1 = updateRequestEl(id);
-
-    return ok1;
+    bool ok2 = updateRequestWire(id);
+    return ok1 && ok2;
 }
 
 void DialogReqLoad::insertChange(int id)
@@ -304,42 +319,115 @@ void DialogReqLoad::insertChange(int id)
 bool DialogReqLoad::updateRequestEl(int id)
 {
     bool ok=true;
-    if (modelEl->isEmpty()){
-        return ok;
-    }
-    for (int i=0; i<modelEl->rowCount(); i++){
-        int id_el = modelEl->data(modelEl->index(i,2),Qt::EditRole).toInt();
-        int id_diam = modelEl->data(modelEl->index(i,3),Qt::EditRole).toInt();
-        int id_pack = modelEl->data(modelEl->index(i,4),Qt::EditRole).toInt();
-        int id_var = modelEl->data(modelEl->index(i,5),Qt::EditRole).toInt();
-        double kvo = modelEl->data(modelEl->index(i,6),Qt::EditRole).toDouble();
-        QString comm = modelEl->data(modelEl->index(i,7),Qt::EditRole).toString();
-        QSqlQuery queryUpd;
-        queryUpd.prepare("update requests_el set cor = :kvo-plan, comment = :comm where id_req=:id_req and id_el=:id_el and id_diam=:id_diam and id_var=:id_var and id_pack=:id_pack and dat_term=:dat_term");
-        queryUpd.bindValue(":kvo",kvo);
-        queryUpd.bindValue(":comm",comm);
-        queryUpd.bindValue(":id_req",id);
-        queryUpd.bindValue(":id_el",id_el);
-        queryUpd.bindValue(":id_diam",id_diam);
-        queryUpd.bindValue(":id_pack",id_pack);
-        queryUpd.bindValue(":id_var",id_var);
-        queryUpd.bindValue(":dat_term",ui->dateEditTer->date());
-        ok=queryUpd.exec();
-        if (!ok){
-            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryUpd.lastError().text());
-        }
 
-        QSqlQuery queryDel;
-        queryDel.prepare("update requests_el set cor = -plan where id_req = :id_req and (id_el||'#'||id_diam||'#'||id_var||'#'||id_pack||'#'||dat_term) not in "
-                         "(select (id_el||'#'||id_diam||'#'||id_var||'#'||id_pack||'#'||:dat_term) from tmp_req_el)");
-        queryDel.bindValue(":id_req",id);
-        queryDel.bindValue(":dat_term",ui->dateEditTer->date());
-        bool ok2 = queryDel.exec();
-        if (!ok2){
-            QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryDel.lastError().text());
+    if (!modelEl->isEmpty()){
+        for (int i=0; i<modelEl->rowCount(); i++){
+            int id_el = modelEl->data(modelEl->index(i,2),Qt::EditRole).toInt();
+            int id_diam = modelEl->data(modelEl->index(i,3),Qt::EditRole).toInt();
+            int id_pack = modelEl->data(modelEl->index(i,4),Qt::EditRole).toInt();
+            int id_var = modelEl->data(modelEl->index(i,5),Qt::EditRole).toInt();
+            double kvo = modelEl->data(modelEl->index(i,6),Qt::EditRole).toDouble();
+            QString comm = modelEl->data(modelEl->index(i,7),Qt::EditRole).toString();
+            QSqlQuery queryUpd;
+            queryUpd.prepare("update requests_el set cor = :kvo-plan, comment = :comm where id_req=:id_req and id_el=:id_el and id_diam=:id_diam and id_var=:id_var and id_pack=:id_pack and dat_term=:dat_term");
+            queryUpd.bindValue(":kvo",kvo);
+            queryUpd.bindValue(":comm",comm);
+            queryUpd.bindValue(":id_req",id);
+            queryUpd.bindValue(":id_el",id_el);
+            queryUpd.bindValue(":id_diam",id_diam);
+            queryUpd.bindValue(":id_pack",id_pack);
+            queryUpd.bindValue(":id_var",id_var);
+            queryUpd.bindValue(":dat_term",ui->dateEditTer->date());
+            ok=queryUpd.exec();
+            if (!ok){
+                QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryUpd.lastError().text());
+            }
         }
-        ok = ok && ok2;
     }
+
+    QSqlQuery queryDel;
+    queryDel.prepare("update requests_el set cor = -plan where id_req = :id_req and (id_el||'#'||id_diam||'#'||id_var||'#'||id_pack||'#'||to_char(dat_term,'YYYY-MM-DD')) not in "
+                     "(select (id_el||'#'||id_diam||'#'||id_var||'#'||id_pack||'#'||to_char(:dat_term::date,'YYYY-MM-DD')) from tmp_req_el)");
+    queryDel.bindValue(":id_req",id);
+    queryDel.bindValue(":dat_term",ui->dateEditTer->date());
+    bool ok2 = queryDel.exec();
+    if (!ok2){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryDel.lastError().text());
+    }
+
+    QSqlQuery queryIns;
+    queryIns.prepare("insert into requests_el (id_req, id_el, id_diam, id_var, id_pack, comment, cor, dat_term) "
+                     "(select :id_req1, t.id_el, t.id_diam, t.id_var, t.id_pack, t.comm, t.kvo, :dat_term1 from tmp_req_el as t where "
+                     "(t.id_el||'#'||t.id_diam||'#'||t.id_var||'#'||t.id_pack||'#'||to_char(:dat_term2::date,'YYYY-MM-DD')) not in "
+                     "(select (r.id_el||'#'||r.id_diam||'#'||r.id_var||'#'||r.id_pack||'#'||to_char(r.dat_term,'YYYY-MM-DD')) from requests_el as r where r.id_req = :id_req2 ) )");
+    queryIns.bindValue(":id_req1",id);
+    queryIns.bindValue(":id_req2",id);
+    queryIns.bindValue(":dat_term1",ui->dateEditTer->date());
+    queryIns.bindValue(":dat_term2",ui->dateEditTer->date());
+    bool ok3 = queryIns.exec();
+    if (!ok3){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryIns.lastError().text());
+    }
+
+    ok = ok && ok2 && ok3;
+
+    return ok;
+}
+
+bool DialogReqLoad::updateRequestWire(int id)
+{
+    bool ok=true;
+
+    if (!modelWire->isEmpty()){
+        for (int i=0; i<modelWire->rowCount(); i++){
+            int id_prov = modelWire->data(modelWire->index(i,2),Qt::EditRole).toInt();
+            int id_diam = modelWire->data(modelWire->index(i,3),Qt::EditRole).toInt();
+            int id_spool = modelWire->data(modelWire->index(i,4),Qt::EditRole).toInt();
+            int id_pack = modelWire->data(modelWire->index(i,5),Qt::EditRole).toInt();
+            double kvo = modelWire->data(modelWire->index(i,6),Qt::EditRole).toDouble();
+            QString comm = modelWire->data(modelWire->index(i,7),Qt::EditRole).toString();
+            QSqlQuery queryUpd;
+            queryUpd.prepare("update requests_wire set cor = :kvo-plan, comment = :comm where id_req=:id_req and id_provol=:id_prov and id_diam=:id_diam and id_spool=:id_spool and id_pack=:id_pack and dat_term=:dat_term");
+            queryUpd.bindValue(":kvo",kvo);
+            queryUpd.bindValue(":comm",comm);
+            queryUpd.bindValue(":id_req",id);
+            queryUpd.bindValue(":id_prov",id_prov);
+            queryUpd.bindValue(":id_diam",id_diam);
+            queryUpd.bindValue(":id_pack",id_pack);
+            queryUpd.bindValue(":id_spool",id_spool);
+            queryUpd.bindValue(":dat_term",ui->dateEditTer->date());
+            ok=queryUpd.exec();
+            if (!ok){
+                QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryUpd.lastError().text());
+            }
+        }
+    }
+
+    QSqlQuery queryDel;
+    queryDel.prepare("update requests_wire set cor = -plan where id_req = :id_req and (id_provol||'#'||id_diam||'#'||id_spool||'#'||id_pack||'#'||to_char(dat_term,'YYYY-MM-DD')) not in "
+                     "(select (id_prov||'#'||id_diam||'#'||id_spool||'#'||id_pack||'#'||to_char(:dat_term::date,'YYYY-MM-DD')) from tmp_req_wire)");
+    queryDel.bindValue(":id_req",id);
+    queryDel.bindValue(":dat_term",ui->dateEditTer->date());
+    bool ok2 = queryDel.exec();
+    if (!ok2){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryDel.lastError().text());
+    }
+
+    QSqlQuery queryIns;
+    queryIns.prepare("insert into requests_wire (id_req, id_provol, id_diam, id_spool, id_pack, comment, cor, dat_term) "
+                     "(select :id_req1, t.id_prov, t.id_diam, t.id_spool, t.id_pack, t.comm, t.kvo, :dat_term1 from tmp_req_wire as t where "
+                     "(t.id_prov||'#'||t.id_diam||'#'||t.id_spool||'#'||t.id_pack||'#'||to_char(:dat_term2::date,'YYYY-MM-DD')) not in "
+                     "(select (r.id_provol||'#'||r.id_diam||'#'||r.id_spool||'#'||r.id_pack||'#'||to_char(r.dat_term,'YYYY-MM-DD')) from requests_wire as r where r.id_req = :id_req2 ) )");
+    queryIns.bindValue(":id_req1",id);
+    queryIns.bindValue(":id_req2",id);
+    queryIns.bindValue(":dat_term1",ui->dateEditTer->date());
+    queryIns.bindValue(":dat_term2",ui->dateEditTer->date());
+    bool ok3 = queryIns.exec();
+    if (!ok3){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),queryIns.lastError().text());
+    }
+
+    ok = ok && ok2 && ok3;
 
     return ok;
 }
@@ -489,6 +577,7 @@ void DialogReqLoad::loadReq()
     if (!check()){
         return;
     }
+    QString fileName=ui->tableViewFiles->model()->data(ui->tableViewFiles->model()->index(ui->tableViewFiles->currentIndex().row(),0),Qt::EditRole).toString();
     QSqlQuery query;
     query.prepare("select id from requests where num = :num and tdnum = :tdnum and date_part('year',dat) = :year ");
     query.bindValue(":num",ui->lineEditNum->text());
@@ -498,14 +587,14 @@ void DialogReqLoad::loadReq()
         bool exist = query.size() > 0;
         if (!exist){
             if (insertNewRequest()){
-                accept();
+                ftpDel(fileName);
             }
         } else {
             int n = QMessageBox::question(this,tr("Подтвердите корректировку"),tr("Заявка с таким номером уже существует. Заявка будет скорректирована. Продолжить?"),QMessageBox::Yes,QMessageBox::No);
             if (n==QMessageBox::Yes && query.next()){
                 int id=query.value(0).toInt();
                 if (updateRequest(id)){
-                    accept();
+                    ftpDel(fileName);
                 }
             }
         }
@@ -554,7 +643,7 @@ ModelEl::ModelEl(QWidget *parent) : DbTableModel("tmp_req_el",parent)
 
     setColumnFlags(0,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     setColumnFlags(1,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-    //setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 
     select();
 }
@@ -646,7 +735,7 @@ ModelWire::ModelWire(QWidget *parent) : DbTableModel("tmp_req_wire",parent)
 
     setColumnFlags(0,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     setColumnFlags(1,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-    //setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    setColumnFlags(6,Qt::ItemIsSelectable |Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 
     select();
 }

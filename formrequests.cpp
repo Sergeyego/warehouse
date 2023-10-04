@@ -136,7 +136,7 @@ FormRequests::FormRequests(QWidget *parent) :
     mapper->addEmptyLock(ui->tableViewEl);
     mapper->addEmptyLock(ui->tableViewWire);
     mapper->addEmptyLock(ui->tableViewChanges);
-    mapper->addEmptyLock(ui->pushButtonLoad);
+    mapper->addLock(ui->pushButtonLoad);
     mapper->addLock(ui->pushButtonUpd);
 
     connect(ui->comboBoxMonth,SIGNAL(currentIndexChanged(int)),this,SLOT(updReq()));
