@@ -48,6 +48,7 @@ private:
     QString ftpuser;
     QString ftppassword;
     QString ftppath;
+    QString xmldata;
     int delay=0;
     bool ftpGet(QString name);
     bool ftpDel(QString name);

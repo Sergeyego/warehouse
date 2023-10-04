@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1154</width>
-    <height>584</height>
+    <width>1152</width>
+    <height>582</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -333,7 +333,13 @@
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <widget class="QLabel" name="label_8">
+            <widget class="QLabel" name="labelElStatSum">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="text">
               <string>Электроды</string>
              </property>
@@ -357,7 +363,13 @@
             </layout>
            </item>
            <item>
-            <widget class="QLabel" name="label_9">
+            <widget class="QLabel" name="labelWireStatSum">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="text">
               <string>Проволока</string>
              </property>

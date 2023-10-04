@@ -44,7 +44,7 @@ DialogReqLoad::DialogReqLoad(QWidget *parent) :
     ui->tableViewFiles->setModel(filesModel);
 
     ui->tableViewFiles->setColumnWidth(0,200);
-    ui->tableViewFiles->setColumnWidth(1,110);
+    ui->tableViewFiles->setColumnWidth(1,115);
 
     ftpClient = new QFtp(this);
     updateFtpInfo();
@@ -106,7 +106,10 @@ void DialogReqLoad::parceXml(QIODevice *dev)
     modelEl->clearData();
     modelWire->clearData();
     double sum=0.0;
-    QXmlStreamReader xml(dev);
+    dev->seek(0);
+    xmldata=dev->readAll();
+    dev->seek(0);
+    QXmlStreamReader xml(dev);    
     while (!xml.atEnd() && !xml.hasError()){
         xml.readNextStartElement();
         if (xml.tokenType() == QXmlStreamReader::StartElement) {
@@ -251,13 +254,14 @@ bool DialogReqLoad::check()
 bool DialogReqLoad::insertNewRequest()
 {
     QSqlQuery query;
-    query.prepare("insert into requests (num, dat, id_rec, id_cat, comment, tdnum) values (:num, :dat, :id_rec, :id_cat, :comment, :tdnum) returning id");
+    query.prepare("insert into requests (num, dat, id_rec, id_cat, comment, tdnum, xmldata) values (:num, :dat, :id_rec, :id_cat, :comment, :tdnum, :xmldata) returning id");
     query.bindValue(":num",ui->lineEditNum->text());
     query.bindValue(":dat",ui->dateEditReq->date());
     query.bindValue(":id_rec",ui->comboBoxPol->getCurrentData().val);
     query.bindValue(":id_cat",ui->comboBoxCat->getCurrentData().val);
     query.bindValue(":comment",ui->lineEditComment->text());
     query.bindValue(":tdnum",ui->lineEditNum1C->text());
+    query.bindValue(":xmldata",xmldata);
     bool ok = query.exec();
     if (ok){
         if (query.next()){
@@ -289,16 +293,26 @@ bool DialogReqLoad::insertNewRequest()
 bool DialogReqLoad::updateRequest(int id)
 {
     insertChange(id);
-    bool ok1 = updateRequestEl(id);
-    bool ok2 = updateRequestWire(id);
-    return ok1 && ok2;
+
+    QSqlQuery query;
+    query.prepare("update requests set xmldata = :xmldata where id = :id");
+    query.bindValue(":id",id);
+    query.bindValue(":xmldata",xmldata);
+    bool ok1 = query.exec();
+    if (!ok1){
+        QMessageBox::critical(NULL, QString::fromUtf8("Ошибка"),query.lastError().text());
+    }
+
+    bool ok2 = updateRequestEl(id);
+    bool ok3 = updateRequestWire(id);
+    return ok1 && ok2 && ok3;
 }
 
 void DialogReqLoad::insertChange(int id)
 {
     if (ui->dateEditChange->date()!=ui->dateEditChange->minimumDate()){
         QSqlQuery query;
-        query.prepare("insert into requests_changes (id_req, nam, dat) values (:id_req, :nam, :dat )");
+        query.prepare("insert into requests_changes (id_req, nam, dat) values (:id_req, :nam, :dat ) ON CONFLICT (id_req, nam, dat) DO NOTHING");
         query.bindValue(":id_req",id);
         query.bindValue(":nam",ui->lineEditChange->text());
         query.bindValue(":dat",ui->dateEditChange->date());
@@ -464,7 +478,6 @@ void DialogReqLoad::ftpCommandFinished(int commandId, bool error)
             QBuffer *buffer = mapBuffer.value(commandId);
             if (buffer){
                 if (buffer->isOpen()){
-                    buffer->seek(0);
                     parceXml(buffer);
                     buffer->close();
                 }
@@ -533,6 +546,7 @@ void DialogReqLoad::clearData()
     modelWire->clearData();
     ui->labelItogo->setText(tr("ИТОГО: "));
     ui->pushButtonLoad->setEnabled(false);
+    xmldata.clear();
 }
 
 void DialogReqLoad::setHighPalette()
