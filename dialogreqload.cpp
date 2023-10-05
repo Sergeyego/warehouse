@@ -55,6 +55,7 @@ DialogReqLoad::DialogReqLoad(QWidget *parent) :
     connect(ui->comboBoxCat,SIGNAL(currentIndexChanged(int)),this,SLOT(setHighPalette()));
     connect(ui->pushButtonCrePol,SIGNAL(clicked(bool)),this,SLOT(createPol()));
     connect(ui->pushButtonLoad,SIGNAL(clicked(bool)),this,SLOT(loadReq()));
+    connect(ui->pushButtonCodes,SIGNAL(clicked(bool)),this,SLOT(codes1C()));
 
     connect(ui->tableViewFiles->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updData(QModelIndex)));
 
@@ -446,6 +447,77 @@ bool DialogReqLoad::updateRequestWire(int id)
     return ok;
 }
 
+void DialogReqLoad::syncPol()
+{
+    int id_pol=ui->comboBoxPol->getCurrentData().val.toInt();
+    QSqlQuery query;
+    QString naim, adres, innkpp, okpo, inn, kpp;
+    query.prepare("select p.naim, p.adres, p.innkpp, p.okpo from poluch p where p.id = :id_pol ");
+    query.bindValue(":id_pol",id_pol);
+    if (query.exec()){
+        if (query.next()){
+            naim=query.value(0).toString();
+            adres=query.value(1).toString();
+            innkpp=query.value(2).toString();
+            okpo=query.value(3).toString();
+        }
+    } else {
+        QMessageBox::critical(this, tr("Ошибка"),query.lastError().text());
+        return;
+    }
+    QStringList l = innkpp.split('/');
+    if (l.size()){
+        inn=l.at(0);
+        if (l.size()>1){
+            kpp=l.at(1);
+        }
+    }
+    QString message;
+    if (!ui->lineEditPol->text().isEmpty() && naim!=ui->lineEditPol->text()){
+        message+=tr("Отличается полное наименование получателя: в справочнике \"")+naim+tr("\", в заявке: \"")+ui->lineEditPol->text()+tr("\";\n");
+    }
+    if (!ui->lineEditInn->text().isEmpty() && inn!=ui->lineEditInn->text()){
+        message+=tr("Отличается ИНН получателя: в справочнике \"")+inn+tr("\", в заявке: \"")+ui->lineEditInn->text()+tr("\";\n");
+    }
+    if (!ui->lineEditKpp->text().isEmpty() &&  kpp!=ui->lineEditKpp->text()){
+        message+=tr("Отличается КПП получателя: в справочнике \"")+kpp+tr("\", в заявке: \"")+ui->lineEditKpp->text()+tr("\";\n");
+    }
+    if (!ui->lineEditAdr->text().isEmpty() && adres!=ui->lineEditAdr->text()){
+        message+=tr("Отличается адрес получателя: в справочнике \"")+adres+tr("\", в заявке: \"")+ui->lineEditAdr->text()+tr("\";\n");
+    }
+    if (!ui->lineEditOkpo->text().isEmpty() && okpo!=ui->lineEditOkpo->text()){
+        message+=tr("Отличается ОКПО получателя: в справочнике \"")+okpo+tr("\", в заявке: \"")+ui->lineEditOkpo->text()+tr("\";\n");
+    }
+
+    if (!message.isEmpty()){
+        message+=tr("Обновить данные в справочнике?");
+        int n = QMessageBox::question(this,tr("Данные не совпадают"),message,QMessageBox::Yes, QMessageBox::No);
+        if (n==QMessageBox::Yes){
+            QString innkppreq=ui->lineEditInn->text();
+            if (!innkppreq.isEmpty() && !ui->lineEditKpp->text().isEmpty()){
+                innkppreq+="/"+ui->lineEditKpp->text();
+            }
+            QSqlQuery queryUpd;
+            queryUpd.prepare("update poluch set naim = :naim, adres = :adres, innkpp = :innkpp, okpo = :okpo where id = :id_pol");
+            queryUpd.bindValue(":id_pol",id_pol);
+            queryUpd.bindValue(":naim",ui->lineEditPol->text().isEmpty() ? naim : ui->lineEditPol->text());
+            queryUpd.bindValue(":adres",ui->lineEditAdr->text().isEmpty() ? adres : ui->lineEditAdr->text());
+            queryUpd.bindValue(":innkpp",ui->lineEditInn->text().isEmpty() ? innkpp : innkppreq);
+            queryUpd.bindValue(":okpo",ui->lineEditOkpo->text().isEmpty() ? okpo : ui->lineEditOkpo->text());
+            if (!queryUpd.exec()){
+                QMessageBox::critical(this, tr("Ошибка"),queryUpd.lastError().text());
+            }
+        }
+    }
+}
+
+void DialogReqLoad::codes1C()
+{
+    DialogCods d;
+    d.exec();
+    updData(ui->tableViewFiles->currentIndex());
+}
+
 void DialogReqLoad::updData(QModelIndex index)
 {
     if (index.isValid()){
@@ -591,6 +663,7 @@ void DialogReqLoad::loadReq()
     if (!check()){
         return;
     }
+    syncPol();
     QString fileName=ui->tableViewFiles->model()->data(ui->tableViewFiles->model()->index(ui->tableViewFiles->currentIndex().row(),0),Qt::EditRole).toString();
     QSqlQuery query;
     query.prepare("select id from requests where num = :num and tdnum = :tdnum and date_part('year',dat) = :year ");

@@ -6,6 +6,7 @@
 #include "db/dbtablemodel.h"
 #include "models.h"
 #include <QInputDialog>
+#include "dialogcods.h"
 
 namespace Ui {
 class DialogReqLoad;
@@ -66,8 +67,10 @@ private:
     void insertChange(int id);
     bool updateRequestEl(int id);
     bool updateRequestWire(int id);
+    void syncPol();
 
 private slots:
+    void codes1C();
     void updData(QModelIndex index);
     void updateFtpInfo();
     void createTmpTables();
