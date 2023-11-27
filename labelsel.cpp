@@ -35,8 +35,6 @@ QString LabelG5040::getCod()
     cod.push_back(block(2,18,35,20,s,10));
     cod.push_back(dataMatrix(37,25,13,0.7,data->barCodeGr()));
 
-    //cod.push_back(sign2(37,18));
-
     return cod;
 }
 
@@ -88,7 +86,7 @@ QString LabelE60150::getCod()
     }
     cod.push_back(block(44,35,84,16,data->descr(),8,90));
     cod.push_back(dataMatrix(25,106,13,0.7,data->barCodeEd(),90));
-    cod.push_back(block(44,121,25,32,data->sert(),9,90));
+    //cod.push_back(block(44,121,25,32,data->sert(),9,90));
 
     QString s=QString::fromUtf8("Диаметр, мм - ")+data->diametr()+"\n";
     s+=QString::fromUtf8("Партия - ")+data->part()+"\n";
@@ -161,9 +159,7 @@ QString LabelG60150::getCod()
     }
     cod.push_back(block(44,35,84,16,data->descr(),8,90));
     cod.push_back(dataMatrix(25,106,13,0.7,data->barCodeGr(),90));
-    cod.push_back(block(44,121,25,/*32*/21,data->sert(),9,90));
-
-    //cod.push_back(sign(12,124));
+    //cod.push_back(block(44,121,25,/*32*/21,data->sert(),9,90));
 
     QString s=QString::fromUtf8("Диаметр, мм - ")+data->diametr()+"\n";
     s+=QString::fromUtf8("Партия - ")+data->part()+"\n";
