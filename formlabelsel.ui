@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>707</width>
-    <height>495</height>
+    <width>705</width>
+    <height>493</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,20 +54,6 @@
       <widget class="QPushButton" name="pushButtonGr60150">
        <property name="text">
         <string>Гофрокороб 60*150</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonEd5040">
-       <property name="text">
-        <string>Пачка 50*40</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonGr5040">
-       <property name="text">
-        <string>Гофрокороб 50*40</string>
        </property>
       </widget>
      </item>

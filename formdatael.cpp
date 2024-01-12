@@ -273,6 +273,10 @@ bool FormDataEl::check()
 {
     QString err;
     bool dop=true;
+    if (!updPart()){
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),QString::fromUtf8("Партия не найдена!"),QMessageBox::Ok);
+        return false;
+    }
     if (eanEd().length()!=12){
         err+=QString::fromUtf8("Отсутствует штрихкод. Нажмите кнопку \"Сгенерировать\".\n");
         dop=false;
@@ -311,7 +315,7 @@ bool FormDataEl::check()
 }
 
 
-void FormDataEl::updPart()
+bool FormDataEl::updPart()
 {
     int id_part = (mapper->currentIndex()>=0)? currentData(0).toInt() : -1;
 
@@ -342,17 +346,21 @@ void FormDataEl::updPart()
 
     ui->dateEditPack->setDate(QDate::currentDate());
 
+    bool findOk=false;
+
     if (id_part>0){
         for (int i=0; i<ui->tableViewPart->model()->rowCount(); i++){
             int id=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(i,0),Qt::EditRole).toInt();
             if (id==id_part){
                 ui->tableViewPart->selectRow(i);
+                findOk=true;
                 break;
             }
         }
     } else if (ui->tableViewPart->model()->rowCount()){
         ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
     }
+    return findOk;
 }
 
 void FormDataEl::loadSettings()

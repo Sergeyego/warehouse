@@ -95,7 +95,7 @@ private slots:
     void refreshPicMap();
 
 public slots:
-    void updPart();
+    bool updPart();
     void updPacker();
 };
 
