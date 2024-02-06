@@ -182,6 +182,9 @@ void TableView::save(QString fnam, int dec, bool fitToHeight, Qt::ScreenOrientat
                                                         dir.path()+"/"+fnam,
                                                         QString::fromUtf8("Documents (*.xlsx)") );
         if (!filename.isEmpty()){
+            if (filename.right(5)!=".xlsx"){
+                filename+=".xlsx";
+            }
             xlsx.saveAs(filename);
             QFile file(filename);
             QFileInfo info(file);
