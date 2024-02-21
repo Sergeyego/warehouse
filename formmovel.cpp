@@ -265,7 +265,7 @@ void ModelPressEl::refresh(int id_part)
     QSqlQuery query;
     query.prepare("select pp.dat, rb.snam, p.nam, pp.kvo "
                   "from part_prod pp "
-                  "inner join rab_brig rb on rb.id = pp.id_brig "
+                  "inner join rab_rab rb on rb.id = pp.id_brig "
                   "inner join pres p on p.id = pp.id_press "
                   "where pp.id_part = :id_part order by pp.dat");
     query.bindValue(":id_part",id_part);
@@ -331,7 +331,7 @@ void ModelPerePackEl::refresh(int id_part)
                   "where pp.id_part = :id_part and  pn.tip = 7 ) "
                   "union "
                   "(select pn.dat as dat, pn.num as num, 'Переуп. из парт. '||p.n_s ||'-'||date_part('year',p.dat_part) as part, "
-                  "pp.kvo as kvo, NULL as break "
+                  "pp.kvo as kvo, pp.kvo_break as break "
                   "from parti_perepack pp "
                   "inner join parti_nakl pn on pn.id = pp.id_nakl "
                   "inner join parti p on p.id = pp.id_part "
@@ -399,7 +399,7 @@ void ModelSelfEl::refresh(int id_part)
     double sum=0;
     QString title=tr("Собственное потребление");
     QSqlQuery query;
-    query.prepare("select ps.dat, ps.num, ps.kto, psi.kvo*sc.koef "
+    query.prepare("select ps.dat, ps.num, ps.kto, psi.kvo*sc.koef*-1 "
                   "from prod_self_items psi "
                   "inner join prod_self ps on ps.id = psi.id_self "
                   "inner join self_cons sc on sc.id = psi.id_cons "
