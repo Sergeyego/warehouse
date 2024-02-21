@@ -133,6 +133,7 @@ private slots:
     void edtCods();
     void goXml();
     void loadData();
+    void setReqStatVisible(bool b);
 };
 
 #endif // FORMSHIPCONS_H

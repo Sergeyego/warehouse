@@ -6,6 +6,7 @@ FormShipCons::FormShipCons(QWidget *parent) :
     ui(new Ui::FormShipCons)
 {
     ui->setupUi(this);
+
     loadsettings();
     ui->pushButtonUpd->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
@@ -82,6 +83,8 @@ FormShipCons::FormShipCons(QWidget *parent) :
     connect(ui->tableViewWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(setCurrentShipDataWire(QModelIndex)));
     connect(modelReqWire,SIGNAL(sigSum(QString)),ui->labelStatReqWire,SLOT(setText(QString)));
 
+    connect(ui->checkBoxReq,SIGNAL(clicked(bool)),this,SLOT(setReqStatVisible(bool)));
+
     connect(modelReqEl,SIGNAL(sigUpd()),modelEl,SLOT(calcSum()));
     connect(modelReqWire,SIGNAL(sigUpd()),modelWire,SLOT(calcSum()));
 
@@ -98,12 +101,16 @@ void FormShipCons::loadsettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     ui->splitter->restoreState(settings.value("ship_cons_splitter_width").toByteArray());
+    bool vis=(settings.value("ship_cons_req_vis").toBool());
+    ui->checkBoxReq->setChecked(vis);
+    setReqStatVisible(vis);
 }
 
 void FormShipCons::savesettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     settings.setValue("ship_cons_splitter_width",ui->splitter->saveState());
+    settings.setValue("ship_cons_req_vis",ui->checkBoxReq->isChecked());
 }
 
 QDomElement FormShipCons::newElement(QString nam, QString val, QDomDocument *doc)
@@ -317,6 +324,16 @@ void FormShipCons::loadData()
         modelEl->select();
         modelWire->select();
     }
+}
+
+void FormShipCons::setReqStatVisible(bool b)
+{
+    ui->tableViewReqEl->setVisible(b);
+    ui->tableViewReqWire->setVisible(b);
+    ui->labelStatReqEl->setVisible(b);
+    ui->labelStatReqWire->setVisible(b);
+    ui->labelPartEl->setVisible(b);
+    ui->labelPartWire->setVisible(b);
 }
 
 ModelShipCons::ModelShipCons(QObject *parent) : DbTableModel("sertifikat",parent)
