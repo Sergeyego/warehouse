@@ -17,11 +17,13 @@ FormBalance::FormBalance(QWidget *parent) :
     partModel = new TableModel(this);
     proxyPartModel = new ProxyModel(this);
     proxyPartModel->setSourceModel(partModel);
+    proxyPartModel->setSortRole(Qt::EditRole);
     ui->tableViewPart->setModel(proxyPartModel);
 
     balanceModel = new BalanceModel(this);
     proxyModel = new ProxyModel(this);
     proxyModel->setSourceModel(balanceModel);
+    proxyModel->setSortRole(Qt::EditRole);
 
     partModel->setHeader(balanceModel->getPartHeader());
 
