@@ -45,6 +45,7 @@ MainWindow::MainWindow(bool master, QWidget *parent) :
     actAction(ui->actionMovWire,&MainWindow::newFormMovWire);
     actAction(ui->actionRequests,&MainWindow::newFormRequests);
     actAction(ui->actionReqReport,&MainWindow::newFormReqReport);
+    actAction(ui->actionPack,&MainWindow::newFormPack);
 
     connect(ui->actionCfgPrint,SIGNAL(triggered(bool)),this,SLOT(cfgPrint()));
 
@@ -56,6 +57,7 @@ MainWindow::~MainWindow()
 {
     saveSettings();
     delete ui;
+    delete Models::instance();
 }
 
 bool MainWindow::exist(QObject *a)
@@ -289,6 +291,13 @@ void MainWindow::newFormReqReport()
 {
     if (!exist(sender())){
         addSubWindow(new FormReqReport(),sender());
+    }
+}
+
+void MainWindow::newFormPack()
+{
+    if (!exist(sender())){
+        addSubWindow(new FormPack(),sender());
     }
 }
 

@@ -28,6 +28,7 @@
 #include "formmovwire.h"
 #include "formrequests.h"
 #include "formreqreport.h"
+#include "formpack.h"
 
 namespace Ui {
 class MainWindow;
@@ -75,6 +76,7 @@ private slots:
     void newFormMovWire();
     void newFormRequests();
     void newFormReqReport();
+    void newFormPack();
     void cfgPrint();
 
 private:

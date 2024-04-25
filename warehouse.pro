@@ -26,6 +26,7 @@ include(xlsx/qtxlsx.pri)
 
 SOURCES += \
     dialogreqload.cpp \
+    formpack.cpp \
     formreqreport.cpp \
     formrequests.cpp \
         main.cpp \
@@ -96,6 +97,7 @@ SOURCES += \
 
 HEADERS += \
     dialogreqload.h \
+    formpack.h \
     formreqreport.h \
     formrequests.h \
         mainwindow.h \
@@ -165,6 +167,7 @@ HEADERS += \
 
 FORMS += \
     dialogreqload.ui \
+    formpack.ui \
     formreqreport.ui \
     formrequests.ui \
         mainwindow.ui \

@@ -62,6 +62,31 @@ Models::Models(QObject *parent) :
     relReq->setSort("requests.dat desc, requests.num desc");
     relReq->model()->setLimit(4000);
 
+    relCex = new DbSqlRelation("cex","id","nam",this);
+    relCex->setSort("cex.nam");
+    relCex->setFilter("cex.is_el=true");
+
+    relPackOp = new DbSqlRelation("pallets_op","id","nam",this);
+    relPackOp->setSort("nam");
+
+    relPallet = new DbSqlRelation("pallets","id","nam",this);
+    relPallet->setSort("pallets.id desc");
+    relPallet->model()->setLimit(2000);
+
+    relMaster = new DbSqlRelation("rab_rab","id","snam",this);
+    relMaster->setAlias("rab_master");
+    relMaster->setSort("rab_master.snam");
+    relMaster->setFilter("rab_master.id in (select q.id_rab from rab_qual q "
+                         "inner join rab_prof p on q.id_prof = p.id "
+                         "WHERE q.dat = (select max(dat) from rab_qual where dat <= '2999-04-01' "
+                         "and id_rab=q.id_rab) and p.id=26 )");
+    relRabPack = new DbSqlRelation("rab_rab","id","snam",this);
+    relRabPack->setSort("rab_rab.snam");
+    relRabPack->setFilter("rab_rab.id in (select q.id_rab from rab_qual q "
+                         "inner join rab_prof p on q.id_prof = p.id "
+                         "WHERE q.dat = (select max(dat) from rab_qual where dat <= '2999-04-01' "
+                         "and id_rab=q.id_rab) and p.id in (3,65) )");
+
 }
 
 Models *Models::instance()
@@ -75,12 +100,12 @@ QString Models::createPalBarcode(QString prefix)
 {
     QString palBarcode="";
     QSqlQuery query;
-    query.prepare("insert into pallets (datetime, prefix) values (:datetime, :prefix) returning id");
+    query.prepare("insert into pallets (datetime, prefix) values (:datetime, :prefix) returning nam");
     query.bindValue(":datetime",QDateTime::currentDateTime());
     query.bindValue(":prefix",prefix);
     if (query.exec()){
         if (query.next()){
-            palBarcode=prefix+QString("%1").arg((query.value(0).toInt()),10-prefix.length(),'d',0,QChar('0'));
+            palBarcode=query.value(0).toString();
         }
     } else {
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);

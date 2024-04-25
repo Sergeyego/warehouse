@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1045</width>
-    <height>656</height>
+    <width>1041</width>
+    <height>652</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1045</width>
+     <width>1041</width>
      <height>25</height>
     </rect>
    </property>
@@ -75,7 +75,7 @@
    </widget>
    <widget class="QMenu" name="menuAnalit">
     <property name="title">
-     <string>Аналитика</string>
+     <string>Анализ</string>
     </property>
     <addaction name="actionAnAccEl"/>
     <addaction name="actionAnAccWire"/>
@@ -117,8 +117,15 @@
     <addaction name="actionRequests"/>
     <addaction name="actionReqReport"/>
    </widget>
+   <widget class="QMenu" name="menuPack">
+    <property name="title">
+     <string>Упаковка</string>
+    </property>
+    <addaction name="actionPack"/>
+   </widget>
    <addaction name="menuRequests"/>
    <addaction name="menuMark"/>
+   <addaction name="menuPack"/>
    <addaction name="menuStock"/>
    <addaction name="menuShip"/>
    <addaction name="menuMov"/>
@@ -271,6 +278,11 @@
   <action name="actionReqReport">
    <property name="text">
     <string>Отчет по заявкам</string>
+   </property>
+  </action>
+  <action name="actionPack">
+   <property name="text">
+    <string>Сортировка/упаковка электродов</string>
    </property>
   </action>
  </widget>
