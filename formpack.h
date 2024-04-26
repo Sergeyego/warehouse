@@ -5,6 +5,7 @@
 #include "modelro.h"
 #include "db/dbtablemodel.h"
 #include "models.h"
+#include "dialogwebview.h"
 
 namespace Ui {
 class FormPack;
@@ -40,6 +41,7 @@ private:
 private slots:
     void upd();
     void updCont();
+    void packList();
 };
 
 #endif // FORMPACK_H

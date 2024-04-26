@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql network xml printsupport
+QT       += core gui sql network xml printsupport webenginewidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,6 +26,7 @@ include(xlsx/qtxlsx.pri)
 
 SOURCES += \
     dialogreqload.cpp \
+    dialogwebview.cpp \
     formpack.cpp \
     formreqreport.cpp \
     formrequests.cpp \
@@ -36,6 +37,7 @@ SOURCES += \
     db/dbmapper.cpp \
     db/dbtablemodel.cpp \
     db/dbviewer.cpp \
+    printhandler.cpp \
     qftp/qftp.cpp \
     qftp/qurlinfo.cpp \
     sync1c.cpp \
@@ -97,6 +99,7 @@ SOURCES += \
 
 HEADERS += \
     dialogreqload.h \
+    dialogwebview.h \
     formpack.h \
     formreqreport.h \
     formrequests.h \
@@ -106,6 +109,7 @@ HEADERS += \
     db/dbmapper.h \
     db/dbtablemodel.h \
     db/dbviewer.h \
+    printhandler.h \
     qftp/qftp.h \
     qftp/qurlinfo.h \
     sync1c.h \
@@ -167,6 +171,7 @@ HEADERS += \
 
 FORMS += \
     dialogreqload.ui \
+    dialogwebview.ui \
     formpack.ui \
     formreqreport.ui \
     formrequests.ui \

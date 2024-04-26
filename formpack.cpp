@@ -30,6 +30,7 @@ FormPack::FormPack(QWidget *parent) :
     connect(ui->radioButtonTermoPack,SIGNAL(clicked(bool)),this,SLOT(updCont()));
     connect(ui->tableViewDat->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updCont()));
     connect(modelPack,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
+    connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(packList()));
 
     upd();
 }
@@ -64,6 +65,14 @@ void FormPack::updCont()
     if (modelPack->rowCount()){
         ui->tableViewOp->selectRow(ui->tableViewOp->model()->rowCount()-1);
     }
+}
+
+void FormPack::packList()
+{
+    int id = ui->tableViewOp->model()->data(ui->tableViewOp->model()->index(ui->tableViewOp->currentIndex().row(),0),Qt::EditRole).toInt();
+    DialogWebView d;
+    d.setUrl("http://localhost:7000/packlists/elrtr/"+QString::number(id));
+    d.exec();
 }
 
 ModelPack::ModelPack(QWidget *parent) : DbTableModel("el_pallet_op",parent)
