@@ -71,7 +71,7 @@ void FormPack::packList()
 {
     int id = ui->tableViewOp->model()->data(ui->tableViewOp->model()->index(ui->tableViewOp->currentIndex().row(),0),Qt::EditRole).toInt();
     DialogWebView d;
-    d.setUrl("http://localhost:7000/packlists/elrtr/"+QString::number(id));
+    d.setUrl("http://192.168.1.114:7000/packlists/elrtr/"+QString::number(id));
     d.exec();
 }
 
