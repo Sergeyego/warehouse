@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql network xml printsupport webenginewidgets
+QT       += core gui sql network xml printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,6 +30,7 @@ SOURCES += \
     formpack.cpp \
     formreqreport.cpp \
     formrequests.cpp \
+    httpsyncmanager.cpp \
         main.cpp \
         mainwindow.cpp \
     db/dbdelegate.cpp \
@@ -37,7 +38,6 @@ SOURCES += \
     db/dbmapper.cpp \
     db/dbtablemodel.cpp \
     db/dbviewer.cpp \
-    printhandler.cpp \
     qftp/qftp.cpp \
     qftp/qurlinfo.cpp \
     sync1c.cpp \
@@ -103,13 +103,13 @@ HEADERS += \
     formpack.h \
     formreqreport.h \
     formrequests.h \
+    httpsyncmanager.h \
         mainwindow.h \
     db/dbdelegate.h \
     db/dblogin.h \
     db/dbmapper.h \
     db/dbtablemodel.h \
     db/dbviewer.h \
-    printhandler.h \
     qftp/qftp.h \
     qftp/qurlinfo.h \
     sync1c.h \
