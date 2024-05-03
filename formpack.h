@@ -2,8 +2,8 @@
 #define FORMPACK_H
 
 #include <QWidget>
-#include "modelro.h"
 #include "db/dbtablemodel.h"
+#include "db/dbmapper.h"
 #include "models.h"
 #include "dialogwebview.h"
 
@@ -16,7 +16,7 @@ class ModelPack : public DbTableModel
     Q_OBJECT
 public:
     explicit ModelPack(QWidget *parent = nullptr);
-    void refresh(QDate dat, bool is_pack);
+    void refresh(QDate dat, int id_src);
 
 private slots:
     void calcSum();
@@ -35,8 +35,10 @@ public:
 
 private:
     Ui::FormPack *ui;
-    ModelRo *modelDate;
+    DbMapper *mapper;
     ModelPack *modelPack;
+    void loadSettings();
+    void saveSettings();
 
 private slots:
     void upd();
