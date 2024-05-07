@@ -282,7 +282,7 @@ void ModelBreakWire::refresh(int id_part)
 
 ModelStockWire::ModelStockWire(QObject *parent) : ModelRo(parent)
 {
-    setDecimal(1);
+    setDecimal(3);
 }
 
 void ModelStockWire::refresh(int id_part)

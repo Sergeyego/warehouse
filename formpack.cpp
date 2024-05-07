@@ -8,6 +8,13 @@ FormPack::FormPack(QWidget *parent) :
     ui->setupUi(this);
     loadSettings();
 
+    modelMaster = new TableModel(this);
+    QStringList head;
+    head<<"id"<<tr("Мастер");
+    modelMaster->setHeader(head);
+    ui->comboBoxNaklMaster->setModel(modelMaster);
+    ui->comboBoxNaklMaster->setModelColumn(1);
+
     modelPack = new ModelPack(this);
     ui->tableViewPack->setModel(modelPack);
     ui->tableViewPack->setColumnHidden(0,true);
@@ -16,11 +23,11 @@ FormPack::FormPack(QWidget *parent) :
     ui->tableViewPack->setColumnWidth(3,80);
     ui->tableViewPack->setColumnWidth(4,140);
     ui->tableViewPack->setColumnHidden(5,true);
-    ui->tableViewPack->setColumnWidth(6,330);
+    ui->tableViewPack->setColumnWidth(6,350);
     ui->tableViewPack->setColumnHidden(7,true);
     ui->tableViewPack->setColumnWidth(8,80);
     ui->tableViewPack->setColumnHidden(9,true);
-    ui->tableViewPack->setColumnHidden(10,true);
+    ui->tableViewPack->setColumnWidth(10,140);
 
     mapper = new DbMapper(ui->tableViewPack,this);
     mapper->addMapping(ui->dateTimeEdit,2);
@@ -49,6 +56,7 @@ FormPack::FormPack(QWidget *parent) :
     connect(ui->dateEdit,SIGNAL(userDateChanged(QDate)),this,SLOT(updCont()));
     connect(modelPack,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(packList()));
+    connect(ui->pushButtonnNakl,SIGNAL(clicked(bool)),this,SLOT(packNakl()));
 
     upd();
 }
@@ -86,6 +94,19 @@ void FormPack::updCont()
         id_src=2;
     }
     modelPack->refresh(ui->dateEdit->date(),id_src);
+    QVector<QVector<QVariant>> masters;
+    QSet<int> ids;
+    for (int i=0; i<modelPack->rowCount(); i++){
+        QVariant id=modelPack->data(modelPack->index(i,10),Qt::EditRole);
+        if (!id.isNull() && !ids.contains(id.toInt())){
+            QVector<QVariant> c;
+            c.push_back(id);
+            c.push_back(modelPack->data(modelPack->index(i,10),Qt::DisplayRole).toString());
+            masters.push_back(c);
+            ids.insert(id.toInt());
+        }
+    }
+    modelMaster->setModelData(masters);
 }
 
 void FormPack::packList()
@@ -93,6 +114,20 @@ void FormPack::packList()
     int id = mapper->modelData(mapper->currentIndex(),0).toInt();
     DialogWebView d;
     d.sendGetReq("packlists/elrtr/"+QString::number(id));
+    d.exec();
+}
+
+void FormPack::packNakl()
+{
+    int id_src=0;
+    if (ui->radioButtonPack->isChecked()){
+        id_src=1;
+    } else if (ui->radioButtonPerePack->isChecked()){
+        id_src=2;
+    }
+    int id_master=ui->comboBoxNaklMaster->model()->data(ui->comboBoxNaklMaster->model()->index(ui->comboBoxNaklMaster->currentIndex(),0),Qt::EditRole).toInt();
+    DialogWebView d;
+    d.sendGetReq("packnakl/elrtr/"+ui->dateEdit->date().toString("yyyy-MM-dd")+"/"+QString::number(id_src)+"/"+QString::number(id_master)+"/");
     d.exec();
 }
 

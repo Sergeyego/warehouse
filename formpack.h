@@ -39,11 +39,13 @@ private:
     ModelPack *modelPack;
     void loadSettings();
     void saveSettings();
+    TableModel *modelMaster;
 
 private slots:
     void upd();
     void updCont();
     void packList();
+    void packNakl();
 };
 
 #endif // FORMPACK_H
