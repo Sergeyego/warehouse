@@ -6,7 +6,8 @@ DialogWebView::DialogWebView(QWidget *parent) :
     ui(new Ui::DialogWebView)
 {
     ui->setupUi(this);
-
+    ui->textEdit->document()->setUseDesignMetrics(true);
+    single=false;
     connect(ui->pushButtonPrint,SIGNAL(clicked(bool)),this,SLOT(print()));
 }
 
@@ -15,12 +16,14 @@ DialogWebView::~DialogWebView()
     delete ui;
 }
 
-void DialogWebView::sendGetReq(QString path)
+bool DialogWebView::sendGetReq(QString path)
 {
     QByteArray data;
-    if (HttpSyncManager::sendGet(path,data)){
+    bool ok=HttpSyncManager::sendGet(path,data);
+    if (ok){
         loadDoc(data);
     }
+    return ok;
 }
 
 void DialogWebView::setSingle(bool s)
@@ -58,6 +61,7 @@ void DialogWebView::loadDoc(const QString &html)
         ui->textEdit->document()->addResource(QTextDocument::ImageResource,res,tmpRes.value(res));
     }
     ui->textEdit->setHtml(html);
+
 }
 
 void DialogWebView::print()
@@ -71,13 +75,30 @@ void DialogWebView::print()
         if (single) {
             printer.setCopyCount(1);
         }
+        QPainter painter(&printer);
         if (ui->textEdit->document()->size().height()<(ui->textEdit->height()*1.2)){
-            QPainter painter(&printer);
             drawDoc(&painter);
         } else {
-            ui->textEdit->document()->print(&printer);
+            //ui->textEdit->document()->print(&printer);
+            QRect paintRect=printer.pageLayout().paintRectPixels(printer.resolution());
+            QRect rect = QRect(0,0,paintRect.width(),paintRect.height());
+            ui->textEdit->document()->setPageSize(rect.size());
+            QTextFrameFormat fmt = ui->textEdit->document()->rootFrame()->frameFormat();
+            fmt.setMargin(0);
+            ui->textEdit->document()->rootFrame()->setFrameFormat(fmt);
+            for (int i=0; i<ui->textEdit->document()->pageCount();i++){
+                painter.save();
+                painter.translate(rect.left(), rect.top() - (i) * rect.height());
+                QRectF clip(0, (i) * rect.height(), rect.width(), rect.height());
+                ui->textEdit->document()->drawContents(&painter, clip);
+                painter.restore();
+                if (i!=ui->textEdit->document()->pageCount()-1){
+                    printer.newPage();
+                }
+            }
         }
     }
+
     accept();
 }
 

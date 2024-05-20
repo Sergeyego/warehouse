@@ -6,6 +6,7 @@
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QTextBlock>
+#include <QAbstractTextDocumentLayout>
 #include "httpsyncmanager.h"
 
 namespace Ui {
@@ -19,7 +20,7 @@ class DialogWebView : public QDialog
 public:
     explicit DialogWebView(QWidget *parent = nullptr);
     ~DialogWebView();
-    void sendGetReq(QString path);
+    bool sendGetReq(QString path);
     void setSingle(bool s);
     void loadDoc(const QString &html);
 

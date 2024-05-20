@@ -8,6 +8,7 @@
 #include "models.h"
 #include "db/tablemodel.h"
 #include "dialogprintpacklist.h"
+#include "dialogwebview.h"
 
 namespace Ui {
 class FormShip;

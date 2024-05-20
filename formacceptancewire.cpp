@@ -94,11 +94,16 @@ void FormAcceptanceWire::printNakl()
     QString num=modelAcceptanceWire->data(modelAcceptanceWire->index(mapper->currentIndex(),1),Qt::EditRole).toString();
     QString kis=modelAcceptanceWire->sqlRelation(3)->getDisplayValue(id_ist,"prefix")+year+"-"+num;
 
-    PackNaklDoc doc(kis);
+    DialogWebView d;
+    if (d.sendGetReq("packnakl/nakl/"+kis)){
+        d.exec();
+    }
+
+    /*PackNaklDoc doc(kis);
     DialogPrintPackList d(&doc);
     d.setWindowTitle("Накладная "+kis);
     d.setSingle(false);
-    d.exec();
+    d.exec();*/
 }
 
 ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)

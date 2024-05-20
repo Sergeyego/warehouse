@@ -210,11 +210,17 @@ void FormShip::sync()
 void FormShip::printNakl()
 {
     const int id_ship = modelShip->data(modelShip->index(ui->tableViewShip->currentIndex().row(),0),Qt::EditRole).toInt();
-    PackNaklDoc doc(id_ship);
+
+    DialogWebView d;
+    if (d.sendGetReq("packnakl/shipnakl/"+QString::number(id_ship))){
+        d.exec();
+    }
+
+    /*PackNaklDoc doc(id_ship);
     DialogPrintPackList d(&doc);
     d.setWindowTitle("Накладная");
     d.setSingle(false);
-    d.exec();
+    d.exec();*/
 }
 
 void FormShip::setPartFilter()

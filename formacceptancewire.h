@@ -8,6 +8,7 @@
 #include "models.h"
 #include "labelbase.h"
 #include "dialogprintpacklist.h"
+#include "dialogwebview.h"
 
 namespace Ui {
 class FormAcceptanceWire;

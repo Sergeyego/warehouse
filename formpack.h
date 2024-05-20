@@ -40,10 +40,12 @@ private:
     void loadSettings();
     void saveSettings();
     TableModel *modelMaster;
+    int getIdSrc();
 
 private slots:
     void upd();
     void updCont();
+    void updMaster();
     void packList();
     void packNakl();
 };

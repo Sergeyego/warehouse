@@ -57,6 +57,8 @@ FormPack::FormPack(QWidget *parent) :
     connect(modelPack,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(packList()));
     connect(ui->pushButtonnNakl,SIGNAL(clicked(bool)),this,SLOT(packNakl()));
+    connect(modelPack,SIGNAL(sigRefresh()),this,SLOT(updMaster()));
+    connect(modelPack,SIGNAL(sigUpd()),this,SLOT(updMaster()));
 
     upd();
 }
@@ -79,6 +81,17 @@ void FormPack::saveSettings()
     settings.setValue("pack_splitter_width",ui->splitter->saveState());
 }
 
+int FormPack::getIdSrc()
+{
+    int id_src=0;
+    if (ui->radioButtonPack->isChecked()){
+        id_src=1;
+    } else if (ui->radioButtonPerePack->isChecked()){
+        id_src=2;
+    }
+    return id_src;
+}
+
 void FormPack::upd()
 {
     ui->dateEdit->setDate(QDate::currentDate());
@@ -87,13 +100,11 @@ void FormPack::upd()
 
 void FormPack::updCont()
 {
-    int id_src=0;
-    if (ui->radioButtonPack->isChecked()){
-        id_src=1;
-    } else if (ui->radioButtonPerePack->isChecked()){
-        id_src=2;
-    }
-    modelPack->refresh(ui->dateEdit->date(),id_src);
+    modelPack->refresh(ui->dateEdit->date(),getIdSrc());
+}
+
+void FormPack::updMaster()
+{
     QVector<QVector<QVariant>> masters;
     QSet<int> ids;
     for (int i=0; i<modelPack->rowCount(); i++){
@@ -113,22 +124,19 @@ void FormPack::packList()
 {
     int id = mapper->modelData(mapper->currentIndex(),0).toInt();
     DialogWebView d;
-    d.sendGetReq("packlists/elrtr/"+QString::number(id));
-    d.exec();
+    d.setSingle(true);
+    if (d.sendGetReq("packlists/elrtr/"+QString::number(id))){
+        d.exec();
+    }
 }
 
 void FormPack::packNakl()
 {
-    int id_src=0;
-    if (ui->radioButtonPack->isChecked()){
-        id_src=1;
-    } else if (ui->radioButtonPerePack->isChecked()){
-        id_src=2;
-    }
     int id_master=ui->comboBoxNaklMaster->model()->data(ui->comboBoxNaklMaster->model()->index(ui->comboBoxNaklMaster->currentIndex(),0),Qt::EditRole).toInt();
     DialogWebView d;
-    d.sendGetReq("packnakl/elrtr/"+ui->dateEdit->date().toString("yyyy-MM-dd")+"/"+QString::number(id_src)+"/"+QString::number(id_master)+"/");
-    d.exec();
+    if (d.sendGetReq("packnakl/elrtr/"+ui->dateEdit->date().toString("yyyy-MM-dd")+"/"+QString::number(getIdSrc())+"/"+QString::number(id_master)+"/")){
+        d.exec();
+    }
 }
 
 ModelPack::ModelPack(QWidget *parent) : DbTableModel("el_pallet_op",parent)
