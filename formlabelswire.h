@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "formdatawire.h"
 #include "labelswire.h"
-#include "dialogprintpacklist.h"
+#include "dialogwebview.h"
 
 namespace Ui {
 class FormLabelsWire;

@@ -314,6 +314,11 @@ bool FormDataEl::check()
     return ok;
 }
 
+int FormDataEl::getIdPart()
+{
+    return (mapper->currentIndex()>=0)? currentData(0).toInt() : -1;
+}
+
 
 bool FormDataEl::updPart()
 {

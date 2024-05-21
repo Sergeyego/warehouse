@@ -31,7 +31,19 @@ FormLabelsWire::~FormLabelsWire()
 
 void FormLabelsWire::printPackListA5()
 {
-    PackWireDoc doc(data);
+    /*PackWireDoc doc(data);
     DialogPrintPackList d(&doc);
-    d.exec();
+    d.exec();*/
+    if (!data->masPal().isEmpty()){
+        QByteArray packer=data->master().toUtf8();
+        QString p64url = packer.toBase64().replace("+","-").replace("/","_");
+        QString pallet=Models::instance()->createPalBarcode("W");
+        DialogWebView d;
+        if (d.sendGetReq("packlists/old/w/"+pallet+"/"+QString::number(data->getIdPart())+"/"+data->masPal()+"?packer="+p64url+"&dat_pack="+data->datePack()+"&pack_kvo="+data->kvoSpool())){
+            d.setSingle(true);
+            d.exec();
+        }
+    } else {
+        QMessageBox::critical(this,tr("Ошибка"),tr("Нет массы поддона"),QMessageBox::Cancel);
+    }
 }

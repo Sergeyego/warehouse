@@ -215,12 +215,6 @@ void FormShip::printNakl()
     if (d.sendGetReq("packnakl/shipnakl/"+QString::number(id_ship))){
         d.exec();
     }
-
-    /*PackNaklDoc doc(id_ship);
-    DialogPrintPackList d(&doc);
-    d.setWindowTitle("Накладная");
-    d.setSingle(false);
-    d.exec();*/
 }
 
 void FormShip::setPartFilter()

@@ -44,6 +44,7 @@ public:
     QString kvoSpool();
     QString masPal();
     QString master();
+    int getIdPart();
 
 private:
     Ui::FormDataWire *ui;

@@ -97,12 +97,6 @@ void FormAcceptanceEl::printNakl()
     QString num=modelAcceptanceEl->data(modelAcceptanceEl->index(mapper->currentIndex(),1),Qt::EditRole).toString();
     QString kis=modelAcceptanceEl->sqlRelation(3)->getDisplayValue(id_ist,"prefix")+year+"-"+num;
 
-    /*PackNaklDoc doc(kis);
-    DialogPrintPackList d(&doc);
-    d.setWindowTitle("Накладная "+kis);
-    d.setSingle(false);
-    d.exec();*/
-
     DialogWebView d;
     if (d.sendGetReq("packnakl/nakl/"+kis)){
         d.exec();

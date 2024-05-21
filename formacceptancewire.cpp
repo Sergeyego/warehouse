@@ -98,12 +98,6 @@ void FormAcceptanceWire::printNakl()
     if (d.sendGetReq("packnakl/nakl/"+kis)){
         d.exec();
     }
-
-    /*PackNaklDoc doc(kis);
-    DialogPrintPackList d(&doc);
-    d.setWindowTitle("Накладная "+kis);
-    d.setSingle(false);
-    d.exec();*/
 }
 
 ModelAcceptanceWire::ModelAcceptanceWire(QObject *parent) : DbTableModel("wire_whs_waybill",parent)

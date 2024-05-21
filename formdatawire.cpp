@@ -275,6 +275,11 @@ QString FormDataWire::master()
     return ui->comboBoxMaster->currentText();
 }
 
+int FormDataWire::getIdPart()
+{
+    return ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),0),Qt::EditRole).toInt();
+}
+
 bool FormDataWire::selectPart()
 {
     QSqlQuery query;

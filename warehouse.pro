@@ -72,11 +72,8 @@ SOURCES += \
     formdatawire.cpp \
     labelswire.cpp \
     doublelineedit.cpp \
-    dialogprintpacklist.cpp \
-    qr/qrencode.cpp \
     formcells.cpp \
     dialoglblsize.cpp \
-    code128/code128.cpp \
     formdrv.cpp \
     formbalanceew.cpp \
     progressreportdialog.cpp \
@@ -144,11 +141,8 @@ HEADERS += \
     formdatawire.h \
     labelswire.h \
     doublelineedit.h \
-    dialogprintpacklist.h \
-    qr/qrencode.h \
     formcells.h \
     dialoglblsize.h \
-    code128/code128.h \
     formdrv.h \
     formbalanceew.h \
     progressreportdialog.h \
@@ -197,7 +191,6 @@ FORMS += \
     dialogcmd.ui \
     formlabelswire.ui \
     formdatawire.ui \
-    dialogprintpacklist.ui \
     formcells.ui \
     dialoglblsize.ui \
     formdrv.ui \

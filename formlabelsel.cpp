@@ -26,9 +26,21 @@ FormLabelsEl::~FormLabelsEl()
 
 void FormLabelsEl::printPackList()
 {
-    PackElDoc doc(data);
+    /*PackElDoc doc(data);
     DialogPrintPackList d(&doc);
-    d.exec();
+    d.exec();*/
+    if (!data->masPal().isEmpty()){
+        QByteArray packer=data->packer().toUtf8();
+        QString p64url = packer.toBase64().replace("+","-").replace("/","_");
+        QString pallet=Models::instance()->createPalBarcode("E");
+        DialogWebView d;
+        if (d.sendGetReq("packlists/old/e/"+pallet+"/"+QString::number(data->getIdPart())+"/"+data->masPal()+"?packer="+p64url+"&dat_pack="+data->datePack()+"&pack_kvo="+data->kvoPackPal())){
+            d.setSingle(true);
+            d.exec();
+        }
+    } else {
+        QMessageBox::critical(this,tr("Ошибка"),tr("Нет массы поддона"),QMessageBox::Cancel);
+    }
 }
 
 void FormLabelsEl::printE60150()

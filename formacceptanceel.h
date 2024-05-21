@@ -6,7 +6,6 @@
 #include "db/dbtablemodel.h"
 #include "db/dbmapper.h"
 #include "labelbase.h"
-#include "dialogprintpacklist.h"
 #include "dialogwebview.h"
 
 namespace Ui {

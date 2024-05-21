@@ -5,7 +5,7 @@
 #include "models.h"
 #include "db/tablemodel.h"
 #include <QSortFilterProxyModel>
-#include "dialogprintpacklist.h"
+#include "dialogwebview.h"
 
 namespace Ui {
 class FormBalance;

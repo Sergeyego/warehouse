@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "formdatael.h"
 #include "labelsel.h"
-#include <dialogprintpacklist.h>
+#include "dialogwebview.h"
 
 namespace Ui {
 class FormLabelsEl;

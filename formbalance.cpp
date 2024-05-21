@@ -136,13 +136,8 @@ void FormBalance::createPackList()
         QStringList lk=kis.split(":");
         if (lk.size()==2){
             int id_part=QString(lk.at(1)).toInt();
-            if (lk.at(0)=="e"){
-                PackElDoc doc(id_part,kvo,cont);
-                DialogPrintPackList d(&doc);
-                d.exec();
-            } else {
-                PackWireDoc doc(id_part,kvo,cont);
-                DialogPrintPackList d(&doc);
+            DialogWebView d;
+            if (d.sendGetReq("packlists/old/"+lk.at(0)+"/"+cont+"/"+QString::number(id_part)+"/"+QString::number(kvo))){
                 d.exec();
             }
         }
