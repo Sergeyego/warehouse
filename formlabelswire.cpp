@@ -31,9 +31,6 @@ FormLabelsWire::~FormLabelsWire()
 
 void FormLabelsWire::printPackListA5()
 {
-    /*PackWireDoc doc(data);
-    DialogPrintPackList d(&doc);
-    d.exec();*/
     if (!data->masPal().isEmpty()){
         QByteArray packer=data->master().toUtf8();
         QString p64url = packer.toBase64().replace("+","-").replace("/","_");

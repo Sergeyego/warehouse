@@ -100,21 +100,24 @@ void FormPack::upd()
 
 void FormPack::updCont()
 {
+    if (sender()==ui->pushButtonUpd){
+        modelPack->refreshRelsModel();
+    }
     modelPack->refresh(ui->dateEdit->date(),getIdSrc());
 }
 
 void FormPack::updMaster()
 {
     QVector<QVector<QVariant>> masters;
-    QSet<int> ids;
+    QSet<QString> ids;
     for (int i=0; i<modelPack->rowCount(); i++){
         QVariant id=modelPack->data(modelPack->index(i,10),Qt::EditRole);
-        if (!id.isNull() && !ids.contains(id.toInt())){
+        if (!id.isNull() && !ids.contains(id.toString())){
             QVector<QVariant> c;
             c.push_back(id);
             c.push_back(modelPack->data(modelPack->index(i,10),Qt::DisplayRole).toString());
             masters.push_back(c);
-            ids.insert(id.toInt());
+            ids.insert(id.toString());
         }
     }
     modelMaster->setModelData(masters);
@@ -132,9 +135,9 @@ void FormPack::packList()
 
 void FormPack::packNakl()
 {
-    int id_master=ui->comboBoxNaklMaster->model()->data(ui->comboBoxNaklMaster->model()->index(ui->comboBoxNaklMaster->currentIndex(),0),Qt::EditRole).toInt();
+    QString id_master=ui->comboBoxNaklMaster->model()->data(ui->comboBoxNaklMaster->model()->index(ui->comboBoxNaklMaster->currentIndex(),0),Qt::EditRole).toString();
     DialogWebView d;
-    if (d.sendGetReq("packnakl/elrtr/"+ui->dateEdit->date().toString("yyyy-MM-dd")+"/"+QString::number(getIdSrc())+"/"+QString::number(id_master)+"/")){
+    if (d.sendGetReq("packnakl/elrtr/"+ui->dateEdit->date().toString("yyyy-MM-dd")+"/"+QString::number(getIdSrc())+"/"+id_master+"/")){
         d.exec();
     }
 }

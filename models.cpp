@@ -73,19 +73,13 @@ Models::Models(QObject *parent) :
     relPallet->setSort("pallets.id desc");
     relPallet->model()->setLimit(2000);
 
-    relMaster = new DbSqlRelation("rab_rab","id","snam",this);
+    relMaster = new DbSqlRelation("kamin_empl","id","snam",this);
     relMaster->setAlias("rab_master");
     relMaster->setSort("rab_master.snam");
-    relMaster->setFilter("rab_master.id in (select q.id_rab from rab_qual q "
-                         "inner join rab_prof p on q.id_prof = p.id "
-                         "WHERE q.dat = (select max(dat) from rab_qual where dat <= '2999-04-01' "
-                         "and id_rab=q.id_rab) and p.id=26 )");
-    relRabPack = new DbSqlRelation("rab_rab","id","snam",this);
-    relRabPack->setSort("rab_rab.snam");
-    relRabPack->setFilter("rab_rab.id in (select q.id_rab from rab_qual q "
-                         "inner join rab_prof p on q.id_prof = p.id "
-                         "WHERE q.dat = (select max(dat) from rab_qual where dat <= '2999-04-01' "
-                         "and id_rab=q.id_rab) and p.id in (3,65) )");
+    relMaster->setFilter("rab_master.id in (select id from el_master)");
+    relRabPack = new DbSqlRelation("kamin_empl","id","snam",this);
+    relRabPack->setSort("kamin_empl.snam");
+    relRabPack->setFilter("kamin_empl.id in (select id from el_packer)");
 
 }
 

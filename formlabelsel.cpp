@@ -26,9 +26,6 @@ FormLabelsEl::~FormLabelsEl()
 
 void FormLabelsEl::printPackList()
 {
-    /*PackElDoc doc(data);
-    DialogPrintPackList d(&doc);
-    d.exec();*/
     if (!data->masPal().isEmpty()){
         QByteArray packer=data->packer().toUtf8();
         QString p64url = packer.toBase64().replace("+","-").replace("/","_");
