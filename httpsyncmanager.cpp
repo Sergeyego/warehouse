@@ -9,7 +9,7 @@ HttpSyncManager::HttpSyncManager(QObject *parent)
 bool HttpSyncManager::sendRequest(QString path, QString req, const QByteArray &data, QByteArray &respData)
 {
     QSqlDatabase db=QSqlDatabase::database();
-    const QString host=db.isValid()? /*db.hostName()*/"192.168.1.114" : "127.0.0.1";
+    const QString host=db.isValid()? db.hostName() : "127.0.0.1";
     int port=7000;
     QNetworkRequest request(QUrl("http://"+host+":"+QString::number(port)+"/"+path));
     request.setRawHeader("Accept-Charset", "UTF-8");

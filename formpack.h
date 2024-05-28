@@ -6,6 +6,7 @@
 #include "db/dbmapper.h"
 #include "models.h"
 #include "dialogwebview.h"
+#include "dialogpacker.h"
 
 namespace Ui {
 class FormPack;
@@ -17,6 +18,8 @@ class ModelPack : public DbTableModel
 public:
     explicit ModelPack(QWidget *parent = nullptr);
     void refresh(QDate dat, int id_src);
+    bool insertRow(int row, const QModelIndex &parent);
+    bool insertDb();
 
 private slots:
     void calcSum();
@@ -48,6 +51,7 @@ private slots:
     void updMaster();
     void packList();
     void packNakl();
+    void printBadge();
 };
 
 #endif // FORMPACK_H

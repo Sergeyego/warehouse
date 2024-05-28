@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 include(xlsx/qtxlsx.pri)
 
 SOURCES += \
+    dialogpacker.cpp \
     dialogreqload.cpp \
     dialogwebview.cpp \
     formpack.cpp \
@@ -95,6 +96,7 @@ SOURCES += \
     invoicemanager.cpp
 
 HEADERS += \
+    dialogpacker.h \
     dialogreqload.h \
     dialogwebview.h \
     formpack.h \
@@ -164,6 +166,7 @@ HEADERS += \
     invoicemanager.h
 
 FORMS += \
+    dialogpacker.ui \
     dialogreqload.ui \
     dialogwebview.ui \
     formpack.ui \

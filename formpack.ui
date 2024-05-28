@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1098</width>
-    <height>700</height>
+    <width>1096</width>
+    <height>698</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,6 +69,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonPrintBadge">
+       <property name="text">
+        <string>Печать бейджей</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_11">
@@ -290,14 +297,14 @@
    <header>db/dbdateedit.h</header>
   </customwidget>
   <customwidget>
-   <class>DbViewer</class>
-   <extends>QTableView</extends>
-   <header>db/dbviewer.h</header>
-  </customwidget>
-  <customwidget>
    <class>DbComboBox</class>
    <extends>QComboBox</extends>
    <header>db/dbcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbViewer</class>
+   <extends>QTableView</extends>
+   <header>db/dbviewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

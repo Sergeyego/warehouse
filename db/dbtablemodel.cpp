@@ -164,7 +164,13 @@ bool DbTableModel::removeRow(int row, const QModelIndex& parent)
     }
     if (ok){
         if (modelData->rowCount()<1) {
-            this->insertRow(0);
+            QVector<colVal> tmpRow;
+            for (int i=0; i<columnCount();i++){
+                tmpRow.push_back(modelData->column(i)->defaultVal);
+            }
+            beginInsertRows(QModelIndex(),rowCount(),rowCount());
+            ok=editor->add(rowCount(),tmpRow);
+            endInsertRows();
         }
         emit sigUpd();
     }

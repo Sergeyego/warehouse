@@ -59,6 +59,7 @@ FormPack::FormPack(QWidget *parent) :
     connect(ui->pushButtonnNakl,SIGNAL(clicked(bool)),this,SLOT(packNakl()));
     connect(modelPack,SIGNAL(sigRefresh()),this,SLOT(updMaster()));
     connect(modelPack,SIGNAL(sigUpd()),this,SLOT(updMaster()));
+    connect(ui->pushButtonPrintBadge,SIGNAL(clicked(bool)),this,SLOT(printBadge()));
 
     upd();
 }
@@ -142,6 +143,12 @@ void FormPack::packNakl()
     }
 }
 
+void FormPack::printBadge()
+{
+    DialogPacker d;
+    d.exec();
+}
+
 ModelPack::ModelPack(QWidget *parent) : DbTableModel("el_pallet_op",parent)
 {
     addColumn("id",tr("id"));
@@ -167,6 +174,16 @@ void ModelPack::refresh(QDate dat, int id_src)
     setDefaultValue(1,id_src);
     setDefaultValue(2,dat);
     select();
+}
+
+bool ModelPack::insertRow(int /*row*/, const QModelIndex &/*parent*/)
+{
+    return false;
+}
+
+bool ModelPack::insertDb()
+{
+    return false;
 }
 
 void ModelPack::calcSum()
