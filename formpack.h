@@ -18,8 +18,6 @@ class ModelPack : public DbTableModel
 public:
     explicit ModelPack(QWidget *parent = nullptr);
     void refresh(QDate dat, int id_src);
-    bool insertRow(int row, const QModelIndex &parent);
-    bool insertDb();
 
 private slots:
     void calcSum();

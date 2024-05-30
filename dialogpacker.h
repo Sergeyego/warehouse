@@ -25,6 +25,7 @@ private:
     Ui::DialogPacker *ui;
     ModelRo *modelPacker;
     double getPix(double mm);
+    bool isSelected();
 
 private slots:
     void upd();

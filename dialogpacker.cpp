@@ -23,6 +23,18 @@ double DialogPacker::getPix(double mm)
     return 96*0.03937007874015748*mm;
 }
 
+bool DialogPacker::isSelected()
+{
+    bool b=false;
+    for (int i=0; i<ui->tableView->model()->rowCount();i++){
+        if (ui->tableView->selectionModel()->isRowSelected(i,QModelIndex())){
+            b=true;
+            break;
+        }
+    }
+    return b;
+}
+
 void DialogPacker::upd()
 {
     QSqlQuery query;
@@ -47,13 +59,17 @@ void DialogPacker::updEmpl()
 
 void DialogPacker::printBadge()
 {
-    QPrinter printer;
-    printer.setPageSize(QPageSize(QPageSize::A5));
-    printer.setPageOrientation(QPageLayout::Portrait);
-    printer.setFullPage(true);
-    QPrintPreviewDialog preview(&printer, this);
-    connect(&preview,SIGNAL(paintRequested(QPrinter*)), this, SLOT(print(QPrinter*)));
-    preview.exec();
+    if (isSelected()){
+        QPrinter printer;
+        printer.setPageSize(QPageSize(QPageSize::A5));
+        printer.setPageOrientation(QPageLayout::Portrait);
+        printer.setFullPage(true);
+        QPrintPreviewDialog preview(&printer, this);
+        connect(&preview,SIGNAL(paintRequested(QPrinter*)), this, SLOT(print(QPrinter*)));
+        preview.exec();
+    } else {
+        QMessageBox::information(this,tr("Предупреждение"),tr("Не выбрано ни одного работника."),QMessageBox::Ok);
+    }
 }
 
 void DialogPacker::drawBadge(QPainter *painter, int pos, int row)

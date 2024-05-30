@@ -186,6 +186,8 @@ public:
     QVariant defaultValue(int column) const;
     bool setDecimals(int column, int dec);
     QString name() const;
+    void setInsertEnabled(bool b);
+    bool insertEnabled();
 
 protected:
     QString tableName;
@@ -200,6 +202,7 @@ private:
     MData *modelData;
     DataEditor *editor;
     bool block;
+    bool ins_en;
     QSqlIndex pkList;
     QSqlRecord defaultRecord;
 

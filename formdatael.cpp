@@ -563,10 +563,7 @@ void FormDataEl::updPacker()
 {
     QString save_p=ui->comboBoxPack->currentText();
     QSqlQuery query;
-    query.prepare("select r.snam from rab_rab r inner join rab_qual q on q.id_rab=r.id "
-                  "inner join rab_prof p on q.id_prof = p.id "
-                  "WHERE q.dat = (select max(dat) from rab_qual where dat <= '2999-04-01' "
-                  "and id_rab=r.id) and p.id=65 order by r.snam");
+    query.prepare("select nam from el_packer");
     if (query.exec()){
         modelPacker->setQuery(query);
         ui->comboBoxPack->setCurrentText(save_p);

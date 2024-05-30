@@ -164,6 +164,8 @@ ModelPack::ModelPack(QWidget *parent) : DbTableModel("el_pallet_op",parent)
     addColumn("id_main_rab",tr("Мастер"),Models::instance()->relMaster);
     setSort("el_pallet_op.dtm");
 
+    setInsertEnabled(false);
+
     connect(this,SIGNAL(sigRefresh()),this,SLOT(calcSum()));
     connect(this,SIGNAL(sigUpd()),this,SLOT(calcSum()));
 }
@@ -174,16 +176,6 @@ void ModelPack::refresh(QDate dat, int id_src)
     setDefaultValue(1,id_src);
     setDefaultValue(2,dat);
     select();
-}
-
-bool ModelPack::insertRow(int /*row*/, const QModelIndex &/*parent*/)
-{
-    return false;
-}
-
-bool ModelPack::insertDb()
-{
-    return false;
 }
 
 void ModelPack::calcSum()

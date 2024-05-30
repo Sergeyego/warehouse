@@ -8,6 +8,7 @@ DbTableModel::DbTableModel(QString table, QObject *parent) :
     modelData = new MData(this);
     editor = new DataEditor(modelData,this);
     block=false;
+    ins_en=true;
     pkList=QSqlDatabase::database().driver()->primaryIndex(tableName);
     defaultRecord=QSqlDatabase::database().driver()->record(tableName);
     //qDebug()<<pkList;
@@ -209,7 +210,9 @@ bool DbTableModel::isEmpty() const
 
 bool DbTableModel::insertRow(int /*row*/, const QModelIndex& /*parent*/)
 {
-    if (block) return false;
+    if (block || !ins_en) {
+        return false;
+    }
     bool ok=false;
     if (!editor->isAdd() && !editor->isEdt()){
         QVector<colVal> tmpRow;
@@ -296,8 +299,21 @@ QString DbTableModel::name() const
     return tableName;
 }
 
+bool DbTableModel::insertEnabled()
+{
+    return ins_en;
+}
+
+void DbTableModel::setInsertEnabled(bool b)
+{
+    ins_en=b;
+}
+
 bool DbTableModel::insertDb()
 {
+    if(!ins_en){
+        return false;
+    }
     QSqlQuery query;
     QString qu;
     QString rows, vals, rets;

@@ -451,25 +451,13 @@ void FormDataWire::updPart()
     }
 
     QSqlQuery queryNam;
-    queryNam.prepare("select r.id, r.first_name||' '||substr(r.last_name,1,1)||'. '||substr(r.middle_name,1,1)||'. '||'('||n.num||')' as rab, n.num "
-                     "from wire_namoch as n "
-                     "inner join wire_empl as r on n.id_rab = r.id "
-                     "where r.id <> 0 and n.id_pr = 3 "
-                     "order by rab");
+    queryNam.prepare("select ww.id, ww.rab, ww.num from wire_winder ww order by ww.rab");
     if (modelNam->execQuery(queryNam)){
         ui->comboBoxNam->setModelColumn(1);
     }
 
     QSqlQuery queryMaster;
-    queryMaster.prepare("select oj.id, e.first_name||' '||substr(e.last_name,1,1)||'. '||substr(e.middle_name,1,1)||'.' "
-                        "from wire_empl as e "
-                        "left outer join "
-                        "(select md.id_empl as id, p.nam as nam, p.id as idp from "
-                        "(select id_empl, max(dat) as mdat from (select * from wire_empl_pos_h where dat<= :dat ) as th group by id_empl) as md "
-                        "inner join wire_empl_pos_h h on (h.id_empl=md.id_empl and h.dat=md.mdat and h.id_op<>3) "
-                        "inner join wire_empl_pos as p on p.id=h.id_pos) as oj on e.id=oj.id "
-                        "where oj.idp=50 "
-                        "order by e.first_name, e.last_name, e.middle_name");
+    queryMaster.prepare("select id, nam from wire_master");
     queryMaster.bindValue(":dat",ui->dateEditEnd->date());
     if (modelMaster->execQuery(queryMaster)){
         ui->comboBoxMaster->setModelColumn(1);
