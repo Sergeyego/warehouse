@@ -122,6 +122,9 @@ void FormPack::updMaster()
         }
     }
     modelMaster->setModelData(masters);
+    if (ui->comboBoxNaklMaster->model()->rowCount()){
+        ui->comboBoxNaklMaster->setCurrentIndex(0);
+    }
 }
 
 void FormPack::packList()
