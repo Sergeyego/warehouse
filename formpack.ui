@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1096</width>
-    <height>698</height>
+    <width>1289</width>
+    <height>696</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -97,7 +97,14 @@
      <item>
       <widget class="QPushButton" name="pushButtonnNakl">
        <property name="text">
-        <string>Накладная</string>
+        <string>Накладная по партиям</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonNaklBrig">
+       <property name="text">
+        <string>Накладная по бригадам</string>
        </property>
       </widget>
      </item>

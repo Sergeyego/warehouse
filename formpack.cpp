@@ -46,6 +46,7 @@ FormPack::FormPack(QWidget *parent) :
     mapper->addLock(ui->radioButtonPerePack);
     mapper->addLock(ui->radioButtonTermoPack);
     mapper->addEmptyLock(ui->pushButtonnNakl);
+    mapper->addEmptyLock(ui->pushButtonNaklBrig);
     mapper->addEmptyLock(ui->pushButtonPackList);
     ui->horizontalLayoutMap->insertWidget(0,mapper);
 
@@ -57,6 +58,7 @@ FormPack::FormPack(QWidget *parent) :
     connect(modelPack,SIGNAL(sigSum(QString)),ui->labelSum,SLOT(setText(QString)));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(packList()));
     connect(ui->pushButtonnNakl,SIGNAL(clicked(bool)),this,SLOT(packNakl()));
+    connect(ui->pushButtonNaklBrig,SIGNAL(clicked(bool)),this,SLOT(packNakl()));
     connect(modelPack,SIGNAL(sigRefresh()),this,SLOT(updMaster()));
     connect(modelPack,SIGNAL(sigUpd()),this,SLOT(updMaster()));
     connect(ui->pushButtonPrintBadge,SIGNAL(clicked(bool)),this,SLOT(printBadge()));
@@ -139,9 +141,10 @@ void FormPack::packList()
 
 void FormPack::packNakl()
 {
+    bool by_rab=(sender()==ui->pushButtonNaklBrig);
     QString id_master=ui->comboBoxNaklMaster->model()->data(ui->comboBoxNaklMaster->model()->index(ui->comboBoxNaklMaster->currentIndex(),0),Qt::EditRole).toString();
     DialogWebView d;
-    if (d.sendGetReq("packnakl/elrtr/"+ui->dateEdit->date().toString("yyyy-MM-dd")+"/"+QString::number(getIdSrc())+"/"+id_master+"/")){
+    if (d.sendGetReq("packnakl/elrtr/"+ui->dateEdit->date().toString("yyyy-MM-dd")+"/"+QString::number(getIdSrc())+"/"+id_master+"?by_rab="+(by_rab ? "true":"false"))){
         d.exec();
     }
 }
