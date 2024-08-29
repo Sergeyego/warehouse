@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1156</width>
-    <height>648</height>
+    <width>1154</width>
+    <height>646</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -364,6 +364,13 @@
           <widget class="QPushButton" name="pushButtonXML">
            <property name="text">
             <string>XML</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonXMLPart">
+           <property name="text">
+            <string>XML с партиями</string>
            </property>
           </widget>
          </item>

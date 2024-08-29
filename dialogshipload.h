@@ -21,6 +21,7 @@ public slots:
 private:
     Ui::DialogShipLoad *ui;
     int id_s;
+    int id_pol;
     ModelRo *modelShip;
     ModelRo *modelEl;
     ModelRo *modelWire;

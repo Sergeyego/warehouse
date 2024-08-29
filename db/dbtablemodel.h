@@ -179,6 +179,8 @@ public:
     QVariant::Type columnType(int column) const;
     QVariant nullVal(int column) const;
     int currentEdtRow() const;
+    QVector<colVal> oldRow();
+    QVector<colVal> newRow();
     QValidator* validator(int column) const;
     void setValidator(int column, QValidator *validator);
     void setDefaultValue(int column, QVariant value);

@@ -12,7 +12,7 @@ DialogShipLoad::DialogShipLoad(int id_ship, QWidget *parent) :
     modelWire = new ModelRo(this);
 
     QSqlQuery query;
-    query.prepare("select sp.id, sp.nom_s, sp.dat_vid, p.short "
+    query.prepare("select sp.id, sp.nom_s, sp.dat_vid, p.short, sp.id_pol "
                   "from ship_plan sp "
                   "inner join poluch p on p.id = sp.id_pol "
                   "where sp.id_pol = (select s.id_pol  from sertifikat s where s.id = :id_sert ) and sp.dat_vid>= :d "
@@ -28,7 +28,9 @@ DialogShipLoad::DialogShipLoad(int id_ship, QWidget *parent) :
     ui->tableViewShip->setModel(modelShip);
     if (modelShip->columnCount()){
         ui->tableViewShip->setColumnHidden(0,true);
+        ui->tableViewShip->setColumnHidden(4,true);
         ui->tableViewShip->resizeToContents();
+        id_pol=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(0,4)).toInt();
     }
 
     ui->tableViewEl->setModel(modelEl);
@@ -136,10 +138,11 @@ bool DialogShipLoad::insertEl(int id_part, double kvo)
             }
         } else {
             QSqlQuery query;
-            query.prepare("insert into otpusk (id_sert, id_part, massa) values (:id_sert, :id_part, :massa)");
+            query.prepare("insert into otpusk (id_sert, id_part, massa, id_pol) values (:id_sert, :id_part, :massa, :id_pol)");
             query.bindValue(":id_sert",id_s);
             query.bindValue(":id_part",id_part);
             query.bindValue(":massa",kvo);
+            query.bindValue(":id_pol",id_pol);
             ok=query.exec();
             if (!ok){
                 QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
@@ -175,10 +178,11 @@ bool DialogShipLoad::insertWire(int id_part, double kvo)
             }
         } else {
             QSqlQuery query;
-            query.prepare("insert into wire_shipment_consist (id_ship, id_wparti, m_netto) values (:id_sert, :id_part, :massa)");
+            query.prepare("insert into wire_shipment_consist (id_ship, id_wparti, m_netto, id_pol) values (:id_sert, :id_part, :massa, :id_pol)");
             query.bindValue(":id_sert",id_s);
             query.bindValue(":id_part",id_part);
             query.bindValue(":massa",kvo);
+            query.bindValue(":id_pol",id_pol);
             ok=query.exec();
             if (!ok){
                 QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);

@@ -246,6 +246,16 @@ int DbTableModel::currentEdtRow() const
     return editor->currentPos();
 }
 
+QVector<colVal> DbTableModel::oldRow()
+{
+    return editor->oldRow();
+}
+
+QVector<colVal> DbTableModel::newRow()
+{
+    return editor->newRow();
+}
+
 QValidator *DbTableModel::validator(int column) const
 {
     return modelData->column(column)->validator;

@@ -28,7 +28,7 @@ class ModelShipConsEl : public DbTableModel
 public:
     ModelShipConsEl(QObject *parent=0);
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const;
-    void refresh(int id_ship);
+    void refresh(int id_ship, int id_pol);
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
     bool submit();
     void revert();
@@ -51,7 +51,7 @@ class ModelShipConsWire : public DbTableModel
 public:
     ModelShipConsWire(QObject *parent=0);
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const;
-    void refresh(int id_ship);
+    void refresh(int id_ship, int id_pol);
     bool setData(const QModelIndex &index, const QVariant &value, int role=Qt::EditRole);
     bool submit();
     void revert();
@@ -132,6 +132,7 @@ private slots:
     void setCurrentShipDataWire(QModelIndex index);
     void edtCods();
     void goXml();
+    void goXmlPart();
     void loadData();
     void setReqStatVisible(bool b);
 };
