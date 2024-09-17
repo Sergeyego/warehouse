@@ -228,7 +228,7 @@ void ModelPerePackWire::refresh(int id_part)
                                     "inner join wire_parti as wp on p.id_wpartires=wp.id "
                                     "inner join wire_parti_m as m on wp.id_m=m.id "
                                     "where p.id_wpartisrc= :id_part1 ) "
-                                    "union "
+                                    "union all "
                                     "(select n.dat as dat, n.num, 'Переуп. из партии '||m.n_s ||'-'||date_part('year',m.dat) as nam, p.m_netto from wire_perepack as p "
                                     "inner join wire_perepack_nakl as n on p.id_nakl=n.id "
                                     "inner join wire_parti as wp on p.id_wpartisrc=wp.id "

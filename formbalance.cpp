@@ -62,6 +62,7 @@ void FormBalance::saveSettings()
 
 void FormBalance::refresh()
 {
+    ui->pushButtonUpd->setEnabled(false);
     bool byp = ui->radioButtonPart->isChecked();
     balanceModel->refresh(ui->dateEdit->date(),byp,ui->checkBoxOt->isChecked());
     if (byp){
@@ -79,6 +80,7 @@ void FormBalance::refresh()
     if (ui->tableView->model()->rowCount()){
         ui->tableView->selectRow(0);
     }
+    ui->pushButtonUpd->setEnabled(true);
 }
 
 void FormBalance::calcSum()
