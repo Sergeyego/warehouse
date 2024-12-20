@@ -22,7 +22,7 @@ FormBalanceEW::FormBalanceEW(bool e, bool w, QWidget *parent) :
 
     QStringList headerPart, headerMark;
 
-    headerPart<<"id"<<"Марка"<<"Диам."<<"Носитель"<<"Партия"<<"Год"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"key";
+    headerPart<<"id"<<"Марка"<<"Диам."<<"Носитель"<<"Партия"<<"Дата партии"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"key";
     headerMark<<"key"<<"Марка"<<"Диам."<<"Носитель"<<"Количество, кг";
 
     modelPart->setHeader(headerPart);
@@ -59,7 +59,7 @@ void FormBalanceEW::startUpd()
     QString query;
     if (en_el){
         query=QString("select 'e:'||cpn.id_part, e.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END, "
-                      "cast(p.diam as varchar(3)), ep.pack_ed, p.n_s, date_part('year',p.dat_part)::integer as pye, i.nam, rn.nam, p.prim_prod, cpn.kvo, "
+                      "cast(p.diam as varchar(3)), ep.pack_ed, p.n_s||'-'||date_part('year',p.dat_part), p.dat_part, i.nam, rn.nam, p.prim_prod, cpn.kvo, "
                       "e.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END||'#'||cast(p.diam as varchar(3))||'#'||ep.pack_ed "
                       "from calc_parti_new('%1') as cpn "
                       "inner join parti p on p.id = cpn.id_part "
@@ -69,12 +69,12 @@ void FormBalanceEW::startUpd()
                       "left join rcp_nam rn  on rn.id = p.id_rcp "
                       "inner join elrtr_vars ev on ev.id = p.id_var "
                       "where cpn.kvo<>0 "
-                      "order by e.marka, p.diam, pye, p.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
+                      "order by e.marka, p.diam, p.dat_part, p.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
 
     } else if (en_wire){
         query=QString("select 'w:'||p.id, pr.nam, d.sdim, k.short|| "
                       "CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END, "
-                      "m.n_s, cast(date_part('year',m.dat) as integer) as yer, "
+                      "m.n_s||'-'||date_part('year',m.dat), m.dat, "
                       "s.nam, pb.n_plav, p.prim_prod, c.st, "
                       "pr.nam||'#'||d.sdim||'#'||k.short|| CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END "
                       "from wire_parti p "
@@ -87,7 +87,7 @@ void FormBalanceEW::startUpd()
                       "inner join prov_buht pb on pb.id = m.id_buht "
                       "inner join wire_pack wp on wp.id = p.id_pack_type "
                       "where c.st <>0 "
-                      "order by pr.nam, d.sdim, k.nam, yer, m.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
+                      "order by pr.nam, d.sdim, k.nam, m.dat, m.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
     }
     if (!query.isEmpty()){
         sqlExecutor->setQuery(query);
