@@ -86,7 +86,7 @@ void FormAccNaklEl::refreshNaklCont(QModelIndex index)
         QDate dat=ui->tableViewNakl->model()->data(ui->tableViewNakl->model()->index(index.row(),1),Qt::EditRole).toDate();
         int id_type=ui->tableViewNakl->model()->data(ui->tableViewNakl->model()->index(index.row(),2),Qt::EditRole).toInt();
         QSqlQuery query;
-        query.prepare("select e.marka, p2.diam, p2.n_s||'-'||date_part('year',p.dat), p.kvo "
+        query.prepare("select e.marka, p2.diam, p2.n_s||'-'||date_part('year',p2.dat_part), p.kvo "
                       "from prod p "
                       "inner join parti p2 on p2.id = p.id_part "
                       "inner join elrtr e on e.id = p2.id_el "
