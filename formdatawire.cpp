@@ -356,14 +356,16 @@ void FormDataWire::refreshData(QModelIndex index)
 
     QSqlQuery sertQuery;
     sertQuery.prepare("select i.id_doc_t, i.ved_short, i.grade "
-                      "from zvd_get_wire_sert( "
+                      "from zvd_get_wire_sert_var ( "
                       "(select dat from wire_parti_m where id= (select p.id_m from wire_parti as p where p.id= :id1 ) ), "
                       "(select id_provol from wire_parti_m where id= (select p.id_m from wire_parti as p where p.id= :id2 ) ), "
-                      "(select id_diam from wire_parti_m where id= (select p.id_m from wire_parti as p where p.id= :id3 ) ) "
-                      ") as i group by i.id_doc_t, i.ved_short, i.grade order by i.id_doc_t ");
+                      "(select id_diam from wire_parti_m where id= (select p.id_m from wire_parti as p where p.id= :id3 ) ), "
+                      "(select p.id_var from wire_parti as p where p.id = :id4 ) "
+                      ") as i where i.en=true group by i.id_doc_t, i.ved_short, i.grade order by i.id_doc_t ");
     sertQuery.bindValue(":id1",id_part);
     sertQuery.bindValue(":id2",id_part);
     sertQuery.bindValue(":id3",id_part);
+    sertQuery.bindValue(":id4",id_part);
     if (modelOdobr->execQuery(sertQuery)){
         ui->tableViewOdobr->setColumnHidden(0,true);
         ui->tableViewOdobr->resizeColumnsToContents();
