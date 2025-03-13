@@ -12,8 +12,15 @@ FormMovEl::FormMovEl(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate(QDate::currentDate().year(),1,1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    reader = new Reader();
+
     executorPart = new ProgressExecutor(this);
     executorOst = new ProgressExecutor(this);
+
+    if (!Models::instance()->relElrtr->isInital()){
+        Models::instance()->relElrtr->refreshModel();
+    }
+    ui->comboBoxMark->setModel(Models::instance()->relElrtr->model());
 
     modelPartElInfo = new ModelPartElInfo(this);
     modelPartElInfo->refresh(-1);
@@ -76,6 +83,8 @@ FormMovEl::FormMovEl(QWidget *parent) :
     connect(modelSelfEl,SIGNAL(sigSum(QString)),ui->labelSelf,SLOT(setText(QString)));
     connect(modelStockEl,SIGNAL(sigSum(QString)),ui->labelStock,SLOT(setText(QString)));
     connect(modelShipEl,SIGNAL(sigSum(QString)),ui->labelShip,SLOT(setText(QString)));
+    connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),ui->comboBoxMark,SLOT(setEnabled(bool)));
+    connect(ui->tableViewShip,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showCert(QModelIndex)));
 
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updInfo(QModelIndex)));
 }
@@ -83,6 +92,7 @@ FormMovEl::FormMovEl(QWidget *parent) :
 FormMovEl::~FormMovEl()
 {
     saveSettings();
+    delete reader;
     delete ui;
 }
 
@@ -100,13 +110,17 @@ void FormMovEl::saveSettings()
 
 void FormMovEl::startUpd()
 {
+    QString flt;
+    if (ui->checkBoxOnly->isChecked()){
+        flt="and p.id_el = "+QString::number(ui->comboBoxMark->getCurrentData().val.toInt())+" ";
+    }
     QString query = QString("select p.id, p.n_s||'-'||date_part('year',p.dat_part) as part, e.marka, p.diam, ev.nam, ep.pack_ed, i.nam, c.kvo "
                             "from calc_parti_new('3000-01-01') as c "
                             "inner join parti as p on c.id_part=p.id "
                             "inner join el_pack as ep on ep.id=p.id_pack "
                             "inner join elrtr as e on p.id_el=e.id "
                             "inner join istoch as i on p.id_ist=i.id "
-                            "inner join elrtr_vars ev on ev.id = p.id_var "
+                            "inner join elrtr_vars ev on ev.id = p.id_var "+flt+
                             "where p.dat_part between '%1' and '%2' "
                             "order by p.n_s, p.dat_part").arg(ui->dateEditBeg->date().toString("yyyy-MM-dd")).arg(ui->dateEditEnd->date().toString("yyyy-MM-dd"));
     executorPart->setQuery(query);
@@ -150,6 +164,7 @@ void FormMovEl::updInfo(QModelIndex index)
     ui->tableViewStock->resizeToContents();
 
     modelShipEl->refresh(id_part);
+    ui->tableViewShip->setColumnHidden(5,true);
     ui->tableViewShip->resizeToContents();
 
     modelOstEl->refresh(id_part);
@@ -183,6 +198,19 @@ void FormMovEl::saveInfo()
 {
     if (mapperInfo->submit()){
         ui->pushButtonSaveInfo->setEnabled(false);
+    }
+}
+
+void FormMovEl::showCert(QModelIndex index)
+{
+    int ds_status=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),4),Qt::EditRole).toInt();
+    if (ds_status>0){
+        QString name=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),1),Qt::EditRole).toString();
+        name +="_"+ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),1),Qt::EditRole).toString();
+        name=name.replace(QRegExp("[^\\w]"), "_");
+        int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),5),Qt::EditRole).toInt();
+        reader->setCurrentIdShip(id_ship,name,"elrtr");
+        reader->show();
     }
 }
 
@@ -473,7 +501,7 @@ void ModelShipEl::refresh(int id_part)
     double sum=0;
     QString title=tr("Отгрузки");
     QSqlQuery query;
-    query.prepare("select s.dat_vid, s.nom_s, p.short, o.massa "
+    query.prepare("select s.dat_vid, s.nom_s, p.short, o.massa, o.ds_status, o.id "
                   "from otpusk o "
                   "inner join sertifikat s on o.id_sert=s.id "
                   "inner join poluch p on s.id_pol=p.id "
@@ -485,6 +513,7 @@ void ModelShipEl::refresh(int id_part)
         setHeaderData(1,Qt::Horizontal,tr("№ нак."));
         setHeaderData(2,Qt::Horizontal,tr("Получатель"));
         setHeaderData(3,Qt::Horizontal,tr("К-во, кг"));
+        setHeaderData(4,Qt::Horizontal,tr("ЭЦП"));
         for (int i=0; i<rowCount(); i++){
             sum+=data(index(i,3),Qt::EditRole).toDouble();
         }

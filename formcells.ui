@@ -24,23 +24,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButtonCell">
-       <property name="text">
-        <string>Ячейки</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="radioButtonCont">
-       <property name="text">
-        <string>Контейнеры</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

@@ -379,14 +379,16 @@ void ModelBalance::updData(QDate dat)
     }
     QSqlQuery query;
     query.prepare("select 'e:'||p.id, ep.pack_ed, "
-                  "CASE WHEN p.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || p.prim_prod  from parti p "
+                  "CASE WHEN p.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || COALESCE(p.prim_prod,'')  from parti p "
                   "inner join el_pack ep on ep.id = p.id_pack "
                   "inner join elrtr_vars ev on ev.id = p.id_var "
                   "where p.id between :minide and :maxide "
                   "union "
-                  "select 'w:'||wp.id, CASE WHEN (COALESCE(wp2.mas_ed,0)<>0) THEN (' (' || COALESCE(wp2.mas_ed,0) || ' кг)') ELSE '' end, wp.prim_prod "
+                  "select 'w:'||wp.id, CASE WHEN (COALESCE(wp2.mas_ed,0)<>0) THEN (' (' || COALESCE(wp2.mas_ed,0) || ' кг)') ELSE '' end, "
+                  "CASE WHEN wp.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || COALESCE(wp.prim_prod,'') "
                   "from wire_parti wp "
                   "inner join wire_pack wp2 on wp2.id = wp.id_pack_type "
+                  "inner join elrtr_vars ev on ev.id = wp.id_var "
                   "where wp.id between :minidw and :maxidw ");
     query.bindValue(":minide",minide);
     query.bindValue(":maxide",maxide);

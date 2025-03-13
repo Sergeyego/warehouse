@@ -21,8 +21,6 @@ FormCells::FormCells(QWidget *parent) :
     connect(ui->toolButtonCheckAll,SIGNAL(clicked(bool)),this,SLOT(checkAll()));
     connect(ui->toolButtonUncheckAll,SIGNAL(clicked(bool)),this,SLOT(uncheckAll()));
     connect(ui->pushButtonPrint,SIGNAL(clicked(bool)),this,SLOT(printLbl()));
-    connect(ui->radioButtonCell,SIGNAL(clicked(bool)),this,SLOT(refresh()));
-    connect(ui->radioButtonCont,SIGNAL(clicked(bool)),this,SLOT(refresh()));
     connect(ui->pushButtonCfgSize,SIGNAL(clicked(bool)),this,SLOT(cfgLblSize()));
 
     refresh();
@@ -41,7 +39,6 @@ void FormCells::loadsettings()
     heightLbl = settings.value("heightLbl",40).toDouble();
     gapLbl = settings.value("gapLbl",2.5).toDouble();
     rotLbl = settings.value("rotLbl",false).toBool();
-    ui->radioButtonCont->setChecked(!settings.value("lblIsCell",true).toBool());
     ui->labelLblSize->setText(QString("Этикетка %1 на %2").arg(widthLbl).arg(heightLbl));
 }
 
@@ -52,20 +49,14 @@ void FormCells::savesettings()
     settings.setValue("heightLbl",heightLbl);
     settings.setValue("gapLbl",gapLbl);
     settings.setValue("rotLbl",rotLbl);
-    settings.setValue("lblIsCell",ui->radioButtonCell->isChecked());
 }
 
 void FormCells::refresh()
 {
     QStringList head;
     QVector<QVector<QVariant>> data;
-    if (ui->radioButtonCell->isChecked()){
-        head<<"Ячейка"<<"Штрихкод"<<"Зона"<<"Стеллаж"<<"Позиция"<<"Ярус"<<"Статус ячейки";
-        Models::instance()->sync1C->getCells(data);
-    } else if (ui->radioButtonCont->isChecked()){
-        head<<"Название"<<"Штрихкод"<<"Состояние"<<"Проконтролирован"<<"Упакован";
-        Models::instance()->sync1C->getConts(data);
-    }
+    head<<"Ячейка"<<"Штрихкод"<<"Зона"<<"Стеллаж"<<"Позиция"<<"Ярус"<<"Статус ячейки";
+    Models::instance()->sync1C->getCells(data);
     ui->lineEditStr->clear();
     ui->comboBoxColumn->clear();
     ui->comboBoxColumn->addItems(head);

@@ -72,11 +72,11 @@ void FormBalanceEW::startUpd()
                       "order by e.marka, p.diam, p.dat_part, p.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
 
     } else if (en_wire){
-        query=QString("select 'w:'||p.id, pr.nam, d.sdim, k.short|| "
+        query=QString("select 'w:'||p.id, pr.nam || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END, d.sdim, k.short|| "
                       "CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END, "
                       "m.n_s||'-'||date_part('year',m.dat), m.dat, "
                       "s.nam, pb.n_plav, p.prim_prod, c.st, "
-                      "pr.nam||'#'||d.sdim||'#'||k.short|| CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END "
+                      "pr.nam||CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' END||'#'||d.sdim||'#'||k.short|| CASE WHEN wp.id<>0 THEN ' ('||wp.mas_ed||' кг)' ELSE '' END "
                       "from wire_parti p "
                       "inner join wire_parti_m as m on p.id_m=m.id "
                       "inner join provol pr on pr.id=m.id_provol "
@@ -86,6 +86,7 @@ void FormBalanceEW::startUpd()
                       "inner join wire_source s on m.id_source=s.id "
                       "inner join prov_buht pb on pb.id = m.id_buht "
                       "inner join wire_pack wp on wp.id = p.id_pack_type "
+                      "inner join elrtr_vars ev on ev.id = p.id_var "
                       "where c.st <>0 "
                       "order by pr.nam, d.sdim, k.nam, m.dat, m.n_s").arg(ui->dateEdit->date().toString("yyyy-MM-dd"));
     }

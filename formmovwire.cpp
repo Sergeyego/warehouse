@@ -11,6 +11,13 @@ FormMovWire::FormMovWire(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate(QDate::currentDate().year(),1,1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    reader = new Reader();
+
+    if (!Models::instance()->relProvol->isInital()){
+        Models::instance()->relProvol->refreshModel();
+    }
+    ui->comboBoxMark->setModel(Models::instance()->relProvol->model());
+
     modelNamWire = new ModelNamWire(this);
     ui->tableViewNam->setModel(modelNamWire);
 
@@ -51,6 +58,8 @@ FormMovWire::FormMovWire(QWidget *parent) :
     connect(modelBreakWire,SIGNAL(sigSum(QString)),ui->labelBreak,SLOT(setText(QString)));
     connect(modelStockWire,SIGNAL(sigSum(QString)),ui->labelStock,SLOT(setText(QString)));
     connect(modelShipWire,SIGNAL(sigSum(QString)),ui->labelShip,SLOT(setText(QString)));
+    connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),ui->comboBoxMark,SLOT(setEnabled(bool)));
+    connect(ui->tableViewShip,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showCert(QModelIndex)));
 
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updInfo(QModelIndex)));
 }
@@ -58,6 +67,7 @@ FormMovWire::FormMovWire(QWidget *parent) :
 FormMovWire::~FormMovWire()
 {
     saveSettings();
+    delete reader;
     delete ui;
 }
 
@@ -75,6 +85,10 @@ void FormMovWire::saveSettings()
 
 void FormMovWire::startUpd()
 {
+    QString flt;
+    if (ui->checkBoxOnly->isChecked()){
+        flt="and m.id_provol = "+QString::number(ui->comboBoxMark->getCurrentData().val.toInt())+" ";
+    }
     QString query = QString("select s.id_wparti, m.n_s ||'-'|| date_part('year',m.dat), pr.nam, d.sdim, pk.short, wp.pack_ed, ws.nam, s.st as sklad "
                             "from wire_calc_stock('3000-01-01') as s "
                             "inner join wire_parti as p on s.id_wparti=p.id "
@@ -84,7 +98,7 @@ void FormMovWire::startUpd()
                             "inner join wire_pack_kind as pk on p.id_pack=pk.id "
                             "inner join wire_pack wp on wp.id = p.id_pack_type "
                             "inner join wire_source ws on ws.id = m.id_source "
-                            "where m.dat between '%1' and '%2' "
+                            "where m.dat between '%1' and '%2' "+flt+
                             "order by m.n_s, m.dat, pr.nam, d.sdim, pk.short").arg(ui->dateEditBeg->date().toString("yyyy-MM-dd")).arg(ui->dateEditEnd->date().toString("yyyy-MM-dd"));
     executorPart->setQuery(query);
     executorPart->start();
@@ -131,6 +145,7 @@ void FormMovWire::updInfo(QModelIndex index)
     ui->tableViewStock->resizeToContents();
 
     modelShipWire->refresh(id_part);
+    ui->tableViewShip->setColumnHidden(5,true);
     ui->tableViewShip->resizeToContents();
 }
 
@@ -154,6 +169,19 @@ void FormMovWire::savePrim()
         } else {
             QMessageBox::critical(this,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
         }
+    }
+}
+
+void FormMovWire::showCert(QModelIndex index)
+{
+    int ds_status=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),4),Qt::EditRole).toInt();
+    if (ds_status>0){
+        QString name=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),1),Qt::EditRole).toString();
+        name +="_"+ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),1),Qt::EditRole).toString();
+        name=name.replace(QRegExp("[^\\w]"), "_");
+        int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),5),Qt::EditRole).toInt();
+        reader->setCurrentIdShip(id_ship,name,"wire");
+        reader->show();
     }
 }
 
@@ -337,7 +365,7 @@ void ModelShipWire::refresh(int id_part)
     double sum=0;
     QString title=tr("Отгрузки");
     QSqlQuery query;
-    query.prepare("select s.dat_vid, s.nom_s, p.short, d.m_netto "
+    query.prepare("select s.dat_vid, s.nom_s, p.short, d.m_netto, d.ds_status, d.id "
                   "from wire_shipment_consist as d "
                   "inner join sertifikat as s on s.id=d.id_ship "
                   "inner join poluch as p on s.id_pol=p.id "
@@ -349,6 +377,7 @@ void ModelShipWire::refresh(int id_part)
         setHeaderData(1,Qt::Horizontal,tr("№ нак."));
         setHeaderData(2,Qt::Horizontal,tr("Получатель"));
         setHeaderData(3,Qt::Horizontal,tr("К-во, кг"));
+        setHeaderData(4,Qt::Horizontal,tr("ЭЦП"));
         for (int i=0; i<rowCount(); i++){
             sum+=data(index(i,3),Qt::EditRole).toDouble();
         }

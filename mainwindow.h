@@ -13,7 +13,6 @@
 #include "formpoluch.h"
 #include "formdrv.h"
 #include "formbalance.h"
-#include "formturnovers.h"
 #include "formreportel.h"
 #include "formreportwire.h"
 #include "olap/cubewidget.h"
@@ -60,7 +59,6 @@ private slots:
     void newFormBalance();
     void newFormBalanceEl();
     void newFormBalanceWire();
-    void newFormTurnovers();
     void newFormReportEl();
     void newFormReportWire();
     void newAnShipEl();

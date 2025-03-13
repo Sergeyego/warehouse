@@ -28,6 +28,7 @@ SOURCES += \
     dialogpacker.cpp \
     dialogreqload.cpp \
     dialogwebview.cpp \
+    formcert.cpp \
     formpack.cpp \
     formreqreport.cpp \
     formrequests.cpp \
@@ -41,13 +42,13 @@ SOURCES += \
     db/dbviewer.cpp \
     qftp/qftp.cpp \
     qftp/qurlinfo.cpp \
+    reader.cpp \
     sync1c.cpp \
     models.cpp \
     formship.cpp \
     dialogcods.cpp \
     formpoluch.cpp \
     formbalance.cpp \
-    formturnovers.cpp \
     olap/axiswidget.cpp \
     olap/cubewidget.cpp \
     olap/cubic.cpp \
@@ -99,6 +100,7 @@ HEADERS += \
     dialogpacker.h \
     dialogreqload.h \
     dialogwebview.h \
+    formcert.h \
     formpack.h \
     formreqreport.h \
     formrequests.h \
@@ -111,13 +113,13 @@ HEADERS += \
     db/dbviewer.h \
     qftp/qftp.h \
     qftp/qurlinfo.h \
+    reader.h \
     sync1c.h \
     models.h \
     formship.h \
     dialogcods.h \
     formpoluch.h \
     formbalance.h \
-    formturnovers.h \
     olap/axiswidget.h \
     olap/cubewidget.h \
     olap/cubic.h \
@@ -169,6 +171,7 @@ FORMS += \
     dialogpacker.ui \
     dialogreqload.ui \
     dialogwebview.ui \
+    formcert.ui \
     formpack.ui \
     formreqreport.ui \
     formrequests.ui \
@@ -178,7 +181,6 @@ FORMS += \
     dialogcods.ui \
     formpoluch.ui \
     formbalance.ui \
-    formturnovers.ui \
     olap/axiswidget.ui \
     olap/cubewidget.ui \
     olap/dialogolapflt.ui \
@@ -208,7 +210,8 @@ FORMS += \
     formmovwire.ui \
     formshipcons.ui \
     dialogshipload.ui \
-    db/dbrelationeditdialog.ui
+    db/dbrelationeditdialog.ui \
+    reader.ui
 
 RC_FILE = ico.rc
 

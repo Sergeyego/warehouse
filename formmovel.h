@@ -8,6 +8,8 @@
 #include <QDataWidgetMapper>
 #include "modelro.h"
 #include "dialogrest.h"
+#include "models.h"
+#include "reader.h"
 
 namespace Ui {
 class FormMovEl;
@@ -131,6 +133,7 @@ private:
     ModelOstEl *modelOstEl;
     void loadSettings();
     void saveSettings();
+    Reader *reader;
 
 private slots:
     void startUpd();
@@ -139,6 +142,7 @@ private slots:
     void calcOst();
     void enSaveInfo();
     void saveInfo();
+    void showCert(QModelIndex index);
 };
 
 #endif // FORMMOVEL_H

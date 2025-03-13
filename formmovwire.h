@@ -5,6 +5,8 @@
 #include "progressexecutor.h"
 #include "modelro.h"
 #include "db/tablemodel.h"
+#include "models.h"
+#include "reader.h"
 
 namespace Ui {
 class FormMovWire;
@@ -91,6 +93,7 @@ private:
     ModelBreakWire *modelBreakWire;
     ModelStockWire *modelStockWire;
     ModelShipWire *modelShipWire;
+    Reader *reader;
 
 private slots:
     void startUpd();
@@ -98,6 +101,7 @@ private slots:
     void updInfo(QModelIndex index);
     void enSavePrim();
     void savePrim();
+    void showCert(QModelIndex index);
 };
 
 #endif // FORMMOVWIRE_H

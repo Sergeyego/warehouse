@@ -7,6 +7,7 @@
 #include "models.h"
 #include "dialogcods.h"
 #include "dialogshipload.h"
+#include "formcert.h"
 #include <QDomDocument>
 
 namespace Ui {
@@ -131,10 +132,10 @@ private slots:
     void setCurrentShipDataEl(QModelIndex index);
     void setCurrentShipDataWire(QModelIndex index);
     void edtCods();
-    void goXml();
     void goXmlPart();
     void loadData();
     void setReqStatVisible(bool b);
+    void showCert();
 };
 
 #endif // FORMSHIPCONS_H
