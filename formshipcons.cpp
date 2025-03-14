@@ -48,7 +48,7 @@ FormShipCons::FormShipCons(QWidget *parent) :
     ui->tableViewWire->setModel(modelWire);
     ui->tableViewWire->setColumnHidden(0,true);
     ui->tableViewWire->setColumnHidden(1,true);
-    ui->tableViewWire->setColumnWidth(2,350);
+    ui->tableViewWire->setColumnWidth(2,400);
     ui->tableViewWire->setColumnWidth(3,100);
     ui->tableViewWire->setColumnWidth(4,300);
 
@@ -250,21 +250,20 @@ void FormShipCons::goXmlPart()
 
     query.clear();
     query.prepare("select * from ( "
-                  "(select e.marka||' д-'||d.sdim as marka, sum(o.massa) as kvo, ke.cod as cod, "
+                  "(select e.marka||' д-'||d.sdim as marka, o.massa as kvo, ke.cod as cod, "
                   "p.n_s||'-'||date_part('year',p.dat_part) as part, s.dat_vid + make_interval(0,e.shelf_life) as god, "
-                  "'№'||p.n_s||'-'||date_part('year',p.dat_part)||'/'||s.nom_s||' от '||to_char(s.dat_vid, 'DD.MM.YYYY') as nom, 'e' as typ "
+                  "'№'||p.n_s||'-'||date_part('year',p.dat_part)||'/'||s.nom_s||' от '||to_char(s.dat_vid, 'DD.MM.YYYY') as nom, 'e' as typ, o.hash, o.id "
                   "from otpusk o "
                   "inner join sertifikat s on s.id = o.id_sert "
                   "inner join parti p on o.id_part=p.id "
                   "inner join elrtr e on p.id_el=e.id "
                   "inner join diam d on d.diam=p.diam "
                   "left outer join td_keys_el as ke on ke.id_el=p.id_el and ke.id_diam=d.id and ke.id_pack=p.id_pack and ke.id_var=p.id_var "
-                  "where o.id_sert = :id_sert1 "
-                  "group by e.marka, d.sdim, ke.cod, p.n_s, p.dat_part, s.dat_vid, s.nom_s, e.shelf_life) "
+                  "where o.id_sert = :id_sert1 )"
                   "union "
-                  "(select pr.nam||' д-'||d.sdim||' '||k.nam, sum(w.m_netto), kw.cod , m.n_s||'-'||date_part('year',m.dat), "
+                  "(select pr.nam||' д-'||d.sdim||' '||k.nam, w.m_netto, kw.cod , m.n_s||'-'||date_part('year',m.dat), "
                   "s.dat_vid + make_interval(0,pr.shelf_life), "
-                  "'№'||m.n_s||'-'||date_part('year',m.dat)||'/'||s.nom_s||' от '||to_char(s.dat_vid, 'DD.MM.YYYY'), 'w' "
+                  "'№'||m.n_s||'-'||date_part('year',m.dat)||'/'||s.nom_s||' от '||to_char(s.dat_vid, 'DD.MM.YYYY'), 'w', w.hash, w.id "
                   "from wire_shipment_consist as w "
                   "inner join sertifikat s on s.id = w.id_ship "
                   "inner join wire_parti as p on p.id=w.id_wparti "
@@ -273,8 +272,7 @@ void FormShipCons::goXmlPart()
                   "inner join diam as d on d.id=m.id_diam "
                   "inner join wire_pack_kind as k on p.id_pack=k.id "
                   "left outer join td_keys_wire as kw on kw.id_prov=m.id_provol and kw.id_diam=m.id_diam and kw.id_spool=p.id_pack and kw.id_pack=p.id_pack_type "
-                  "where w.id_ship= :id_sert2 "
-                  "group by pr.nam, d.sdim, k.nam, kw.cod, m.n_s, m.dat, s.dat_vid, s.nom_s, pr.shelf_life) "
+                  "where w.id_ship = :id_sert2 )"
                   ") as z order by z.typ, z.marka, z.part");
     query.bindValue(":id_sert1", id_ship);
     query.bindValue(":id_sert2", id_ship);
@@ -294,6 +292,7 @@ void FormShipCons::goXmlPart()
             stroka.appendChild(newElement(QString::fromUtf8("Партия"),query.value(3).toString(),&doc));
             stroka.appendChild(newElement(QString::fromUtf8("СрокХранения"),query.value(4).toDate().toString("dd.MM.yyyy"),&doc));
             stroka.appendChild(newElement(QString::fromUtf8("Сертификат"),query.value(5).toString(),&doc));
+            stroka.appendChild(newElement(QString::fromUtf8("СсылкаНаСертификат"),"https://certificates.czcm-weld.ru/"+query.value(7).toString()+"/"+query.value(8).toString()+"-ru.pdf",&doc));
             tov.appendChild(stroka);
             i++;
         }
@@ -391,14 +390,21 @@ ModelShipConsEl::ModelShipConsEl(QObject *parent) : DbTableModel("otpusk", paren
 
 QVariant ModelShipConsEl::data(const QModelIndex &index, int role) const
 {
-    if(role == Qt::BackgroundRole) {
+    if (role == Qt::BackgroundRole) {
         int area = colorState.value(DbTableModel::data(this->index(index.row(),2),Qt::EditRole).toInt());
-        if(area == 4) return QVariant(QColor(255,170,170)); else
-            if(area == 5) return QVariant(QColor(Qt::yellow)); else
-                if(area == 6) return QVariant(QColor(Qt::gray)); else
-                    if(area == 7) return QVariant(QColor(190,210,190)); else
-                        if(area == 15) return QVariant(QColor(170,255,170)); else
-                            return QVariant(QColor(255,200,100));
+        if (!(area & 4)){
+            return QVariant(QColor(255,200,100));
+        } else if (area & 8){
+            return QVariant(QColor(170,255,170));
+        } else if ((area & 1)&&(area & 2)){
+            return QVariant(QColor(190,210,190));
+        } else if (area & 1){
+            return QVariant(QColor(Qt::yellow));
+        } else if (area & 2){
+            return QVariant(QColor(Qt::gray));
+        } else {
+            return QVariant(QColor(255,170,170));
+        }
     } else return DbTableModel::data(index,role);
 }
 
@@ -486,7 +492,9 @@ void ModelShipConsEl::refreshState()
                   "and id_pack=(select id_pack from parti where id=otpusk.id_part) "
                   "and id_var=(select id_var from parti where id=otpusk.id_part)) "
                   "then 4 else 0 end "
-                  "as r)+(case when otpusk.ds_status=2 then 8 else 0 end) from otpusk where otpusk.id_sert = :id ");
+                  "+ "
+                  "case when otpusk.ds_status=2 then 8 else 0 end) "
+                  "from otpusk where otpusk.id_sert = :id ");
     query.bindValue(":id",currentIdShip);
     if (query.exec()){
         colorState.clear();
@@ -549,12 +557,19 @@ QVariant ModelShipConsWire::data(const QModelIndex &index, int role) const
 {
     if(role == Qt::BackgroundRole) {
         int area = colorState.value(DbTableModel::data(this->index(index.row(),2),Qt::EditRole).toInt());
-        if(area == 4) return QVariant(QColor(255,170,170)); else
-            if(area == 5) return QVariant(QColor(Qt::yellow)); else
-                if(area == 6) return QVariant(QColor(Qt::gray)); else
-                    if(area == 7) return QVariant(QColor(190,210,190)); else
-                        if(area == 15) return QVariant(QColor(170,255,170)); else
-                            return QVariant(QColor(255,200,100));
+        if (!(area & 4)){
+            return QVariant(QColor(255,200,100));
+        } else if (area & 8){
+            return QVariant(QColor(170,255,170));
+        } else if ((area & 1)&&(area & 2)){
+            return QVariant(QColor(190,210,190));
+        } else if (area & 1){
+            return QVariant(QColor(Qt::yellow));
+        } else if (area & 2){
+            return QVariant(QColor(Qt::gray));
+        } else {
+            return QVariant(QColor(255,170,170));
+        }
     } else return DbTableModel::data(index,role);
 }
 
@@ -645,7 +660,9 @@ void ModelShipConsWire::refreshState()
                   "and id_spool=(select wp.id_pack from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti) "
                   "and id_pack=(select wp.id_pack_type from wire_parti as wp where wp.id=wire_shipment_consist.id_wparti)) "
                   "then 4 else 0 end "
-                  "as r)+(case when wire_shipment_consist.ds_status=2 then 8 else 0 end) from wire_shipment_consist where wire_shipment_consist.id_ship = :id ");
+                  "+ "
+                  "case when wire_shipment_consist.ds_status=2 then 8 else 0 end) "
+                  "from wire_shipment_consist where wire_shipment_consist.id_ship = :id ");
     query.bindValue(":id",currentIdShip);
     if (query.exec()){
         colorState.clear();
