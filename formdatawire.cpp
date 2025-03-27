@@ -156,12 +156,12 @@ QString FormDataWire::spool()
 
 QString FormDataWire::masGroup()
 {
-    return (!ui->lineEditEanGr->text().isEmpty()) ? ui->lineEditKvoGr->text() : ui->lineEditKvo->text();
+    return (!ui->lineEditEanGr->text().isEmpty()) ? ui->lineEditKvoGr->text().replace(".",",") : ui->lineEditKvo->text().replace(".",",");
 }
 
 QString FormDataWire::masEd()
 {
-    return ui->lineEditKvo->text();
+    return ui->lineEditKvo->text().replace(".",",");
 }
 
 QString FormDataWire::eanEd()

@@ -36,6 +36,16 @@ protected:
     FormDataWire *data;
 };
 
+class LabelE7035 : public LabelBase
+{
+public:
+    LabelE7035(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
+protected:
+    virtual QString getCod();
+    virtual QByteArray getImages();
+    FormDataWire *data;
+};
+
 class LabelG100100 : public LabelBase
 {
 public:

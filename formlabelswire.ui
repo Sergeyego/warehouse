@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>905</width>
-    <height>537</height>
+    <width>1010</width>
+    <height>587</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,6 +47,13 @@
       <widget class="QPushButton" name="pushButtonPackListA5">
        <property name="text">
         <string>Упаковочный лист А5</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton70_35">
+       <property name="text">
+        <string>Этикетка 70*35</string>
        </property>
       </widget>
      </item>

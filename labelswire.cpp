@@ -8,7 +8,6 @@ LabelE801016::LabelE801016(QString nam, double w, double h, double g, FormDataWi
 QString LabelE801016::getCod()
 {
     QString cod=LabelBase::getCod();
-    //cod.push_back(logo(15,13.75));
     cod.push_back(text(6.25,50,QString::fromUtf8("Марка - ")+data->marka(),12));
     cod.push_back(text(6.25,55,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),12));
     cod.push_back(text(6.25,60,QString::fromUtf8("Плавка - ")+data->plavka(),12));
@@ -36,7 +35,6 @@ LabelG95110::LabelG95110(QString nam, double w, double h, double g, FormDataWire
 QString LabelG95110::getCod()
 {
     QString cod=LabelBase::getCod();
-    //cod.push_back(logo(6.25,13.75));
     cod.push_back(text(6.25,32.5,QString::fromUtf8("Проволока сварочная"),12));
     cod.push_back(text(45,31.875,data->marka(),14));
     cod.push_back(block(6.25,37.5,86.25,10,data->gost(),12));
@@ -69,7 +67,6 @@ LabelE4570::LabelE4570(QString nam, double w, double h, double g, FormDataWire *
 QString LabelE4570::getCod()
 {
     QString cod=LabelBase::getCod();
-    //cod.push_back(logo(2,2));
     cod.push_back(ean13(5,20.5,data->eanEd(),9,0.375,0));
     cod.push_back(text(2.5,35,QString::fromUtf8("Марка - ")+data->marka(),10));
     cod.push_back(text(2.5,39,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),10));
@@ -106,7 +103,6 @@ LabelG100100::LabelG100100(QString nam, double w, double h, double g, FormDataWi
 QString LabelG100100::getCod()
 {
     QString cod=LabelBase::getCod();
-    //cod.push_back(logo(6.25,6.25));
     cod.push_back(text(6.25,25,QString::fromUtf8("Проволока сварочная"),12));
     cod.push_back(text(45,24.375,data->marka(),14));
     cod.push_back(block(6.25,30,86.25,10,data->gost(),12));
@@ -145,7 +141,6 @@ QString LabelG100100Pal::getCod()
     QString palBarcode=Models::instance()->createPalBarcode("W");
 
     QString cod=LabelBase::getCod();
-    //cod.push_back(logo(58,4));
     cod.push_back(ean128(4,4,palBarcode,13));
     if (!data->eanGr().isEmpty()){
         cod.push_back(dataMatrix(70,67,20,1,data->barCodePack()+palBarcode));
@@ -173,4 +168,42 @@ QString LabelG100100Pal::getCod()
     cod.push_back(text(6.25,90,QString::fromUtf8("НЕ БРОСАТЬ!"),16));
     cod.push_back(print(1));
     return cod;
+}
+
+LabelE7035::LabelE7035(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent) : LabelBase(nam,w,h,g,parent), data(d)
+{
+
+}
+
+QString LabelE7035::getCod()
+{
+    QString cod=LabelBase::getCod();
+    cod.push_back(ean13(43,2.5,data->eanEd(),9,0.25,0));
+    cod.push_back(text(2.5,2.5,QString::fromUtf8("Марка - ")+data->marka(),10));
+    cod.push_back(text(2.5,6,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),10));
+    cod.push_back(text(2.5,9.5,QString::fromUtf8("Плавка - ")+data->plavka(),10));
+    cod.push_back(text(2.5,13,QString::fromUtf8("Партия - ")+data->part(),10));
+
+    QRegExp reg("^L-(\\d+)$");
+
+    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+        cod.push_back(text(2.5,16.5,QString::fromUtf8("Тип носителя - ")+data->spool(),10));
+        cod.push_back(text(2.5,20,QString::fromUtf8("Код продукции - ")+data->codeProd(),10));
+        cod.push_back(text(2.5,23.5,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
+        cod.push_back(text(2.5,27,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
+    } else { //длинномер
+        cod.push_back(text(2.5,16.5,QString::fromUtf8("Длина, мм - ")+reg.cap(1),10));
+        cod.push_back(text(2.5,20,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
+        cod.push_back(text(2.5,23.5,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
+        cod.push_back(block(2.5,27,40,7,data->gost(),10));
+    }
+
+    cod.push_back(otkStamp(41,16,data->otkNum()));
+    cod.push_back(dataMatrix(55,20,12,0.7,data->barCode()));
+    return cod;
+}
+
+QByteArray LabelE7035::getImages()
+{
+    return LabelBase::getImages();
 }

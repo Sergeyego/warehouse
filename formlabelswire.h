@@ -26,6 +26,7 @@ private:
     LabelE4570 *labelE4570;
     LabelG100100 *labelG100100;
     LabelG100100Pal *labelG100100Pal;
+    LabelE7035 *labelE7035;
 
 private slots:
     void printPackListA5();
