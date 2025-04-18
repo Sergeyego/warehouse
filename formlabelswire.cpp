@@ -15,6 +15,7 @@ FormLabelsWire::FormLabelsWire(QWidget *parent) :
     labelG100100 = new LabelG100100(QString::fromUtf8("Этикетка_100*100"),100,100,2.8,data,this);
     labelG100100Pal = new LabelG100100Pal(QString::fromUtf8("Упаковочный_лист_100*100"),100,100,2.8,data,this);
     labelE7035 = new LabelE7035(QString::fromUtf8("Этикетка_70*35"),70,35,3,data,this);
+    labelWG60150 = new LabelWG60150("Этикетка_60*150",60,150,2,data,this);
 
     connect(ui->pushButton80_1016,SIGNAL(clicked(bool)),labelE801016,SLOT(printLabel()));
     connect(ui->pushButton95_110,SIGNAL(clicked(bool)),labelG95110,SLOT(printLabel()));
@@ -22,6 +23,7 @@ FormLabelsWire::FormLabelsWire(QWidget *parent) :
     connect(ui->pushButton70_35,SIGNAL(clicked(bool)),labelE7035,SLOT(printLabel()));
     connect(ui->pushButton100_100,SIGNAL(clicked(bool)),labelG100100,SLOT(printLabel()));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),labelG100100Pal,SLOT(printLabel()));
+    connect(ui->pushButton60_150,SIGNAL(clicked(bool)),labelWG60150,SLOT(printLabel()));
 
     connect(ui->pushButtonPackListA5,SIGNAL(clicked(bool)),this,SLOT(printPackListA5()));
 }

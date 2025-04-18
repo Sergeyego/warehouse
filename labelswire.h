@@ -65,4 +65,14 @@ protected:
     FormDataWire *data;
 };
 
+class LabelWG60150 : public LabelBase
+{
+public:
+    LabelWG60150(QString nam, double w, double h, double g, FormDataWire *d, QObject *parent);
+protected:
+    virtual QString getCod();
+    virtual QByteArray getImages();
+    FormDataWire *data;
+};
+
 #endif // LABELSWIRE_H

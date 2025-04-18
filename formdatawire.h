@@ -32,6 +32,7 @@ public:
     QString masGroup();
     QString eanEd();
     QString eanGr();
+    QString vendorCode();
     QString barCode();
     QString barCodePack();
     QString codeProd();

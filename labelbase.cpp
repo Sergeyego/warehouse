@@ -143,13 +143,18 @@ QString LabelBase::dataMatrix(double x, double y, double size, double sizeCell, 
     return QString ("DMATRIX %1,%2,%3,%4,x%5,r%6, \"%7\"\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(size)).arg(getDots(size)).arg(getDots(sizeCell)).arg(rotation).arg(normalize(data));
 }
 
-QString LabelBase::otkStamp(double x, double y, QString num)
+QString LabelBase::otkStamp(double x, double y, QString num, bool rotation)
 {
     QString cod;
     if (!num.isEmpty()){
         cod.push_back(QString("CIRCLE %1,%2,%3,%4\n").arg(getDots(x)).arg(getDots(y)).arg(getDots(11)).arg(getDots(0.5)));
-        cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",0,12,12,\"ОТК\"\n").arg(getDots(x+2.0)).arg(getDots(y+2.0)));
-        cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",0,12,12,\"%3\"\n").arg(getDots(x+3.5)).arg(getDots(y+6.0)).arg(num));
+        if (!rotation){
+            cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",0,12,12,\"ОТК\"\n").arg(getDots(x+2.0)).arg(getDots(y+2.0)));
+            cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",0,12,12,\"%3\"\n").arg(getDots(x+3.5)).arg(getDots(y+6.0)).arg(num));
+        } else {
+            cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",90,12,12,\"ОТК\"\n").arg(getDots(x+9.5)).arg(getDots(y+2.0)));
+            cod.push_back(QString::fromUtf8("TEXT %1,%2,\"0\",90,12,12,\"%3\"\n").arg(getDots(x+5.0)).arg(getDots(y+3.5)).arg(num));
+        }
     }
     return cod;
 }

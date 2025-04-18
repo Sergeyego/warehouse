@@ -180,6 +180,11 @@ QString FormDataWire::eanGr()
     return ean;
 }
 
+QString FormDataWire::vendorCode()
+{
+    return eanEd().length()==12 ? eanEd().right(5) : "";
+}
+
 QString FormDataWire::barCode()
 {
     QString ean;
