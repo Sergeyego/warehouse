@@ -288,7 +288,7 @@ int FormDataWire::getIdPart()
 bool FormDataWire::selectPart()
 {
     QSqlQuery query;
-    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group, wp.mas_group "
+    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short ||' '||wp.pack_ed, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group, wp.mas_group "
                   "from wire_parti as p "
                   "inner join wire_parti_m as m on p.id_m=m.id "
                   "inner join provol as w on m.id_provol=w.id "

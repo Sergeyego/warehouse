@@ -890,11 +890,11 @@ int Sync1C::wireCatalogSync()
 int Sync1C::wirePackSync()
 {
     QString query("select distinct we.id_prov ||':'||we.id_diam||':'||we.id_spool as kis, "
-                  "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
+                  "wp.pack_ed, "
                   "wp.mas_ed "
                   "from wire_ean we "
                   "inner join wire_pack wp on wp.id = we.id_pack "
-                  "order by npack");
+                  "order by wp.pack_ed");
     return packSync(query);
 }
 
@@ -1150,7 +1150,7 @@ int Sync1C::syncShipDocData(int id_ship, QString docKey)
                   "union "
                   "(select 'w:'||wsc.id_wparti, wpm.id_provol ||':'||wpm.id_diam||':'||p.id_pack, "
                   "wpm.n_s, wpm.dat, "
-                  "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
+                  "wp.pack_ed as npack, "
                   "wp.mas_ed, wsc.m_netto, 'w:'||wsc.id "
                   "from ship_plan_wire wsc "
                   "inner join wire_parti p on p.id = wsc.id_wparti "
@@ -1263,7 +1263,7 @@ int Sync1C::syncOpDocWire(int id_doc)
                                "where www.id = %1").arg(id_doc);
     QString queryCont = QString("select 'w:'||ww.id_wparti, wpm.id_provol ||':'||wpm.id_diam||':'||p.id_pack as kis, "
                                 "wpm.n_s, wpm.dat, "
-                                "CASE WHEN wp.pack_group<>'-' THEN wp.pack_ed||'/'||wp.pack_group ELSE wp.pack_ed end as npack, "
+                                "wp.pack_ed npack, "
                                 "wp.mas_ed, ww.m_netto, "
                                 "wwbt.prefix ||date_part('year',www.dat) ||'-'||www.num ||'-'||ww.numcont as numcont, ww.pack_kvo, ww.barcodecont "
                                 "from wire_warehouse ww "

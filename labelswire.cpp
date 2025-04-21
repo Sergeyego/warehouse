@@ -228,15 +228,8 @@ QString LabelWG60150::getCod()
     cod.push_back(diagonal(45,85,57,85));
     cod.push_back(diagonal(45,105,57,105));
 
-    //cod.push_back(diagonal(11,32,27,32));
     cod.push_back(diagonal(11,68,27,68));
     cod.push_back(diagonal(11,120,45,120));
-
-    /*cod.push_back(diagonal(15,20,15,68));
-    cod.push_back(diagonal(19,32,19,68));
-    cod.push_back(diagonal(23,32,23,68));
-    cod.push_back(diagonal(11,44,19,44));
-    cod.push_back(diagonal(11,56,19,56));*/
 
     cod.push_back(ean13(17,6,data->eanGr(),9,0.375,0));
     cod.push_back(otkStamp(13.5,56,data->otkNum(),true));
@@ -245,14 +238,10 @@ QString LabelWG60150::getCod()
     cod.push_back(block(54,86,18,6,QString::fromUtf8("Арт.")+data->vendorCode(),12,90,2));
     cod.push_back(block(56,106,40,4,QString::fromUtf8("Проволока сварочная"),12,90,2));
     cod.push_back(block(50,106,40,4,data->diametr()+" "+data->marka(),12,90,2));
-    /*QString znam=data->znam();
-    if (!znam.isEmpty() && znam!="-"){
-        cod.push_back(diagonal(51,106,51,146));
-        cod.push_back(block(50,106,40,4,znam,12,90,2));
-    }*/
-    cod.push_back(block(44,/*35*/55,65,17,data->description(),10,90));
+
+    cod.push_back(block(44,55,65,17,data->description(),10,90));
     cod.push_back(dataMatrix(25,106,13,0.7,data->barCode(),90));
-    cod.push_back(block(44,121,25,/*32*/21,data->getSert(),9,90));
+    cod.push_back(block(44,121,25,21,data->getSert(),9,90));
 
     QString s=QString::fromUtf8("Диаметр, мм - ")+data->diametr()+"\n";
     s+=QString::fromUtf8("Партия - ")+data->part()+"\n";
@@ -267,22 +256,6 @@ QString LabelWG60150::getCod()
 
     cod.push_back(block(26,22,40,14,s1,10,90));
 
-    /*cod.push_back(block(26,21,10,14,QString::fromUtf8("Диам.,\nмм"),8,90,2));
-
-    cod.push_back(block(26.5,33,34,3,QString::fromUtf8("Рекомендуемое значение тока, А"),8,90,2));
-    cod.push_back(block(22.5,33,34,3,QString::fromUtf8("Положение шва"),8,90,2));
-
-    cod.push_back(block(18.5,33,10,3,QString::fromUtf8("Нижнее"),8,90,2));
-    cod.push_back(block(18.5,45,10,3,QString::fromUtf8("Вертик."),8,90,2));
-    cod.push_back(block(18.5,57,10,3,QString::fromUtf8("Потолоч."),8,90,2));*/
-
-    /*cod.push_back(block(14.5,21,10,3,data->amp().diam,8,90,2));
-    cod.push_back(block(14.5,33,10,3,data->amp().bot,8,90,2));
-    cod.push_back(block(14.5,45,10,3,data->amp().vert,8,90,2));
-    cod.push_back(block(14.5,57,10,3,data->amp().ceil,8,90,2));*/
-
-    //QString dop=QString::fromUtf8("Допустимое содержание влаги в покрытии перед использованием - %1 \%. Режим повторной прокалки: %2.").arg(data->vl()).arg(data->proc());
-    //cod.push_back(block(10.5,4,142,3,dop,8,90));
     cod.push_back(block(6.5,4,142,3,data->adr(),8,90));
 
     return cod;
