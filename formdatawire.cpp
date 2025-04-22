@@ -288,7 +288,7 @@ int FormDataWire::getIdPart()
 bool FormDataWire::selectPart()
 {
     QSqlQuery query;
-    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short ||' '||wp.pack_ed, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group, wp.mas_group "
+    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group, wp.mas_group "
                   "from wire_parti as p "
                   "inner join wire_parti_m as m on p.id_m=m.id "
                   "inner join provol as w on m.id_provol=w.id "
@@ -299,7 +299,7 @@ bool FormDataWire::selectPart()
                   "inner join wire_pack as wp on wp.id = p.id_pack_type "
                   "left join wire_ean as we on we.id_prov=m.id_provol and we.id_diam=m.id_diam and we.id_spool=p.id_pack and we.id_pack=p.id_pack_type "
                   "where m.dat between :d1 and :d2 "
-                  "order by m.dat, m.n_s");
+                  "order by m.dat, m.n_s, k.short");
     query.bindValue(":d1",ui->dateEditBeg->date());
     query.bindValue(":d2",ui->dateEditEnd->date());
     bool ok=modelPart->execQuery(query);
