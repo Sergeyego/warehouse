@@ -285,6 +285,53 @@ int FormDataWire::getIdPart()
     return ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),0),Qt::EditRole).toInt();
 }
 
+bool FormDataWire::checkEd(bool checkTu)
+{
+    QString err;
+    if (!modelPart->rowCount()){
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),QString::fromUtf8("Партия не найдена!"),QMessageBox::Ok);
+        return false;
+    }
+    if (eanEd().length()!=12){
+        err+=QString::fromUtf8("Отсутствует штрихкод. Нажмите кнопку \"Сгенерировать\".\n");
+    }
+    if (checkTu && modelTu->rowCount()<1){
+        err+=QString::fromUtf8("Отсутствует нормативная документация.\n");
+    }
+
+    bool ok=err.isEmpty();
+
+    if (!ok){
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),err,QMessageBox::Ok);
+    }
+    return ok;
+}
+
+bool FormDataWire::checkGroup()
+{
+    QString err;
+    if (!modelPart->rowCount()){
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),QString::fromUtf8("Партия не найдена!"),QMessageBox::Ok);
+        return false;
+    }
+    if (eanEd().length()!=12){
+        err+=QString::fromUtf8("Отсутствует штрихкод. Нажмите кнопку \"Сгенерировать\".\n");
+    }
+    if (modelTu->rowCount()<1){
+        err+=QString::fromUtf8("Отсутствует нормативная документация.\n");
+    }
+    if (description().isEmpty()){
+        err+=QString::fromUtf8("Отсутствует описание.\n");
+    }
+
+    bool ok=err.isEmpty();
+
+    if (!ok){
+        QMessageBox::critical(this,QString::fromUtf8("Ошибка"),err,QMessageBox::Ok);
+    }
+    return ok;
+}
+
 bool FormDataWire::selectPart()
 {
     QSqlQuery query;

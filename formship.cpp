@@ -279,7 +279,7 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
         if (id_part.toInt()>0){
             QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString();
             QString part=modelShipData->data(modelShipData->index(i,3),Qt::DisplayRole).toString();
-            QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d* кг)\\).*$"));
+            QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d* кг)[\\)/].*$"));
             if (reg.indexIn(part)!=-1){
                 nom+=" ("+reg.cap(1)+")";
             }
@@ -491,7 +491,7 @@ QVariant ModelShipData::data(const QModelIndex &index, int role) const
 {
     if (role==Qt::BackgroundRole){
         QString s=this->data(this->index(index.row(),3),Qt::DisplayRole).toString();
-        QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d*) кг\\).*$"));
+        QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d*) кг[\\)/].*$"));
         double mas_ed=0;
         if (reg.indexIn(s)!=-1){
             QString str_mas_ed = reg.cap(1);

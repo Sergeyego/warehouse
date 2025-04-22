@@ -31,6 +31,13 @@ private:
 
 private slots:
     void printPackListA5();
+    void printE801016();
+    void printG95110();
+    void printE4570();
+    void printG100100();
+    void printG100100Pal();
+    void printE7035();
+    void printW60150();
 };
 
 #endif // FORMLABELSWIRE_H

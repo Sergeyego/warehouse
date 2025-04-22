@@ -46,6 +46,8 @@ public:
     QString masPal();
     QString master();
     int getIdPart();
+    bool checkEd(bool checkTu=false);
+    bool checkGroup();
 
 private:
     Ui::FormDataWire *ui;
