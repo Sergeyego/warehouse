@@ -384,7 +384,7 @@ void ModelBalance::updData(QDate dat)
                   "inner join elrtr_vars ev on ev.id = p.id_var "
                   "where p.id between :minide and :maxide "
                   "union "
-                  "select 'w:'||wp.id, CASE WHEN (COALESCE(wp2.mas_ed,0)<>0) THEN (' (' || COALESCE(wp2.mas_ed,0) || ' кг)') ELSE '' end, "
+                  "select 'w:'||wp.id, wp2.pack_ed, "
                   "CASE WHEN wp.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || COALESCE(wp.prim_prod,'') "
                   "from wire_parti wp "
                   "inner join wire_pack wp2 on wp2.id = wp.id_pack_type "
