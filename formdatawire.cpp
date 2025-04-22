@@ -288,7 +288,7 @@ int FormDataWire::getIdPart()
 bool FormDataWire::selectPart()
 {
     QSqlQuery query;
-    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group, wp.mas_group "
+    query.prepare("select p.id, m.n_s, w.nam, d.sdim, k.short, i.nam, m.dat, b.n_plav, wp.mas_ed, w.description, we.ean_ed, we.ean_group, wp.mas_group, wp.pack_ed "
                   "from wire_parti as p "
                   "inner join wire_parti_m as m on p.id_m=m.id "
                   "inner join provol as w on m.id_provol=w.id "
@@ -312,7 +312,8 @@ bool FormDataWire::selectPart()
         modelPart->setHeaderData(4,Qt::Horizontal,QString::fromUtf8("Носитель"));
         modelPart->setHeaderData(5,Qt::Horizontal,QString::fromUtf8("Источник"));
         modelPart->setHeaderData(6,Qt::Horizontal,QString::fromUtf8("Дата"));
-        for (int i=7; i<modelPart->columnCount(); i++){
+        modelPart->setHeaderData(13,Qt::Horizontal,QString::fromUtf8("Упаковка"));
+        for (int i=7; i<modelPart->columnCount()-1; i++){
             ui->tableViewPart->setColumnHidden(i,true);
         }
     }
