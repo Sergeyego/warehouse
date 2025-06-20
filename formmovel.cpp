@@ -207,7 +207,7 @@ void FormMovEl::showCert(QModelIndex index)
     if (ds_status>0){
         QString name=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),1),Qt::EditRole).toString();
         name +="_"+ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),1),Qt::EditRole).toString();
-        name=name.replace(QRegExp("[^\\w]"), "_");
+        name=name.replace(QRegularExpression("[^\\w]"), "_");
         int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),5),Qt::EditRole).toInt();
         reader->setCurrentIdShip(id_ship,name,"elrtr");
         reader->show();

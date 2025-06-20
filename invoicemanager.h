@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <QSqlDatabase>
+#include <QRegularExpression>
 
 class InvoiceManager : public QObject
 {

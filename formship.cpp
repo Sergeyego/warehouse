@@ -279,9 +279,11 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
         if (id_part.toInt()>0){
             QString nom=modelShipData->data(modelShipData->index(i,2),Qt::DisplayRole).toString();
             QString part=modelShipData->data(modelShipData->index(i,3),Qt::DisplayRole).toString();
-            QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d* кг)[\\)/].*$"));
-            if (reg.indexIn(part)!=-1){
-                nom+=" ("+reg.cap(1)+")";
+            QRegularExpression reg(QString::fromUtf8("^.*\\((.*)\\).*$"));
+            reg.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
+            QRegularExpressionMatch match = reg.match(part);
+            if (match.hasMatch()){
+                nom+=" ("+match.captured(1)+")";
             }
             double kvo=modelShipData->data(modelShipData->index(i,4),Qt::EditRole).toDouble();
             hash.insert(nom,kvo);
@@ -334,7 +336,9 @@ bool ModelShip::insertRow(int row, const QModelIndex &parent)
     if (rowCount()>0) {
         old_num=this->data(this->index(rowCount()-1,1),Qt::EditRole).toInt();
     }
-    setDefaultValue(1,QString("%1").arg((old_num+1),4,'d',0,QChar('0')));
+    QString num = QString::number(old_num+1);
+    num=num.rightJustified(4,'0',true);
+    setDefaultValue(1,num);
     setDefaultValue(2,QDate::currentDate());
     return DbTableModel::insertRow(row,parent);
 }
@@ -491,10 +495,12 @@ QVariant ModelShipData::data(const QModelIndex &index, int role) const
 {
     if (role==Qt::BackgroundRole){
         QString s=this->data(this->index(index.row(),3),Qt::DisplayRole).toString();
-        QRegExp reg(QString::fromUtf8("^.*\\(.*(\\d*[\\.\\,]*\\d*) кг[\\)/].*$"));
+        QRegularExpression reg(QString::fromUtf8("^.*\\s\\(\\S*?\\s*(\\d*[//.//,]*\\d)\\sкг.*\\).*$"));
+        reg.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
+        QRegularExpressionMatch match = reg.match(s);
         double mas_ed=0;
-        if (reg.indexIn(s)!=-1){
-            QString str_mas_ed = reg.cap(1);
+        if (match.hasMatch()){
+            QString str_mas_ed = match.captured(1);
             str_mas_ed=str_mas_ed.replace(",",".");
             mas_ed=str_mas_ed.toDouble();
         }

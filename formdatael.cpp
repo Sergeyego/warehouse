@@ -179,8 +179,13 @@ QString FormDataEl::barCodePack()
         double kvoM=ui->lineEditMasPal->text().toDouble();
         int kvoP = ui->lineEditKvoPack->text().toInt();
         int ikvoM=kvoM*100;
-        base+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
-        base+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+        QString strKvoM = QString::number(ikvoM);
+        strKvoM = strKvoM.rightJustified(6,'0',true);
+        QString strKvoP = QString::number(kvoP);
+        strKvoP = strKvoP.rightJustified(4,'0',true);
+        //base+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
+        //base+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+        base+=strKvoM+strKvoP;
     }
     return base;
 }
@@ -417,7 +422,7 @@ QString FormDataEl::getSrtStr(int id_part)
 
             QStringList list(srt.values(id_doc_t));
 
-            if (list.indexOf(QRegExp(QString("^"+s+".*")))==-1){
+            if (list.indexOf(QRegularExpression(QString("^"+s+".*")))==-1){
                 srt.insert(id_doc_t,s);
             }
         }

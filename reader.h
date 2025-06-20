@@ -6,7 +6,6 @@
 #include <QPrinter>
 #include <QPainter>
 #include <QApplication>
-#include <QDesktopWidget>
 #include "httpsyncmanager.h"
 #include <QFile>
 #include <QSettings>

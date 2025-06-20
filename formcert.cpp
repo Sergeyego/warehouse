@@ -63,7 +63,7 @@ void FormCert::currentRowChanged(QModelIndex index)
     QString prefix=modelDataShip->data(modelDataShip->index(index.row(),1),Qt::EditRole).toString();
     QString name = prefix+"_"+modelDataShip->data(modelDataShip->index(index.row(),2),Qt::EditRole).toString();
     name+="_"+n_s;
-    name=name.replace(QRegExp("[^\\w]"), "_");
+    name=name.replace(QRegularExpression("[^\\w]"), "_");
     reader->setCurrentIdShip(id_ship,name,prefix);
 }
 
@@ -115,7 +115,7 @@ void FormCert::pdfAll()
         if (ok && data.size()){
             QString name = prefix+"_"+modelDataShip->data(modelDataShip->index(i,2),Qt::EditRole).toString();
             name+="_"+n_s;
-            name=name.replace(QRegExp("[^\\w]"), "_");
+            name=name.replace(QRegularExpression("[^\\w]"), "_");
             QDir dir(QDir::homePath()+"/sertificat");
             if (!dir.exists()) dir.mkdir(dir.path());
             dir.setPath(dir.path()+"/"+QString::number(year));

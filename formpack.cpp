@@ -170,7 +170,7 @@ ModelPack::ModelPack(QWidget *parent) : DbTableModel("el_pallet_op",parent)
     addColumn("id_main_rab",tr("Мастер"),Models::instance()->relMaster);
     setSort("el_pallet_op.dtm");
 
-    setInsertEnabled(false);
+    setInsertable(false);
 
     connect(this,SIGNAL(sigRefresh()),this,SLOT(calcSum()));
     connect(this,SIGNAL(sigUpd()),this,SLOT(calcSum()));

@@ -297,7 +297,6 @@
         <widget class="QLabel" name="labelSumEl">
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -314,7 +313,7 @@
          <widget class="DbViewer" name="tableViewEl"/>
          <widget class="TableView" name="tableViewElStat">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -333,7 +332,6 @@
         <widget class="QLabel" name="labelSumWire">
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -350,7 +348,7 @@
          <widget class="DbViewer" name="tableViewWire"/>
          <widget class="TableView" name="tableViewWireStat">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>

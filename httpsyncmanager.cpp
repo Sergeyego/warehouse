@@ -11,6 +11,12 @@ bool HttpSyncManager::sendRequest(QString path, QString req, const QByteArray &d
     QSqlDatabase db=QSqlDatabase::database();
     const QString host=db.isValid()? db.hostName() : "127.0.0.1";
     int port=7000;
+    int psize = path.size();
+    if (psize){
+        if (path.at(0)=='/'){
+            path=path.last(psize-1);
+        }
+    }
     QNetworkRequest request(QUrl("http://"+host+":"+QString::number(port)+"/"+path));
     request.setRawHeader("Accept-Charset", "UTF-8");
     request.setRawHeader("User-Agent", "Appszsm");

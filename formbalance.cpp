@@ -350,6 +350,6 @@ void ProxyModel::setNomFilret(bool el, bool wire)
     if (pattern.isEmpty()){
         setFilterFixedString("-");
     } else {
-        setFilterRegExp(pattern);
+        setFilterRegularExpression(pattern);
     }
 }

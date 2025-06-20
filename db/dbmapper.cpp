@@ -39,15 +39,14 @@ DbMapper::DbMapper(QAbstractItemView *v, QWidget *parent) :
 
     DbTableModel *sqlModel = qobject_cast<DbTableModel *>(mapper->model());
     if (sqlModel){
-        if (!sqlModel->insertEnabled()){
-            cmdNew->setVisible(false);
-        }
-        connect(sqlModel,SIGNAL(sigRefresh()),this,SLOT(checkEmpty()));
+        cmdNew->setVisible(sqlModel->isInsertable());
         connect(sqlModel,SIGNAL(sigRefresh()),this,SLOT(last()));
+        connect(sqlModel,SIGNAL(sigRefresh()),this,SLOT(checkEmpty()));
     }
 
     connect(cmdNew,SIGNAL(clicked()),this,SLOT(slotNew()));
     connect(cmdWrite,SIGNAL(clicked()),this,SLOT(slotWrite()));
+    connect(cmdEdt,SIGNAL(clicked(bool)),this,SIGNAL(sigEdt()));
     connect(cmdEdt,SIGNAL(clicked()),this,SLOT(slotEdt()));
     connect(cmdEsc,SIGNAL(clicked()),this,SLOT(slotEsc()));
     connect(cmdDel,SIGNAL(clicked()),this,SLOT(slotDel()));

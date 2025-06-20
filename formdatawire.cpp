@@ -92,7 +92,7 @@ QString FormDataWire::getSert()
 
         QStringList list(srt.values(id_doc_t));
 
-        if (list.indexOf(QRegExp(QString("^"+s+".*")))==-1){
+        if (list.indexOf(QRegularExpression(QString("^"+s+".*")))==-1){
             srt.insert(id_doc_t,s);
         }
     }
@@ -209,8 +209,13 @@ QString FormDataWire::barCodePack()
     double kvoM=ui->lineEditKvoPal->text().toDouble();
     int kvoP = ui->lineEditKvoSpool->text().toInt();
     int ikvoM=kvoM*100;
-    base+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
-    base+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
+    QString strKvoM = QString::number(ikvoM);
+    strKvoM = strKvoM.rightJustified(6,'0',true);
+    QString strKvoP = QString::number(kvoP);
+    strKvoP = strKvoP.rightJustified(4,'0',true);
+    base+=strKvoM+strKvoP;
+    //base+=QString("%1").arg(ikvoM,6,'d',0,QChar('0'));
+    //base+=QString("%1").arg(kvoP,4,'d',0,QChar('0'));
     return base;
 }
 
@@ -373,7 +378,9 @@ QString FormDataWire::getNum(QComboBox *c)
     if (c->findText(c->currentText())!=-1 && c->model()->columnCount()>2){
         n=c->model()->data(c->model()->index(c->currentIndex(),2),Qt::EditRole).toInt();
     }
-    return QString("%1").arg((n),2,'d',0,QChar('0'));
+    QString num = QString::number(n);
+    num=num.rightJustified(2,'0',true);
+    return num;
 }
 
 void FormDataWire::loadSettings()

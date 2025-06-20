@@ -157,7 +157,11 @@ void TableView::save(QString fnam, int dec, bool fitToHeight, Qt::ScreenOrientat
                     }
                     if ((value.typeName()==QString("double"))||value.typeName()==QString("int")){
                         if (d>=1){
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+                            QString fmt=QString("# ##0.%1").arg((0),d,10,QChar('0'));
+#else
                             QString fmt=QString("# ##0.%1").arg((0),d,'d',0,QChar('0'));
+#endif
                             numFormat.setNumberFormat(fmt);
                         } else {
                             numFormat.setNumberFormat("0");

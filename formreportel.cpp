@@ -165,12 +165,12 @@ void FormReportEl::save()
                     ws->writeNumeric(i+begRow,j+1,value.toDouble(),standardFormat);
                 } else {
                     if (value.toDouble()!=0){
-                        QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
-                        numFormat.setNumberFormat(fmt);
+                        //QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
+                        numFormat.setNumberFormat("0.0000");
                         ws->writeNumeric(i+begRow,j+1,value.toDouble()/1000.0,numFormat);
                     } else {
-                        QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
-                        numFormat.setNumberFormat(fmt);
+                        //QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
+                        numFormat.setNumberFormat("0.0000");
                         ws->writeBlank(i+begRow,j+1,numFormat);
                     }
                 }
@@ -180,8 +180,8 @@ void FormReportEl::save()
 
         ws->writeString(row,1,QString("Итого"),strFormat);
         ws->writeBlank(row,2,strFormat);
-        QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
-        numFormat.setNumberFormat(fmt);
+        //QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
+        numFormat.setNumberFormat("0.0000");
         ws->write(row,3,QString("=SUM(C%1:C%2)").arg(begRow).arg(row-1),numFormat);
         ws->write(row,4,QString("=SUM(D%1:D%2)").arg(begRow).arg(row-1),numFormat);
         ws->write(row,5,QString("=SUM(E%1:E%2)").arg(begRow).arg(row-1),numFormat);

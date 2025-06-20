@@ -73,16 +73,18 @@ QString LabelE4570::getCod()
     cod.push_back(text(2.5,43,QString::fromUtf8("Плавка - ")+data->plavka(),10));
     cod.push_back(text(2.5,47,QString::fromUtf8("Партия - ")+data->part(),10));
 
-    QRegExp reg("^L-(\\d+)$");
+    QRegularExpression reg("^L-(\\d+)$");
+    reg.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
+    QRegularExpressionMatch match = reg.match(data->spool());
 
-    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+    if (!match.hasMatch()){ //обычная этикетка
         cod.push_back(text(2.5,51,QString::fromUtf8("Тип носителя - ")+data->spool(),10));
         cod.push_back(text(2.5,55,QString::fromUtf8("Код продукции - ")+data->codeProd(),10));
         cod.push_back(text(2.5,59,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
         cod.push_back(text(2.5,63,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
         cod.push_back(otkStamp(33,40,data->otkNum()));
     } else { //длинномер
-        cod.push_back(text(2.5,51,QString::fromUtf8("Длина, мм - ")+reg.cap(1),10));
+        cod.push_back(text(2.5,51,QString::fromUtf8("Длина, мм - ")+match.captured(1),10));
         cod.push_back(text(2.5,55,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
         cod.push_back(text(2.5,59,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
         cod.push_back(block(2.5,63,40,5,data->gost(),10));
@@ -151,15 +153,17 @@ QString LabelG100100Pal::getCod()
     cod.push_back(text(6.25,43,QString::fromUtf8("Плавка - ")+data->plavka(),14));
     cod.push_back(text(6.25,49,QString::fromUtf8("Партия - ")+data->part()+QString::fromUtf8(" Дата выпуска - ")+data->datePart(),14));
 
-    QRegExp reg("^L-(\\d+)$");
+    QRegularExpression reg("^L-(\\d+)$");
+    reg.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
+    QRegularExpressionMatch match = reg.match(data->spool());
 
-    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+    if (!match.hasMatch()){ //обычная этикетка
         cod.push_back(text(6.25,55,QString::fromUtf8("Тип носителя - ")+data->spool(),14));
         cod.push_back(text(6.25,61,QString::fromUtf8("Количество кассет - ")+data->kvoSpool(),14));
         cod.push_back(text(6.25,67,QString::fromUtf8("Масса нетто, кг - ")+data->masPal(),14));
         cod.push_back(text(6.25,73,QString::fromUtf8("Мастер - ")+data->master(),14));
     } else { //длинномер
-        cod.push_back(text(6.25,55,QString::fromUtf8("Длина, мм - ")+reg.cap(1),14));
+        cod.push_back(text(6.25,55,QString::fromUtf8("Длина, мм - ")+match.captured(1),14));
         cod.push_back(text(6.25,61,QString::fromUtf8("Количество мест - ")+data->kvoSpool(),14));
         cod.push_back(text(6.25,67,QString::fromUtf8("Масса нетто, кг - ")+data->masPal(),14));
         cod.push_back(text(6.25,73,QString::fromUtf8("Упаковщик ___________________"),14));
@@ -184,15 +188,17 @@ QString LabelE7035::getCod()
     cod.push_back(text(2.5,9.5,QString::fromUtf8("Плавка - ")+data->plavka(),10));
     cod.push_back(text(2.5,13,QString::fromUtf8("Партия - ")+data->part(),10));
 
-    QRegExp reg("^L-(\\d+)$");
+    QRegularExpression reg("^L-(\\d+)$");
+    reg.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
+    QRegularExpressionMatch match = reg.match(data->spool());
 
-    if (reg.indexIn(data->spool())==-1){ //обычная этикетка
+    if (!match.hasMatch()){ //обычная этикетка
         cod.push_back(text(2.5,16.5,QString::fromUtf8("Тип носителя - ")+data->spool(),10));
         cod.push_back(text(2.5,20,QString::fromUtf8("Код продукции - ")+data->codeProd(),10));
         cod.push_back(text(2.5,23.5,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
         cod.push_back(text(2.5,27,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
     } else { //длинномер
-        cod.push_back(text(2.5,16.5,QString::fromUtf8("Длина, мм - ")+reg.cap(1),10));
+        cod.push_back(text(2.5,16.5,QString::fromUtf8("Длина, мм - ")+match.captured(1),10));
         cod.push_back(text(2.5,20,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
         cod.push_back(text(2.5,23.5,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
         cod.push_back(block(2.5,27,40,7,data->gost(),10));
