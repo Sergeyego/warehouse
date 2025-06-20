@@ -14,7 +14,7 @@ bool HttpSyncManager::sendRequest(QString path, QString req, const QByteArray &d
     int psize = path.size();
     if (psize){
         if (path.at(0)=='/'){
-            path=path.last(psize-1);
+            path=path.right(psize-1);
         }
     }
     QNetworkRequest request(QUrl("http://"+host+":"+QString::number(port)+"/"+path));
