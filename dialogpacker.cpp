@@ -20,7 +20,7 @@ DialogPacker::~DialogPacker()
 
 double DialogPacker::getPix(double mm)
 {
-    return 96*0.03937007874015748*mm;
+    return this->logicalDpiX()*0.03937007874015748*mm;
 }
 
 bool DialogPacker::isSelected()

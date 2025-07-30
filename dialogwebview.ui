@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>542</width>
-    <height>797</height>
+    <width>554</width>
+    <height>816</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,6 +28,12 @@
        <height>750</height>
       </size>
      </property>
+     <property name="lineWrapMode">
+      <enum>QTextEdit::LineWrapMode::FixedPixelWidth</enum>
+     </property>
+     <property name="lineWrapColumnOrWidth">
+      <number>530</number>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
@@ -38,7 +44,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
