@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDir>
 
 class ModelPrint : public TableModel
 {
@@ -17,7 +18,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
 private:
-    const QString fileName = "printers.json";
+    QString fileName;
     const int defaultDensity = 7;
 
 public slots:

@@ -18,13 +18,13 @@
     <widget class="QTextEdit" name="textEdit">
      <property name="minimumSize">
       <size>
-       <width>530</width>
+       <width>550</width>
        <height>750</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>530</width>
+       <width>550</width>
        <height>750</height>
       </size>
      </property>
@@ -32,7 +32,7 @@
       <enum>QTextEdit::LineWrapMode::FixedPixelWidth</enum>
      </property>
      <property name="lineWrapColumnOrWidth">
-      <number>530</number>
+      <number>540</number>
      </property>
      <property name="readOnly">
       <bool>true</bool>

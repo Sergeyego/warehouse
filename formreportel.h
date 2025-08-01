@@ -9,6 +9,15 @@ namespace Ui {
 class FormReportEl;
 }
 
+class ModelRepEl : public TableModel
+{
+    Q_OBJECT
+
+public:
+    explicit ModelRepEl(QObject *parent = 0);
+    QVariant data(const QModelIndex &index, int role) const;
+};
+
 class FormReportEl : public QWidget
 {
     Q_OBJECT
@@ -20,7 +29,7 @@ public:
 private:
     Ui::FormReportEl *ui;
     ProgressExecutor *sqlExecutor;
-    TableModel *modelReport;
+    ModelRepEl *modelReport;
 
 private slots:
     void startUpd();

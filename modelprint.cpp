@@ -2,6 +2,11 @@
 
 ModelPrint::ModelPrint(QObject *parent) : TableModel(parent)
 {
+    QDir dir(QDir::homePath()+"/.szsm");
+    if(!dir.exists()){
+        dir.mkdir(dir.path());
+    }
+    fileName = dir.path()+"/printers.json";
     QStringList head;
     head<<"Имя"<<"URL"<<"DPI"<<"Яркость";
     setHeader(head);

@@ -9,6 +9,15 @@ namespace Ui {
 class FormReportWire;
 }
 
+class ModelRepWire : public TableModel
+{
+    Q_OBJECT
+
+public:
+    explicit ModelRepWire(QObject *parent = 0);
+    QVariant data(const QModelIndex &index, int role) const;
+};
+
 class FormReportWire : public QWidget
 {
     Q_OBJECT
@@ -20,7 +29,7 @@ public:
 private:
     Ui::FormReportWire *ui;
     ProgressExecutor *sqlExecutor;
-    TableModel *modelReport;
+    ModelRepWire *modelReport;
 
 private slots:
     void startUpd();

@@ -14,11 +14,11 @@ FormReportEl::FormReportEl(QWidget *parent) :
 
     sqlExecutor = new ProgressExecutor(this);
 
-    modelReport = new TableModel(this);
+    modelReport = new ModelRepEl(this);
     QStringList headerList;
     headerList<<tr("Марка")<<tr("ф")<<tr("Склад на\n нач. пер.")<<tr("План\n пр-ва")<<tr("Поступ.\n с пр-ва")<<tr("В т.ч. за\n посл.\n день");
     headerList<<tr("Поступ.\n от др.\n производ.")<<tr("Возвр.,\n переуп.\n (+/-)")<<tr("Неконд.")<<tr("Итого,\n поступл.");
-    headerList<<tr("Отгруз. с\n нач. пер.")<<tr("В т.ч.за\n посл.\n день")<<tr("Остаток\n на кон.\n пер.");
+    headerList<<tr("Отгруз. с\n нач. пер.")<<tr("В т.ч.за\n посл.\n день")<<tr("Остаток\n на кон.\n пер.")<<tr("Запас");
     modelReport->setHeader(headerList);
     modelReport->setDecimal(1);
 
@@ -44,7 +44,7 @@ void FormReportEl::startUpd()
     }
     QDate endDate = ui->dateEditEnd->date();
     QString query=QString("select case when m.nk=false then m.el else "+tr("'нк '")+"|| m.el end, m.dim, m.ostls, m.plan, m.suma, m.sumtd, "
-                          "m.sumc, m.sumb, m.sume, m.sumin, m.sumot, m.sumjust, m.kvors "
+                          "m.sumc, m.sumb, m.sume, m.sumin, m.sumot, m.sumjust, m.kvors, m.kvors-m.plan "
                           "from calc_marka_y_new(0,'"+begDate.toString("yyyy-MM-dd")+"','"+endDate.toString("yyyy-MM-dd")+"') as m "
                           "inner join elrtr as e on m.id_el=e.id order by m.nk, e.id_u, m.el, m.dim");
     sqlExecutor->setQuery(query);
@@ -115,7 +115,7 @@ void FormReportEl::save()
         QString fnam="Отчет по электродам ООО СЗСМ с "+ui->dateEditBeg->date().toString("dd.MM.yyyy")+" по "+ui->dateEditEnd->date().toString("dd.MM.yyyy");
         ws->writeString(CellReference("A1"),fnam,titleFormat);
 
-        ws->setColumnWidth(1,1,20.9);
+        ws->setColumnWidth(1,1,28.9);
         ws->setColumnWidth(2,2,6.05);
         ws->setColumnWidth(3,13,10.5);
 
@@ -156,7 +156,7 @@ void FormReportEl::save()
         const int begRow=row;
 
         for (int i=0;i<rows-1;i++){
-            for(int j=0;j<cols;j++){
+            for(int j=0;j<cols-1;j++){
                 int role=Qt::EditRole;
                 QVariant value=ui->tableView->model()->data(ui->tableView->model()->index(i,j),role);
                 if (j==0){
@@ -202,4 +202,17 @@ void FormReportEl::save()
             xlsx.saveAs(filename);
         }
     }
+}
+
+ModelRepEl::ModelRepEl(QObject *parent) : TableModel(parent)
+{
+
+}
+
+QVariant ModelRepEl::data(const QModelIndex &index, int role) const
+{
+    if (role==Qt::BackgroundRole && index.column()==13){
+        return this->data(index,Qt::EditRole).toDouble()<0 ? QVariant(QColor(255,200,100)) : TableModel::data(index,role);
+    }
+    return TableModel::data(index,role);
 }
