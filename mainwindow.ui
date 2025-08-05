@@ -36,7 +36,7 @@
      <x>0</x>
      <y>0</y>
      <width>1041</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuStock">
@@ -80,6 +80,7 @@
     <addaction name="actionAnAccWire"/>
     <addaction name="actionAnShipEl"/>
     <addaction name="actionAnShipWire"/>
+    <addaction name="actionAnReq"/>
    </widget>
    <widget class="QMenu" name="menuNakl">
     <property name="title">
@@ -282,6 +283,11 @@
   <action name="actionPack">
    <property name="text">
     <string>Сортировка/упаковка электродов</string>
+   </property>
+  </action>
+  <action name="actionAnReq">
+   <property name="text">
+    <string>Анализ заявок</string>
    </property>
   </action>
  </widget>

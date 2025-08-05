@@ -65,6 +65,7 @@ private slots:
     void newAnShipWire();
     void newAnAccEl();
     void newAnAccWire();
+    void newAnReq();
     void newFormAccNaklEl();
     void newFormAccNaklWire();
     void newFormLabelsEl();

@@ -37,6 +37,7 @@ MainWindow::MainWindow(bool master, QWidget *parent) :
     actAction(ui->actionAnShipWire,&MainWindow::newAnShipWire);
     actAction(ui->actionAnAccEl,&MainWindow::newAnAccEl);
     actAction(ui->actionAnAccWire,&MainWindow::newAnAccWire);
+    actAction(ui->actionAnReq,&MainWindow::newAnReq);
     actAction(ui->actionAccNaklEl,&MainWindow::newFormAccNaklEl);
     actAction(ui->actionAccNaklWire,&MainWindow::newFormAccNaklWire);
     actAction(ui->actionCells,&MainWindow::newFormCells);
@@ -220,6 +221,13 @@ void MainWindow::newAnAccWire()
 {
     if (!exist(sender())){
         addSubWindow(new CubeWidget(21),sender());
+    }
+}
+
+void MainWindow::newAnReq()
+{
+    if (!exist(sender())){
+        addSubWindow(new CubeWidget(117),sender());
     }
 }
 
