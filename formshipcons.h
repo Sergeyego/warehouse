@@ -124,6 +124,8 @@ private:
     ModelReqShipEl *modelReqEl;
     ModelReqShipWire *modelReqWire;
     QDomElement newElement(QString nam, QString val, QDomDocument *doc);
+protected:
+    virtual void keyPressEvent (QKeyEvent * e );
 
 private slots:
     void updShip();

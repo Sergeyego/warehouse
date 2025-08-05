@@ -124,6 +124,57 @@ QDomElement FormShipCons::newElement(QString nam, QString val, QDomDocument *doc
     return l;
 }
 
+void FormShipCons::keyPressEvent(QKeyEvent *e)
+{
+    switch (e->key()){
+    case Qt::Key_F1:
+        if (e->modifiers()==Qt::NoModifier){
+            int currentRow=ui->tableViewEl->currentIndex().row();
+            if (currentRow>0){
+                QModelIndex ind=ui->tableViewEl->model()->index(currentRow-1,2);
+                ui->tableViewEl->setCurrentIndex(ind);
+                ui->tableViewReqEl->setFocus();
+                ui->tableViewReqEl->setCurrentIndex(ui->tableViewEl->model()->index(0,1));
+            }
+        }
+        break;
+    case Qt::Key_F2:
+        if (e->modifiers()==Qt::NoModifier){
+            int currentRow=ui->tableViewEl->currentIndex().row();
+            if (currentRow<ui->tableViewEl->model()->rowCount()-1){
+                QModelIndex ind=ui->tableViewEl->model()->index(currentRow+1,2);
+                ui->tableViewEl->setCurrentIndex(ind);
+                ui->tableViewReqEl->setFocus();
+                ui->tableViewReqEl->setCurrentIndex(ui->tableViewEl->model()->index(0,1));
+            }
+        }
+        break;
+    case Qt::Key_F3:
+        if (e->modifiers()==Qt::NoModifier){
+            int currentRow=ui->tableViewWire->currentIndex().row();
+            if (currentRow>0){
+                QModelIndex ind=ui->tableViewWire->model()->index(currentRow-1,2);
+                ui->tableViewWire->setCurrentIndex(ind);
+                ui->tableViewReqWire->setFocus();
+                ui->tableViewReqWire->setCurrentIndex(ui->tableViewWire->model()->index(0,1));
+            }
+        }
+        break;
+    case Qt::Key_F4:
+        if (e->modifiers()==Qt::NoModifier){
+            int currentRow=ui->tableViewWire->currentIndex().row();
+            if (currentRow<ui->tableViewWire->model()->rowCount()-1){
+                QModelIndex ind=ui->tableViewWire->model()->index(currentRow+1,2);
+                ui->tableViewWire->setCurrentIndex(ind);
+                ui->tableViewReqWire->setFocus();
+                ui->tableViewReqWire->setCurrentIndex(ui->tableViewWire->model()->index(0,1));
+            }
+        }
+        break;
+    }
+    QWidget::keyPressEvent(e);
+}
+
 void FormShipCons::updShip()
 {
     if ((this->sender()==ui->comboBoxPolFlt && ui->checkBoxOnly->isChecked() && ui->comboBoxPolFlt->currentIndex()>=0) || (this->sender()!=ui->comboBoxPolFlt)){
@@ -525,7 +576,7 @@ void ModelShipConsEl::calcSum()
     }
 
     double sum=0;
-    QString title = tr("Электроды");
+    QString title = tr("F1<>F2 Электроды");
     for (int i=0; i<rowCount(); i++){
         sum+=data(index(i,3),Qt::EditRole).toDouble();
     }
@@ -693,7 +744,7 @@ void ModelShipConsWire::calcSum()
     }
 
     double sum=0;
-    QString title = tr("Проволока");
+    QString title = tr("F3<>F4 Проволока");
     for (int i=0; i<rowCount(); i++){
         sum+=data(index(i,3),Qt::EditRole).toDouble();
     }
@@ -723,6 +774,7 @@ void ModelReqShipEl::refresh(int id_ship_data, double kvo)
     kvoShip=kvo;
     setFilter("requests_ship_el.id_ship_data = "+QString::number(id_ship_data));
     setDefaultValue(0,id_ship_data);
+    setDefaultValue(2,kvo);
     select();
 }
 
@@ -769,7 +821,9 @@ void ModelReqShipEl::calcSum()
     double sum=0;
     QString title = tr("Отгружено: ")+QLocale().toString(kvoShip,'f',1)+tr(" кг; По заявкам: ");
     for (int i=0; i<rowCount(); i++){
-        sum+=data(index(i,2),Qt::EditRole).toDouble();
+        if (i!=this->currentEdtRow()){
+            sum+=data(index(i,2),Qt::EditRole).toDouble();
+        }
     }
     QString s;
     s = title+QLocale().toString(sum,'f',1)+tr(" кг;");
@@ -795,6 +849,7 @@ void ModelReqShipWire::refresh(int id_ship_data, double kvo)
     kvoShip=kvo;
     setFilter("requests_ship_wire.id_ship_data = "+QString::number(id_ship_data));
     setDefaultValue(0,id_ship_data);
+    setDefaultValue(2,kvo);
     select();
 }
 
@@ -840,7 +895,9 @@ void ModelReqShipWire::calcSum()
     double sum=0;
     QString title = tr("Отгружено: ")+QLocale().toString(kvoShip,'f',1)+tr(" кг; По заявкам: ");
     for (int i=0; i<rowCount(); i++){
-        sum+=data(index(i,2),Qt::EditRole).toDouble();
+        if (i!=this->currentEdtRow()){
+            sum+=data(index(i,2),Qt::EditRole).toDouble();
+        }
     }
     QString s;
     s = title+QLocale().toString(sum,'f',1)+tr(" кг;");
