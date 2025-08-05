@@ -18,7 +18,7 @@ FormReportEl::FormReportEl(QWidget *parent) :
     QStringList headerList;
     headerList<<tr("Марка")<<tr("ф")<<tr("Склад на\n нач. пер.")<<tr("План\n пр-ва")<<tr("Поступ.\n с пр-ва")<<tr("В т.ч. за\n посл.\n день");
     headerList<<tr("Поступ.\n от др.\n производ.")<<tr("Возвр.,\n переуп.\n (+/-)")<<tr("Неконд.")<<tr("Итого,\n поступл.");
-    headerList<<tr("Отгруз. с\n нач. пер.")<<tr("В т.ч.за\n посл.\n день")<<tr("Остаток\n на кон.\n пер.")<<tr("Запас");
+    headerList<<tr("Отгруз. с\n нач. пер.")<<tr("В т.ч.за\n посл.\n день")<<tr("Остаток\n на кон.\n пер.")<<tr("Цех")<<tr("Запас");
     modelReport->setHeader(headerList);
     modelReport->setDecimal(1);
 
@@ -43,10 +43,28 @@ void FormReportEl::startUpd()
         return;
     }
     QDate endDate = ui->dateEditEnd->date();
-    QString query=QString("select case when m.nk=false then m.el else "+tr("'нк '")+"|| m.el end, m.dim, m.ostls, m.plan, m.suma, m.sumtd, "
-                          "m.sumc, m.sumb, m.sume, m.sumin, m.sumot, m.sumjust, m.kvors, m.kvors-m.plan "
-                          "from calc_marka_y_new(0,'"+begDate.toString("yyyy-MM-dd")+"','"+endDate.toString("yyyy-MM-dd")+"') as m "
-                          "inner join elrtr as e on m.id_el=e.id order by m.nk, e.id_u, m.el, m.dim");
+    QString order;
+    if (ui->radioButtonUsov->isChecked()){
+        order="e.id_u,";
+    }
+    QString query = QString("select coalesce(m.el, prod.el), coalesce(m.dim, prod.dim), coalesce(m.ostls,0), coalesce(m.plan,0), "
+                            "coalesce(m.suma,0), coalesce(m.sumtd,0), coalesce(m.sumc,0), coalesce(m.sumb,0), coalesce(m.sume,0), "
+                            "coalesce(m.sumin,0), coalesce(m.sumot,0), coalesce(m.sumjust,0), coalesce(m.kvors,0), coalesce(prod.kvo,0), "
+                            "coalesce(m.kvors,0)+coalesce(prod.kvo,0)-coalesce(m.plan,0) "
+                            "from calc_marka_y_new(0,'%1','%2') as m "
+                            "full join ( "
+                            "    select p.id_el as id_el, (el.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' end) as el, "
+                            "    p.diam as dim, p.id_var as id_var, sum(pr.ostend) as kvo "
+                            "    from calc_prod('%3') as pr "
+                            "    inner join parti p on p.id=pr.id_part "
+                            "    inner join elrtr el on el.id=p.id_el "
+                            "    inner join elrtr_vars ev on ev.id=p.id_var "
+                            "    where pr.ostend<>0 "
+                            "    group by p.id_el, p.diam, p.id_var, el.marka, ev.nam "
+                            ") as prod on prod.id_el=m.id_el and prod.dim=m.dim and prod.id_var=m.id_var "
+                            "left join elrtr as e on e.id=coalesce(m.id_el, prod.id_el) "
+                            "order by %4 coalesce(m.el, prod.el), coalesce(m.dim, prod.dim)")
+                        .arg(begDate.toString("yyyy-MM-dd")).arg(endDate.toString("yyyy-MM-dd")).arg(endDate.addDays(-1).toString("yyyy-MM-dd")).arg(order);
     sqlExecutor->setQuery(query);
     sqlExecutor->start();
 }
@@ -156,7 +174,7 @@ void FormReportEl::save()
         const int begRow=row;
 
         for (int i=0;i<rows-1;i++){
-            for(int j=0;j<cols-1;j++){
+            for(int j=0;j<cols-2;j++){
                 int role=Qt::EditRole;
                 QVariant value=ui->tableView->model()->data(ui->tableView->model()->index(i,j),role);
                 if (j==0){
@@ -165,11 +183,9 @@ void FormReportEl::save()
                     ws->writeNumeric(i+begRow,j+1,value.toDouble(),standardFormat);
                 } else {
                     if (value.toDouble()!=0){
-                        //QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
                         numFormat.setNumberFormat("0.0000");
                         ws->writeNumeric(i+begRow,j+1,value.toDouble()/1000.0,numFormat);
                     } else {
-                        //QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
                         numFormat.setNumberFormat("0.0000");
                         ws->writeBlank(i+begRow,j+1,numFormat);
                     }
@@ -180,7 +196,6 @@ void FormReportEl::save()
 
         ws->writeString(row,1,QString("Итого"),strFormat);
         ws->writeBlank(row,2,strFormat);
-        //QString fmt=QString("0.%1").arg((0),4,'d',0,QChar('0'));
         numFormat.setNumberFormat("0.0000");
         ws->write(row,3,QString("=SUM(C%1:C%2)").arg(begRow).arg(row-1),numFormat);
         ws->write(row,4,QString("=SUM(D%1:D%2)").arg(begRow).arg(row-1),numFormat);
@@ -211,7 +226,7 @@ ModelRepEl::ModelRepEl(QObject *parent) : TableModel(parent)
 
 QVariant ModelRepEl::data(const QModelIndex &index, int role) const
 {
-    if (role==Qt::BackgroundRole && index.column()==13){
+    if (role==Qt::BackgroundRole && index.column()==14){
         return this->data(index,Qt::EditRole).toDouble()<0 ? QVariant(QColor(255,200,100)) : TableModel::data(index,role);
     }
     return TableModel::data(index,role);
