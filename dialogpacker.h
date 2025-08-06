@@ -8,6 +8,7 @@
 #include "modelro.h"
 #include "httpsyncmanager.h"
 #include "models.h"
+#include <QScreen>
 
 namespace Ui {
 class DialogPacker;
