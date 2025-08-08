@@ -50,7 +50,7 @@ void FormReportEl::startUpd()
     QString query = QString("select coalesce(m.el, prod.el), coalesce(m.dim, prod.dim), coalesce(m.ostls,0), coalesce(m.plan,0), "
                             "coalesce(m.suma,0), coalesce(m.sumtd,0), coalesce(m.sumc,0), coalesce(m.sumb,0), coalesce(m.sume,0), "
                             "coalesce(m.sumin,0), coalesce(m.sumot,0), coalesce(m.sumjust,0), coalesce(m.kvors,0), coalesce(prod.kvo,0), "
-                            "coalesce(m.kvors,0)+coalesce(prod.kvo,0)-coalesce(m.plan,0) "
+                            "coalesce(m.kvors,0)+coalesce(prod.kvo,0)-coalesce(m.plan,0)-coalesce(m.sumtd,0) "
                             "from calc_marka_y_new(0,'%1','%2') as m "
                             "full join ( "
                             "    select p.id_el as id_el, (el.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' end) as el, "
