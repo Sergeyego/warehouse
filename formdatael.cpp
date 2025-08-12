@@ -64,6 +64,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updPart()));
     connect(ui->pushButtonGen,SIGNAL(clicked(bool)),this,SLOT(genEan()));
     connect(ui->lineEditMasPal,SIGNAL(textChanged(QString)),this,SLOT(setKvoPack()));
+    connect(ui->checkBoxZam,SIGNAL(clicked(bool)),ui->lineEditZam,SLOT(setEnabled(bool)));
 
     updPart();
 }
@@ -91,7 +92,11 @@ QString FormDataEl::diametr()
 
 QString FormDataEl::part()
 {
-    return ui->lineEditPart->text();
+    QString part=ui->lineEditPart->text();
+    if (ui->checkBoxZam->isChecked() && !ui->lineEditZam->text().isEmpty()){
+        part+=tr(" зам. №")+ui->lineEditZam->text();
+    }
+    return part;
 }
 
 QString FormDataEl::datePart()
