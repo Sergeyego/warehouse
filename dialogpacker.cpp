@@ -20,8 +20,12 @@ DialogPacker::~DialogPacker()
 
 double DialogPacker::getPix(double mm)
 {
-    //qDebug()<<screen()->devicePixelRatio()<<screen()->logicalDotsPerInch()<<screen()->physicalDotsPerInch();
-    return this->screen()->logicalDotsPerInch()==qreal(96) ? (this->screen()->devicePixelRatio()*96*mm/25.4) : (this->screen()->logicalDotsPerInch()*mm/25.4);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    double pix=this->screen()->logicalDotsPerInch()==qreal(96) ? (this->screen()->devicePixelRatio()*96*mm/25.4) : (this->screen()->logicalDotsPerInch()*mm/25.4);
+#else
+    double pix=this->logicalDpiX()*mm/25.4;
+#endif
+    return pix;
 }
 
 bool DialogPacker::isSelected()
