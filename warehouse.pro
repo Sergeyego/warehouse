@@ -213,10 +213,12 @@ FORMS += \
     db/dbrelationeditdialog.ui \
     reader.ui
 
-RC_FILE = ico.rc
+win32:RC_FILE = ico.rc
 
 DISTFILES += \
     ico.rc
+
+macx:ICON = ico.icns
 
 RESOURCES += \
     res.qrc

@@ -43,28 +43,37 @@ void FormReportEl::startUpd()
         return;
     }
     QDate endDate = ui->dateEditEnd->date();
-    QString order;
+    QString query;
     if (ui->radioButtonUsov->isChecked()){
-        order="e.id_u,";
+        query = QString("select m.el, m.dim, sum(m.ostls), sum(m.plan), "
+                        "sum(m.suma), sum(m.sumtd), sum(m.sumc), sum(m.sumb), sum(m.sume), "
+                        "sum(m.sumin), sum(m.sumot), sum(m.sumjust), sum(m.kvors), 0, 0 "
+                        "from calc_marka_y('%1','%2') as m "
+                        "left join elrtr e on e.id = m.id_el "
+                        "group by m.el, m.dim, e.id_u "
+                        "order by e.id_u, m.el, m.dim")
+                    .arg(begDate.toString("yyyy-MM-dd")).arg(endDate.toString("yyyy-MM-dd"));
+    } else {
+        query = QString("select coalesce(m.el, prod.el)||' ('||coalesce(m.pack, prod.pack)||')', coalesce(m.dim, prod.dim), coalesce(m.ostls,0), coalesce(m.plan,0), "
+                        "coalesce(m.suma,0), coalesce(m.sumtd,0), coalesce(m.sumc,0), coalesce(m.sumb,0), coalesce(m.sume,0), "
+                        "coalesce(m.sumin,0), coalesce(m.sumot,0), coalesce(m.sumjust,0), coalesce(m.kvors,0), coalesce(prod.kvo,0), "
+                        "coalesce(m.kvors,0)+coalesce(prod.kvo,0)-coalesce(m.plan,0)-coalesce(m.sumtd,0) "
+                        "from calc_marka_y('%1','%2') as m "
+                        "full join ( "
+                        "    select p.id_el as id_el, (el.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' end) as el, ep.pack_ed as pack, "
+                        "    p.diam as dim, p.id_var as id_var, p.id_pack as id_pack, sum(pr.ostend) as kvo "
+                        "    from calc_prod('%3') as pr "
+                        "    inner join parti p on p.id=pr.id_part "
+                        "    inner join elrtr el on el.id=p.id_el "
+                        "    inner join elrtr_vars ev on ev.id=p.id_var "
+                        "    inner join el_pack ep on ep.id = p.id_pack "
+                        "    where pr.ostend<>0 "
+                        "    group by p.id_el, p.diam, p.id_var, el.marka, ev.nam, p.id_pack, ep.pack_ed "
+                        ") as prod on prod.id_el=m.id_el and prod.dim=m.dim and prod.id_var=m.id_var and prod.id_pack=m.id_pack "
+                        "order by coalesce(m.el, prod.el), coalesce(m.dim, prod.dim)")
+                    .arg(begDate.toString("yyyy-MM-dd")).arg(endDate.toString("yyyy-MM-dd")).arg(endDate.addDays(-1).toString("yyyy-MM-dd"));
     }
-    QString query = QString("select coalesce(m.el, prod.el), coalesce(m.dim, prod.dim), coalesce(m.ostls,0), coalesce(m.plan,0), "
-                            "coalesce(m.suma,0), coalesce(m.sumtd,0), coalesce(m.sumc,0), coalesce(m.sumb,0), coalesce(m.sume,0), "
-                            "coalesce(m.sumin,0), coalesce(m.sumot,0), coalesce(m.sumjust,0), coalesce(m.kvors,0), coalesce(prod.kvo,0), "
-                            "coalesce(m.kvors,0)+coalesce(prod.kvo,0)-coalesce(m.plan,0)-coalesce(m.sumtd,0) "
-                            "from calc_marka_y_new(0,'%1','%2') as m "
-                            "full join ( "
-                            "    select p.id_el as id_el, (el.marka || CASE WHEN p.id_var<>1 THEN ' /'||ev.nam ||'/' ELSE '' end) as el, "
-                            "    p.diam as dim, p.id_var as id_var, sum(pr.ostend) as kvo "
-                            "    from calc_prod('%3') as pr "
-                            "    inner join parti p on p.id=pr.id_part "
-                            "    inner join elrtr el on el.id=p.id_el "
-                            "    inner join elrtr_vars ev on ev.id=p.id_var "
-                            "    where pr.ostend<>0 "
-                            "    group by p.id_el, p.diam, p.id_var, el.marka, ev.nam "
-                            ") as prod on prod.id_el=m.id_el and prod.dim=m.dim and prod.id_var=m.id_var "
-                            "left join elrtr as e on e.id=coalesce(m.id_el, prod.id_el) "
-                            "order by %4 coalesce(m.el, prod.el), coalesce(m.dim, prod.dim)")
-                        .arg(begDate.toString("yyyy-MM-dd")).arg(endDate.toString("yyyy-MM-dd")).arg(endDate.addDays(-1).toString("yyyy-MM-dd")).arg(order);
+
     sqlExecutor->setQuery(query);
     sqlExecutor->start();
 }
