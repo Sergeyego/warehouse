@@ -64,7 +64,12 @@ FormDataEl::FormDataEl(QWidget *parent) :
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(updPart()));
     connect(ui->pushButtonGen,SIGNAL(clicked(bool)),this,SLOT(genEan()));
     connect(ui->lineEditMasPal,SIGNAL(textChanged(QString)),this,SLOT(setKvoPack()));
+
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
     connect(ui->checkBoxZam,SIGNAL(checkStateChanged(Qt::CheckState)),this,SLOT(zamChanged(Qt::CheckState)));
+#else
+    connect(ui->checkBoxZam,SIGNAL(clicked(bool)),ui->lineEditZam,SLOT(setEnabled(bool));
+#endif
 
     updPart();
 }
