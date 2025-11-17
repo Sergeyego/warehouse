@@ -136,7 +136,6 @@ FormRequests::FormRequests(QWidget *parent) :
     mapper->addEmptyLock(ui->tableViewEl);
     mapper->addEmptyLock(ui->tableViewWire);
     mapper->addEmptyLock(ui->tableViewChanges);
-    mapper->addLock(ui->pushButtonLoad);
     mapper->addLock(ui->pushButtonUpd);
 
     connect(ui->comboBoxMonth,SIGNAL(currentIndexChanged(int)),this,SLOT(updReq()));
@@ -155,8 +154,6 @@ FormRequests::FormRequests(QWidget *parent) :
     connect(ui->tableViewStatWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updStatDataWire(QModelIndex)));
     connect(modelReqWire,SIGNAL(sigUpd()),modelStatWire,SLOT(select()));
     connect(modelStatWire,SIGNAL(sigUpd()),ui->tableViewStatWire,SLOT(resizeToContents()));
-
-    connect(ui->pushButtonLoad,SIGNAL(clicked(bool)),this,SLOT(loadReq()));
 
     updReq();
 }
@@ -287,14 +284,6 @@ void FormRequests::switchFlt(bool b)
     ui->comboBoxMonth->setEnabled(b);
     ui->spinBoxYear->setEnabled(b);
     updReq();
-}
-
-void FormRequests::loadReq()
-{
-    DialogReqLoad d;
-    if (d.exec()==QDialog::Accepted){
-        updReq();
-    }
 }
 
 ModelReq::ModelReq(QWidget *parent) : DbTableModel("requests",parent)

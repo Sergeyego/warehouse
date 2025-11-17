@@ -90,6 +90,7 @@ private:
 
 private slots:
     void refreshData(QModelIndex index);
+    void zamChanged(Qt::CheckState state);
     void genEan();
     void setKvoPack();
     void refreshDocType();

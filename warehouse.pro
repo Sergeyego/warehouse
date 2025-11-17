@@ -26,7 +26,6 @@ include(xlsx/qtxlsx.pri)
 
 SOURCES += \
     dialogpacker.cpp \
-    dialogreqload.cpp \
     dialogwebview.cpp \
     formcert.cpp \
     formpack.cpp \
@@ -40,8 +39,6 @@ SOURCES += \
     db/dbmapper.cpp \
     db/dbtablemodel.cpp \
     db/dbviewer.cpp \
-    qftp/qftp.cpp \
-    qftp/qurlinfo.cpp \
     reader.cpp \
     sync1c.cpp \
     models.cpp \
@@ -98,7 +95,6 @@ SOURCES += \
 
 HEADERS += \
     dialogpacker.h \
-    dialogreqload.h \
     dialogwebview.h \
     formcert.h \
     formpack.h \
@@ -111,8 +107,6 @@ HEADERS += \
     db/dbmapper.h \
     db/dbtablemodel.h \
     db/dbviewer.h \
-    qftp/qftp.h \
-    qftp/qurlinfo.h \
     reader.h \
     sync1c.h \
     models.h \
@@ -169,7 +163,6 @@ HEADERS += \
 
 FORMS += \
     dialogpacker.ui \
-    dialogreqload.ui \
     dialogwebview.ui \
     formcert.ui \
     formpack.ui \

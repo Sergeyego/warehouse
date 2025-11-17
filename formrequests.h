@@ -7,7 +7,6 @@
 #include "models.h"
 #include "modelro.h"
 #include "db/tablemodel.h"
-#include "dialogreqload.h"
 
 namespace Ui {
 class FormRequests;
@@ -112,7 +111,6 @@ private slots:
     void updStatDataEl(QModelIndex index);
     void updStatDataWire(QModelIndex index);
     void switchFlt(bool b);
-    void loadReq();
 };
 
 #endif // FORMREQUESTS_H

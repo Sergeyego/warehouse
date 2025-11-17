@@ -576,7 +576,7 @@ void ModelShipConsEl::calcSum()
     }
 
     double sum=0;
-    QString title = tr("F1<>F2 Электроды");
+    QString title = tr("F1-F2 Электроды");
     for (int i=0; i<rowCount(); i++){
         sum+=data(index(i,3),Qt::EditRole).toDouble();
     }
@@ -744,7 +744,7 @@ void ModelShipConsWire::calcSum()
     }
 
     double sum=0;
-    QString title = tr("F3<>F4 Проволока");
+    QString title = tr("F3-F4 Проволока");
     for (int i=0; i<rowCount(); i++){
         sum+=data(index(i,3),Qt::EditRole).toDouble();
     }
@@ -808,7 +808,7 @@ bool ModelReqShipEl::submit()
         if (count>0){
             ok=DbTableModel::submit();
         } else {
-            QMessageBox::critical(nullptr,tr("Ошибка"),tr("В этой заявке отсутствуют электроды данной марки, диаметра и типа упаковки"),QMessageBox::Cancel);
+            QMessageBox::critical(nullptr,tr("Ошибка"),tr("В этой заявке отсутствуют электроды данной марки, диаметра и типа упаковки."),QMessageBox::Cancel);
         }
     } else {
         ok=DbTableModel::submit();

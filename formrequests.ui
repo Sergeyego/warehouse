@@ -193,13 +193,6 @@
                </property>
               </spacer>
              </item>
-             <item>
-              <widget class="QPushButton" name="pushButtonLoad">
-               <property name="text">
-                <string>Загрузить</string>
-               </property>
-              </widget>
-             </item>
             </layout>
            </item>
            <item>
@@ -294,7 +287,6 @@
             <widget class="QLabel" name="labelElSum">
              <property name="font">
               <font>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -313,7 +305,6 @@
             <widget class="QLabel" name="labelWireSum">
              <property name="font">
               <font>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -336,7 +327,6 @@
             <widget class="QLabel" name="labelElStatSum">
              <property name="font">
               <font>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -366,7 +356,6 @@
             <widget class="QLabel" name="labelWireStatSum">
              <property name="font">
               <font>
-               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -421,14 +410,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
-  </customwidget>
-  <customwidget>
    <class>DbDateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbdateedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DbComboBox</class>
+   <extends>QComboBox</extends>
+   <header>db/dbcombobox.h</header>
   </customwidget>
   <customwidget>
    <class>DbViewer</class>
@@ -436,9 +425,9 @@
    <header>db/dbviewer.h</header>
   </customwidget>
   <customwidget>
-   <class>DbComboBox</class>
-   <extends>QComboBox</extends>
-   <header>db/dbcombobox.h</header>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
