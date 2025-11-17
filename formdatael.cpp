@@ -68,7 +68,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
     connect(ui->checkBoxZam,SIGNAL(checkStateChanged(Qt::CheckState)),this,SLOT(zamChanged(Qt::CheckState)));
 #else
-    connect(ui->checkBoxZam,SIGNAL(clicked(bool)),ui->lineEditZam,SLOT(setEnabled(bool));
+    connect(ui->checkBoxZam,SIGNAL(clicked(bool)),ui->lineEditZam,SLOT(setEnabled(bool)));
 #endif
 
     updPart();
