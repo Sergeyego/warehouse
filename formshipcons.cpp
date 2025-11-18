@@ -486,7 +486,7 @@ bool ModelShipConsEl::submit()
         double m=getStock(this->index(currentEdtRow(),3));
         bool is_pol=true;
         for (int i=0; i<4; i++){
-            is_pol=is_pol && (this->oldRow().at(i).val==this->newRow().at(i).val);
+            is_pol=is_pol && (this->editor->oldRow().at(i).val==this->editor->newRow().at(i).val);
         }
         if ((kvo>=0 && m>=kvo) || is_pol){
             ok=DbTableModel::submit();
@@ -651,7 +651,7 @@ bool ModelShipConsWire::submit()
         double m=getStock(this->index(currentEdtRow(),3));
         bool is_pol=true;
         for (int i=0; i<4; i++){
-            is_pol=is_pol && (this->oldRow().at(i).val==this->newRow().at(i).val);
+            is_pol=is_pol && (this->editor->oldRow().at(i).val==this->editor->newRow().at(i).val);
         }
         if ((kvo>=0 && m>=kvo) || is_pol){
             ok=DbTableModel::submit();

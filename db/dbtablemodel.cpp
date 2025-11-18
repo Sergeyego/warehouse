@@ -1,4 +1,5 @@
 #include "dbtablemodel.h"
+#include <QTimeZone>
 
 
 DbTableModel::DbTableModel(QString table, QObject *parent) :
@@ -13,6 +14,16 @@ DbTableModel::DbTableModel(QString table, QObject *parent) :
     defaultRecord=QSqlDatabase::database().driver()->record(tableName);
     //qDebug()<<pkList;
     //qDebug()<<defaultRecord;
+    QSqlQuery query;
+    query.prepare("select column_name, udt_name from information_schema.columns where table_name = :table");
+    query.bindValue(":table",table);
+    if (query.exec()){
+        while (query.next()){
+            hTypes.insert(query.value(0).toString(),query.value(1).toString());
+        }
+    } else {
+        QMessageBox::critical(nullptr,tr("Error"),query.lastError().text(),QMessageBox::Cancel);
+    }
 }
 
 Qt::ItemFlags DbTableModel::flags(const QModelIndex &index) const
@@ -34,7 +45,11 @@ QVariant DbTableModel::data(const QModelIndex &index, int role) const
             if (type==QVariant::Date){
                 value=origVal.toDate().toString("dd.MM.yy");
             } else if (type==QVariant::DateTime){
-                value=origVal.toDateTime().toString("dd.MM.yy hh:mm");
+                if (udtType(index.column())=="timestamp"){
+                    value=origVal.toDateTime().toString("dd.MM.yy hh:mm");
+                } else {
+                    value=origVal.toDateTime().toLocalTime().toString("dd.MM.yy hh:mm");
+                }
             } else if (type==QVariant::Double){
                 int dec=3;
                 if (modelData->column(index.column())->validator){
@@ -233,6 +248,11 @@ QVariant::Type DbTableModel::columnType(int column) const
     return nullVal(column).type();
 }
 
+QString DbTableModel::udtType(int column) const
+{
+    return hTypes.value(modelData->column(column)->name);
+}
+
 QVariant DbTableModel::nullVal(int column) const
 {
     return defaultRecord.value(modelData->column(column)->name);
@@ -241,16 +261,6 @@ QVariant DbTableModel::nullVal(int column) const
 int DbTableModel::currentEdtRow() const
 {
     return editor->currentPos();
-}
-
-QVector<colVal> DbTableModel::oldRow()
-{
-    return editor->oldRow();
-}
-
-QVector<colVal> DbTableModel::newRow()
-{
-    return editor->newRow();
 }
 
 QValidator *DbTableModel::validator(int column) const
@@ -967,7 +977,7 @@ DbSqlLikeModel::DbSqlLikeModel(DbSqlRelation *r, QObject *parent) : QSortFilterP
     setSourceModel(origModel);
     setFilterKeyColumn(2);
     setFilterRegularExpression(relation->getCurrentFilterRegExp());
-    connect(relation,SIGNAL(filterRegExpInstalled(QString)),this,SLOT(setFlt(QString)));
+    connect(relation,SIGNAL(filterRegExpInstalled(QString)),this,SLOT(setFilterRegularExpression(QString)));
 }
 
 void DbSqlLikeModel::setAsync(bool b)
@@ -1071,11 +1081,4 @@ void DbSqlLikeModel::queryFinished()
         emit searchFinished(s);
         e->deleteLater();
     }
-}
-
-void DbSqlLikeModel::setFlt(QString reg)
-{
-    QRegularExpression exp(reg);
-    exp.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
-    setFilterRegularExpression(exp);
 }

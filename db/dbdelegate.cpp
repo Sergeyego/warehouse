@@ -44,6 +44,11 @@ QWidget *DbDelegate::createEditor (QWidget * parent, const QStyleOptionViewItem 
             editor= new DbDateEdit(parent);
             break;
         }
+        case QVariant::DateTime:
+        {
+            editor= new DbDateTimeEdit(parent);
+            break;
+        }
         default:
         {
             editor=QItemDelegate::createEditor(parent, option, index);
@@ -66,7 +71,7 @@ void DbDelegate::setEditorData ( QWidget * editor, const QModelIndex & index ) c
             DbComboBox *combo = qobject_cast<DbComboBox *>(editor);
             if (combo) {
                 if (combo->model()!=sqlModel->sqlRelation(index.column())->model()){
-                    connect(combo,SIGNAL(sigActionEdtRel(QModelIndex)),this,SIGNAL(sigActionEdtRel(QModelIndex)));
+                    connect(combo,SIGNAL(sigActionEdtRel(QModelIndex)),this,SLOT(edtRels(QModelIndex)));
                 }
                 combo->setIndex(index);
                 return;
@@ -86,6 +91,20 @@ void DbDelegate::setEditorData ( QWidget * editor, const QModelIndex & index ) c
                     dateEdit->setDate(dateEdit->minimumDate());
                 } else {
                     dateEdit->setDate(dat.toDate());
+                }
+                return;
+            }
+        }
+        if (sqlModel->columnType(index.column()==QMetaType::QDateTime)){
+            DbDateTimeEdit *dateTimeEdit = qobject_cast<DbDateTimeEdit *>(editor);
+            if (dateTimeEdit){
+                if (dat.isNull()){
+                    dateTimeEdit->setDateTime(dateTimeEdit->minimumDateTime());
+                } else {
+                    if (sqlModel->udtType(index.column())=="timestamp"){
+                        dateTimeEdit->setTimeSpec(Qt::UTC);
+                    }
+                    dateTimeEdit->setDateTime(dat.toDateTime());
                 }
                 return;
             }
@@ -156,6 +175,17 @@ void DbDelegate::setModelData ( QWidget * editor, QAbstractItemModel * model, co
                     return;
                 }
             }
+            if (sqlModel->columnType(index.column())==QVariant::DateTime){
+                DbDateTimeEdit *dateTimeEdit = qobject_cast<DbDateTimeEdit *>(editor);
+                if (dateTimeEdit){
+                    if (dateTimeEdit->dateTime()==dateTimeEdit->minimumDateTime()){
+                        sqlModel->setData(index,sqlModel->nullVal(index.column()),Qt::EditRole);
+                    } else {
+                        sqlModel->setData(index,dateTimeEdit->dateTime(),Qt::EditRole);
+                    }
+                    return;
+                }
+            }
             QCheckBox *cb=qobject_cast<QCheckBox *>(editor);
             if (cb && sqlModel->columnType(index.column())==QVariant::Int){
                 sqlModel->setData(index,cb->isChecked() ? 1 : 0,Qt::EditRole);
@@ -200,4 +230,16 @@ bool DbDelegate::eventFilter(QObject *object, QEvent *event)
         }
     }
     return QItemDelegate::eventFilter(object,event);
+}
+
+void DbDelegate::edtRels(QModelIndex index)
+{
+    DbComboBox *combo = qobject_cast<DbComboBox *>(sender());
+    if (combo){
+        DbRelationEditDialog d(index);
+        if (d.exec()==QDialog::Accepted){
+            colVal c = d.currentData();
+            combo->setCurrentData(c);
+        }
+    }
 }
