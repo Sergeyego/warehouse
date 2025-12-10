@@ -65,11 +65,7 @@ FormDataEl::FormDataEl(QWidget *parent) :
     connect(ui->pushButtonGen,SIGNAL(clicked(bool)),this,SLOT(genEan()));
     connect(ui->lineEditMasPal,SIGNAL(textChanged(QString)),this,SLOT(setKvoPack()));
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-    connect(ui->checkBoxZam,SIGNAL(checkStateChanged(Qt::CheckState)),this,SLOT(zamChanged(Qt::CheckState)));
-#else
     connect(ui->checkBoxZam,SIGNAL(clicked(bool)),ui->lineEditZam,SLOT(setEnabled(bool)));
-#endif
 
     updPart();
 }
@@ -293,7 +289,7 @@ bool FormDataEl::check()
         QMessageBox::critical(this,QString::fromUtf8("Ошибка"),QString::fromUtf8("Партия не найдена!"),QMessageBox::Ok);
         return false;
     }
-    ui->checkBoxZam->setChecked(zam);
+    setZamEn(zam);
     if (eanEd().length()!=12){
         err+=QString::fromUtf8("Отсутствует штрихкод. Нажмите кнопку \"Сгенерировать\".\n");
         dop=false;
@@ -384,7 +380,7 @@ bool FormDataEl::updPart()
         ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
     }
     if (findOk && zam){
-        ui->checkBoxZam->setChecked(zam);
+        setZamEn(zam);
     }
     return findOk;
 }
@@ -515,12 +511,13 @@ void FormDataEl::refreshData(QModelIndex /*index*/)
     } else {
         ui->labelPol->setPixmap(pix.scaled(ui->labelPol->size(),Qt::KeepAspectRatio));
     }
-    ui->checkBoxZam->setChecked(false);
+    setZamEn(false);
 }
 
-void FormDataEl::zamChanged(Qt::CheckState state)
+void FormDataEl::setZamEn(bool state)
 {
-    ui->lineEditZam->setEnabled(state==Qt::Checked);
+    ui->checkBoxZam->setChecked(state);
+    ui->lineEditZam->setEnabled(state);
 }
 
 void FormDataEl::genEan()
