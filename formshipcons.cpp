@@ -119,6 +119,8 @@ void FormShipCons::loadsettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     ui->splitter->restoreState(settings.value("ship_cons_splitter_width").toByteArray());
+    ui->splitter_el->restoreState(settings.value("ship_cons_splitter_el_width").toByteArray());
+    ui->splitter_wire->restoreState(settings.value("ship_cons_splitter_wire_width").toByteArray());
     bool vis=(settings.value("ship_cons_req_vis").toBool());
     ui->checkBoxReq->setChecked(vis);
     setReqStatVisible(vis);
@@ -128,6 +130,8 @@ void FormShipCons::savesettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
     settings.setValue("ship_cons_splitter_width",ui->splitter->saveState());
+    settings.setValue("ship_cons_splitter_el_width",ui->splitter_el->saveState());
+    settings.setValue("ship_cons_splitter_wire_width",ui->splitter_wire->saveState());
     settings.setValue("ship_cons_req_vis",ui->checkBoxReq->isChecked());
 }
 
