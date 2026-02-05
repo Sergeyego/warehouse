@@ -51,8 +51,7 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     push->addMapping(ui->dateEdit,2);
     push->addMapping(ui->comboBoxPol,3);
     push->addMapping(ui->comboBoxType,4);
-    push->addMapping(ui->comboBoxDrv,5);
-    push->addMapping(ui->lineEditPrim,6);
+    push->addMapping(ui->lineEditPrim,5);
     push->setDefaultFocus(3);
     push->addEmptyLock(ui->tableViewEl);
     push->addEmptyLock(ui->tableViewWire);
@@ -312,7 +311,6 @@ ModelShip::ModelShip(QObject *parent) : DbTableModel("ship_plan",parent)
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
     addColumn("id_type",tr("Тип отгрузки"),relType);
-    addColumn("id_drv",tr("Водитель"),Models::instance()->relDrv);
     addColumn("prim",tr("Примечание"));
     setSort("ship_plan.dat_vid, ship_plan.nom_s");
     setDefaultValue(4,1);

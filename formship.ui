@@ -255,26 +255,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>Водитель</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="DbComboBox" name="comboBoxDrv">
-           <property name="minimumSize">
-            <size>
-             <width>150</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QLabel" name="label_10">
            <property name="text">
             <string>Примечание</string>
@@ -283,6 +263,12 @@
          </item>
          <item>
           <widget class="QLineEdit" name="lineEditPrim">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
              <width>150</width>
@@ -405,11 +391,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TableView</class>
-   <extends>QTableView</extends>
-   <header>olap/tableview.h</header>
-  </customwidget>
-  <customwidget>
    <class>DbDateEdit</class>
    <extends>QDateEdit</extends>
    <header>db/dbdateedit.h</header>
@@ -423,6 +404,11 @@
    <class>DbViewer</class>
    <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

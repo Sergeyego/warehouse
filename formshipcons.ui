@@ -17,7 +17,7 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
+      <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -53,7 +53,7 @@
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
+            <enum>Qt::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -112,7 +112,7 @@
          <item>
           <spacer name="horizontalSpacer_3">
            <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
+            <enum>Qt::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -216,6 +216,23 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Водитель</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="DbComboBox" name="comboBoxDrv">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -233,7 +250,24 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="DbViewer" name="tableViewEl"/>
+          <widget class="DbViewer" name="tableViewEl">
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="TableView" name="tableViewElStat">
+           <property name="maximumSize">
+            <size>
+             <width>300</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -297,7 +331,24 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <widget class="DbViewer" name="tableViewWire"/>
+          <widget class="DbViewer" name="tableViewWire">
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="TableView" name="tableViewWireStat">
+           <property name="maximumSize">
+            <size>
+             <width>300</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -349,9 +400,16 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayoutMapper">
          <item>
+          <widget class="QLabel" name="labelItogo">
+           <property name="text">
+            <string>Итого</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer_4">
            <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
+            <enum>Qt::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -392,7 +450,37 @@
    <extends>QTableView</extends>
    <header>db/dbviewer.h</header>
   </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header>olap/tableview.h</header>
+  </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tableViewShip</tabstop>
+  <tabstop>dateEditBeg</tabstop>
+  <tabstop>dateEditEnd</tabstop>
+  <tabstop>pushButtonUpd</tabstop>
+  <tabstop>comboBoxType</tabstop>
+  <tabstop>checkBoxReq</tabstop>
+  <tabstop>pushButtonCert</tabstop>
+  <tabstop>pushButtonLoad</tabstop>
+  <tabstop>pushButtonCods</tabstop>
+  <tabstop>lineEditNum</tabstop>
+  <tabstop>dateEdit</tabstop>
+  <tabstop>comboBoxPol</tabstop>
+  <tabstop>comboBoxDrv</tabstop>
+  <tabstop>lineEditPol</tabstop>
+  <tabstop>tableViewEl</tabstop>
+  <tabstop>tableViewElStat</tabstop>
+  <tabstop>tableViewReqEl</tabstop>
+  <tabstop>tableViewWire</tabstop>
+  <tabstop>tableViewWireStat</tabstop>
+  <tabstop>tableViewReqWire</tabstop>
+  <tabstop>pushButtonXMLPart</tabstop>
+  <tabstop>checkBoxOnly</tabstop>
+  <tabstop>comboBoxPolFlt</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -14,6 +14,14 @@ FormShipCons::FormShipCons(QWidget *parent) :
 
     ui->comboBoxPolFlt->setModel(Models::instance()->relPol->model());
 
+    modelStatEl = new ModelRo(this);
+    modelStatEl->setDecimal(1);
+    ui->tableViewElStat->setModel(modelStatEl);
+
+    modelStatWire = new ModelRo(this);
+    modelStatWire->setDecimal(1);
+    ui->tableViewWireStat->setModel(modelStatWire);
+
     modelReqEl = new ModelReqShipEl(this);
     ui->tableViewReqEl->setModel(modelReqEl);
     ui->tableViewReqEl->setColumnHidden(0,true);
@@ -41,24 +49,25 @@ FormShipCons::FormShipCons(QWidget *parent) :
     ui->tableViewEl->setColumnHidden(0,true);
     ui->tableViewEl->setColumnHidden(1,true);
     ui->tableViewEl->setColumnWidth(2,400);
-    ui->tableViewEl->setColumnWidth(3,100);
-    ui->tableViewEl->setColumnWidth(4,300);
+    ui->tableViewEl->setColumnWidth(3,80);
+    ui->tableViewEl->setColumnWidth(4,290);
 
     modelWire = new ModelShipConsWire(this);
     ui->tableViewWire->setModel(modelWire);
     ui->tableViewWire->setColumnHidden(0,true);
     ui->tableViewWire->setColumnHidden(1,true);
     ui->tableViewWire->setColumnWidth(2,400);
-    ui->tableViewWire->setColumnWidth(3,100);
-    ui->tableViewWire->setColumnWidth(4,300);
+    ui->tableViewWire->setColumnWidth(3,80);
+    ui->tableViewWire->setColumnWidth(4,290);
 
     mapper = new DbMapper(ui->tableViewShip,this);
-    ui->horizontalLayoutMapper->insertWidget(1,mapper);
+    ui->horizontalLayoutMapper->insertWidget(2,mapper);
 
     mapper->addMapping(ui->lineEditNum,1);
     mapper->addMapping(ui->dateEdit,2);
     mapper->addMapping(ui->comboBoxPol,3);
     mapper->addMapping(ui->comboBoxType,4);
+    mapper->addMapping(ui->comboBoxDrv,5);
     mapper->setDefaultFocus(3);
     mapper->addEmptyLock(ui->tableViewEl);
     mapper->addEmptyLock(ui->tableViewWire);
@@ -91,6 +100,11 @@ FormShipCons::FormShipCons(QWidget *parent) :
 
     connect(modelReqEl,SIGNAL(sigUpd()),modelEl,SLOT(calcSum()));
     connect(modelReqWire,SIGNAL(sigUpd()),modelWire,SLOT(calcSum()));
+    connect(modelEl,SIGNAL(sigRefresh()),this,SLOT(updStatEl()));
+    connect(modelEl,SIGNAL(sigUpd()),this,SLOT(updStatEl()));
+    connect(modelWire,SIGNAL(sigRefresh()),this,SLOT(updStatWire()));
+    connect(modelWire,SIGNAL(sigUpd()),this,SLOT(updStatWire()));
+
 
     updPol();
 }
@@ -376,6 +390,8 @@ void FormShipCons::setReqStatVisible(bool b)
     ui->labelStatReqWire->setVisible(b);
     ui->labelPartEl->setVisible(b);
     ui->labelPartWire->setVisible(b);
+    ui->tableViewElStat->setVisible(!b);
+    ui->tableViewWireStat->setVisible(!b);
 }
 
 void FormShipCons::showCert()
@@ -387,6 +403,62 @@ void FormShipCons::showCert()
     f->show();
 }
 
+void FormShipCons::updStatEl()
+{
+    QSqlQuery query;
+    query.prepare("select e.marka ||' ф'||cast(p.diam as varchar(3))||CASE WHEN p.id_var <> 1 THEN (' /'::text || ev.nam::text) || '/'::text ELSE ''::text end as str,  sum(o.massa) "
+                  "from otpusk o "
+                  "inner join parti p on p.id=o.id_part "
+                  "inner join elrtr e on e.id=p.id_el "
+                  "inner join elrtr_vars ev on ev.id=p.id_var "
+                  "where o.id_sert = :id_sert "
+                  "group by e.marka, p.diam, ev.nam, p.id_var "
+                  "order by str");
+    query.bindValue(":id_sert",mapper->modelData(mapper->currentIndex(),0).toInt());
+    if (modelStatEl->execQuery(query)){
+        modelStatEl->setHeaderData(0,Qt::Horizontal,tr("Марка"));
+        modelStatEl->setHeaderData(1,Qt::Horizontal,tr("Масса, кг"));
+    }
+    ui->tableViewElStat->resizeToContents();
+    calcTotal();
+}
+
+void FormShipCons::updStatWire()
+{
+    QSqlQuery query;
+    query.prepare("select p.nam|| ' ф '||cast(d.diam as varchar(3))||' '|| wpk.short as str, sum(wsc.m_netto) "
+                  "from wire_shipment_consist wsc "
+                  "inner join wire_parti wp on wp.id = wsc.id_wparti "
+                  "inner join wire_parti_m wpm on wpm.id = wp.id_m "
+                  "inner join provol p on p.id = wpm.id_provol "
+                  "inner join diam d on d.id = wpm.id_diam "
+                  "inner join wire_pack_kind wpk on wpk.id = wp.id_pack "
+                  "where wsc.id_ship = :id_sert "
+                  "group by p.nam,d.diam,wpk.short "
+                  "order by str");
+    query.bindValue(":id_sert",mapper->modelData(mapper->currentIndex(),0).toInt());
+    if (modelStatWire->execQuery(query)){
+        modelStatWire->setHeaderData(0,Qt::Horizontal,tr("Марка"));
+        modelStatWire->setHeaderData(1,Qt::Horizontal,tr("Масса, кг"));
+    }
+    ui->tableViewWireStat->resizeToContents();
+    calcTotal();
+}
+
+void FormShipCons::calcTotal()
+{
+    double sum=0;
+    for (int i=0; i<modelStatEl->rowCount(); i++){
+        sum+=modelStatEl->data(modelStatEl->index(i,1),Qt::EditRole).toDouble();
+    }
+    for (int i=0; i<modelStatWire->rowCount(); i++){
+        sum+=modelStatWire->data(modelStatWire->index(i,1),Qt::EditRole).toDouble();
+    }
+    QString s;
+    s = (sum>0)? tr("Итого: ")+QLocale().toString(sum,'f',1)+tr(" кг") : tr("Итого");
+    ui->labelItogo->setText(s);
+}
+
 ModelShipCons::ModelShipCons(QObject *parent) : DbTableModel("sertifikat",parent)
 {
     DbSqlRelation *relType = new DbSqlRelation("sert_type","id","nam",this);
@@ -396,6 +468,7 @@ ModelShipCons::ModelShipCons(QObject *parent) : DbTableModel("sertifikat",parent
     addColumn("dat_vid",tr("Дата"));
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
     addColumn("id_type",tr("Тип отгрузки"),relType);
+    addColumn("id_drv",tr("Водитель"),Models::instance()->relDrv);
     setSort("sertifikat.dat_vid, sertifikat.nom_s");
     setDefaultValue(4,1);
 }

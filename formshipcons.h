@@ -124,6 +124,8 @@ private:
     ModelReqShipEl *modelReqEl;
     ModelReqShipWire *modelReqWire;
     QDomElement newElement(QString nam, QString val, QDomDocument *doc);
+    ModelRo *modelStatEl;
+    ModelRo *modelStatWire;
 protected:
     virtual void keyPressEvent (QKeyEvent * e );
 
@@ -138,6 +140,9 @@ private slots:
     void loadData();
     void setReqStatVisible(bool b);
     void showCert();
+    void updStatEl();
+    void updStatWire();
+    void calcTotal();
 };
 
 #endif // FORMSHIPCONS_H
