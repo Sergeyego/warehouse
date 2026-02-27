@@ -68,6 +68,7 @@ FormShipCons::FormShipCons(QWidget *parent) :
     mapper->addMapping(ui->comboBoxPol,3);
     mapper->addMapping(ui->comboBoxType,4);
     mapper->addMapping(ui->comboBoxDrv,5);
+    mapper->addMapping(ui->checkBoxDouble,6);
     mapper->setDefaultFocus(3);
     mapper->addEmptyLock(ui->tableViewEl);
     mapper->addEmptyLock(ui->tableViewWire);
@@ -473,6 +474,7 @@ ModelShipCons::ModelShipCons(QObject *parent) : DbTableModel("sertifikat",parent
     addColumn("id_pol",tr("Получатель"),Models::instance()->relPol);
     addColumn("id_type",tr("Тип отгрузки"),relType);
     addColumn("id_drv",tr("Водитель"),Models::instance()->relDrv);
+    addColumn("doublepol",tr("Два получателя"));
     setSort("sertifikat.dat_vid, sertifikat.nom_s");
     setDefaultValue(4,1);
 }
