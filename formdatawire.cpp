@@ -285,6 +285,11 @@ QString FormDataWire::master()
     return ui->comboBoxMaster->currentText();
 }
 
+QString FormDataWire::orgNam()
+{
+    return org;
+}
+
 int FormDataWire::getIdPart()
 {
     return ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),0),Qt::EditRole).toInt();
@@ -543,6 +548,7 @@ void FormDataWire::updPart()
     queryAdr.prepare("select nam_lbl, adr, site from hoz where id=1");
     if (queryAdr.exec()){
         while (queryAdr.next()){
+            org = queryAdr.value(0).toString();
             strAdr=QString::fromUtf8("Изготовитель ")+queryAdr.value(0).toString()+QString::fromUtf8(", ")+queryAdr.value(1).toString();
             site=queryAdr.value(2).toString();
         }

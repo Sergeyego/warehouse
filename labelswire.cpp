@@ -183,29 +183,31 @@ QString LabelE7035::getCod()
 {
     QString cod=LabelBase::getCod();
     cod.push_back(ean13(43,2.5,data->eanEd(),9,0.25,0));
-    cod.push_back(text(2.5,2.5,QString::fromUtf8("Марка - ")+data->marka(),10));
-    cod.push_back(text(2.5,6,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),10));
-    cod.push_back(text(2.5,9.5,QString::fromUtf8("Плавка - ")+data->plavka(),10));
-    cod.push_back(text(2.5,13,QString::fromUtf8("Партия - ")+data->part(),10));
+    cod.push_back(text(2.5,2.5,QString::fromUtf8("Марка - ")+data->marka(),9));
+    cod.push_back(text(2.5,5.5,QString::fromUtf8("Диаметр, мм - ")+data->diametr(),9));
+    cod.push_back(text(2.5,8.5,QString::fromUtf8("Плавка - ")+data->plavka(),9));
+    cod.push_back(text(2.5,11.5,QString::fromUtf8("Партия - ")+data->part(),9));
 
     QRegularExpression reg("^L-(\\d+)$");
     reg.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
     QRegularExpressionMatch match = reg.match(data->spool());
 
     if (!match.hasMatch()){ //обычная этикетка
-        cod.push_back(text(2.5,16.5,QString::fromUtf8("Тип носителя - ")+data->spool(),10));
-        cod.push_back(text(2.5,20,QString::fromUtf8("Код продукции - ")+data->codeProd(),10));
-        cod.push_back(text(2.5,23.5,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
-        cod.push_back(text(2.5,27,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
+        cod.push_back(text(2.5,14.5,QString::fromUtf8("Тип носителя - ")+data->spool(),9));
+        cod.push_back(text(2.5,17.5,QString::fromUtf8("Код продукции - ")+data->codeProd(),9));
+        cod.push_back(text(2.5,20.5,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),9));
+        cod.push_back(text(2.5,23.5,QString::fromUtf8("Дата изг. - ")+data->datePart(),9));
     } else { //длинномер
-        cod.push_back(text(2.5,16.5,QString::fromUtf8("Длина, мм - ")+match.captured(1),10));
-        cod.push_back(text(2.5,20,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),10));
-        cod.push_back(text(2.5,23.5,QString::fromUtf8("Дата изг. - ")+data->datePart(),10));
-        cod.push_back(block(2.5,27,40,7,data->gost(),10));
+        cod.push_back(text(2.5,14.5,QString::fromUtf8("Длина, мм - ")+match.captured(1),9));
+        cod.push_back(text(2.5,17.5,QString::fromUtf8("Масса нетто, кг - ")+data->masEd(),9));
+        cod.push_back(text(2.5,20.5,QString::fromUtf8("Дата изг. - ")+data->datePart(),9));
+        cod.push_back(block(2.5,23.5,50,6,data->gost(),9));
     }
 
+    cod.push_back(text(2.5,30,data->orgNam(),8));
     cod.push_back(otkStamp(41,16,data->otkNum()));
-    cod.push_back(dataMatrix(55,20,12,0.7,data->barCode()));
+
+    cod.push_back(dataMatrix(55,17,12,0.7,data->barCode()));
     return cod;
 }
 

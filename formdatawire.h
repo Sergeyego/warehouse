@@ -45,6 +45,7 @@ public:
     QString kvoSpool();
     QString masPal();
     QString master();
+    QString orgNam();
     int getIdPart();
     bool checkEd(bool checkTu=false);
     bool checkGroup();
@@ -63,6 +64,7 @@ private:
     bool selectPart();
     QString strAdr;
     QString site;
+    QString org;
     QString getNum(QComboBox *c);
     void loadSettings();
     void saveSettings();
