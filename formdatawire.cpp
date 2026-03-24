@@ -309,6 +309,10 @@ bool FormDataWire::checkEd(bool checkTu)
         err+=QString::fromUtf8("Отсутствует нормативная документация.\n");
     }
 
+    if (checkTu && this->otkNum().isEmpty()){
+        err+=QString::fromUtf8("Не выбран контролёр ОТК.\n");
+    }
+
     bool ok=err.isEmpty();
 
     if (!ok){
