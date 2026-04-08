@@ -169,7 +169,7 @@ void FormBalance::createModelData()
         QJsonArray arr = respDoc.array();
         double sum=0;
 
-        for (const QJsonValue &v : std::as_const(arr)){
+        for (const QJsonValue &v : qAsConst(arr)){
             QVector<QVariant> row;
             QJsonObject o = v.toObject();
 

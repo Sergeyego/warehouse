@@ -104,7 +104,7 @@ void FormBalanceEW::upd()
     QMultiMap<QString,double> map;
     double sum=0;
 
-    for (const QVector<QVariant> &dt : std::as_const(data)){
+    for (const QVector<QVariant> &dt : qAsConst(data)){
         double kvo=dt.at(dt.size()-2).toDouble();
         sum+=kvo;
         QString key=dt.at(dt.size()-1).toString();
@@ -117,7 +117,7 @@ void FormBalanceEW::upd()
         QStringList colums=key.split("#");
         QVector<QVariant> dt;
         dt.push_back(key);
-        for (const QString &col : std::as_const(colums)){
+        for (const QString &col : qAsConst(colums)){
             dt.push_back(col);
         }
         QList<double> vals=map.values(key);

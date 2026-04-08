@@ -36,7 +36,7 @@ void ModelPrint::load()
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
         QJsonArray array=doc.array();
         QVector<QVector<QVariant>> data;
-        for (const QJsonValue &v : std::as_const(array)){
+        for (const QJsonValue &v : qAsConst(array)){
             QVector<QVariant> row;
             QJsonObject o = v.toObject();
             row.push_back(o.value("name").toString());

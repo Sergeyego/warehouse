@@ -363,7 +363,7 @@ void ModelBalance::updData(QDate dat)
         if (respDoc.isArray()){
             QVector<QVector<QVariant>> tmpd;
             QJsonArray arr = respDoc.array();
-            for (const QJsonValue &v : std::as_const(arr)){
+            for (const QJsonValue &v : qAsConst(arr)){
                 QVector<QVariant> row;
                 QJsonObject o = v.toObject();
                 QString part=o.value("part").toString();
