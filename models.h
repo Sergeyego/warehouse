@@ -39,6 +39,7 @@ public:
     DbSqlRelation *relMaster;
     DbSqlRelation *relRabPack;
     QString createPalBarcode(QString prefix);
+    QString appServer();
 
 protected:
     Models(QObject *parent = 0);

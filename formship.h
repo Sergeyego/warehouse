@@ -27,7 +27,7 @@ struct shipContInfo {
     DbSqlRelation *relPart;
 };
 
-class ModelBalance : public TableModel
+class ModelBalance : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
@@ -37,13 +37,9 @@ public:
     double getStock(QString ide);
     void clear();
 private:
-    struct pData {
-        QString pack;
-        QString prim;
-    };
-    QHash<QString,pData> partData;
-    QMultiHash<QString,partInfo> part;
-    QHash<QString,contInfo> cont;
+    TableModel *srcModel;
+signals:
+    void sigUpd();
 };
 
 class ModelShip : public DbTableModel
@@ -104,7 +100,6 @@ private:
     ModelBalance *modelBalance;
     TableModel *modelElStat;
     TableModel *modelWireStat;
-    QSortFilterProxyModel *proxyModelBalance;
     void loadsettings();
     void savesettings();
     void calcStat(ModelShipData *modelShipData, TableModel *modelStat);

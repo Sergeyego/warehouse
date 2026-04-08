@@ -3,15 +3,13 @@
 InvoiceManager::InvoiceManager(QObject *parent) : QObject(parent)
 {
     manager = new QNetworkAccessManager(this);
+    server="http://127.0.0.1:7000";
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onResult(QNetworkReply*)));
 }
 
 void InvoiceManager::getInvoice(QString path, QString vid, QString type, QString filename, int year)
 {
-    QSqlDatabase db=QSqlDatabase::database();
-    const QString host=db.isValid()? db.hostName() : "127.0.0.1";
-    int port=7000;
-    QUrl url("http://"+host+":"+QString::number(port)+"/"+path);
+    QUrl url(server+"/"+path);
     QNetworkRequest request;
     request.setUrl(url);
     QNetworkReply *reply = manager->get(request);
@@ -19,6 +17,11 @@ void InvoiceManager::getInvoice(QString path, QString vid, QString type, QString
     reply->setProperty("invoice_type",type);
     reply->setProperty("filename",filename);
     reply->setProperty("year",year);
+}
+
+void InvoiceManager::setServer(QString url)
+{
+    server=url;
 }
 
 void InvoiceManager::onResult(QNetworkReply *reply)

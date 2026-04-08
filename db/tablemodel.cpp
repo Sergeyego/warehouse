@@ -91,6 +91,11 @@ QStringList TableModel::getHeader() const
     return p_header;
 }
 
+QVector<QVector<QVariant> > TableModel::getData() const
+{
+    return p_d;
+}
+
 void TableModel::clear()
 {
     if (rowCount()){

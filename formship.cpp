@@ -30,10 +30,9 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     ui->tableViewWireStat->setModel(modelWireStat);
 
     modelBalance = new ModelBalance(this);
-    proxyModelBalance = new QSortFilterProxyModel(this);
-    proxyModelBalance->setSourceModel(modelBalance);
-    proxyModelBalance->sort(12);
-    ui->tableViewBal->setModel(proxyModelBalance);
+    ui->tableViewBal->setModel(modelBalance);
+    ui->tableViewBal->setColumnHidden(13,true);
+    ui->tableViewBal->setColumnHidden(14,true);
 
     modelShip = new ModelShip(this);
     ui->tableViewShip->setModel(modelShip);
@@ -136,7 +135,6 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
     connect(ui->pushButtonNakl,SIGNAL(clicked(bool)),this,SLOT(printNakl()));
     connect(ui->tableViewEl->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
     connect(ui->tableViewWire->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updKisBalance(QModelIndex)));
-    connect(modelBalance,SIGNAL(sigUpd()),ui->tableViewBal,SLOT(resizeToContents()));
     connect(ui->pushButtonEdt,SIGNAL(clicked(bool)),this,SLOT(updBalance()));
     connect(push,SIGNAL(sigWrite()),this,SLOT(updBalance()));
     connect(modelShipEl, SIGNAL(sigSum(QString)),ui->labelSumEl,SLOT(setText(QString)));
@@ -147,6 +145,8 @@ FormShip::FormShip(bool readonly, QWidget *parent) :
 
     connect(modelShipWire,SIGNAL(sigUpd()),this,SLOT(updShipStatisticWire()));
     connect(modelShipWire,SIGNAL(sigRefresh()),this,SLOT(updShipStatisticWire()));
+
+    connect(modelBalance,SIGNAL(sigUpd()),ui->tableViewBal,SLOT(resizeToContents()));
 
     updPol();
 }
@@ -288,10 +288,10 @@ void FormShip::calcStat(ModelShipData *modelShipData, TableModel *modelStat)
             hash.insert(nom,kvo);
         }
     }
-    for (QString key : hash.uniqueKeys()){
+    for (QString &key : hash.uniqueKeys()){
         double sum=0;
         QList<double> vals = hash.values(key);
-        for (double s : vals){
+        for (double &s : vals){
             sum+=s;
         }
         QVector<QVariant> v;
@@ -341,124 +341,77 @@ bool ModelShip::insertRow(int row, const QModelIndex &parent)
     return DbTableModel::insertRow(row,parent);
 }
 
-ModelBalance::ModelBalance(QObject *parent) : TableModel(parent)
+ModelBalance::ModelBalance(QObject *parent) : QSortFilterProxyModel (parent)
 {
+    srcModel = new TableModel(this);
     QStringList head;
-    head<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рец./плавка"<<"Коммент."<<"Кол-во, кг"<<"План прих., кг"<<"План расх., кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"Год";
-    setHeader(head);
+    head<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рец./плавка"<<"Коммент."<<"Кол-во, кг"<<"План прих., кг"<<"План расх., кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"Год"<<"id_part"<<"id_kis";
+    srcModel->setHeader(head);
+    this->setSourceModel(srcModel);
+    this->setSortRole(Qt::EditRole);
+    this->setFilterCaseSensitivity(Qt::CaseSensitive);
+    this->setFilterKeyColumn(14);
+    this->sort(12);
 }
 
 void ModelBalance::updData(QDate dat)
 {
-    Models::instance()->sync1C->getBalance(dat,part);
-    Models::instance()->sync1C->getContBalance(dat,cont);
-    QList<partInfo> list = part.values();
-    int maxide=0;
-    int maxidw=0;
-    int minide=1410065408;
-    int minidw=1410065408;
-    for (partInfo i : list){
-        QStringList idl=i.id_part_kis.split(":");
-        if (idl.size()>1){
-            if (idl.at(0)=="e"){
-                int ide=idl.at(1).toInt();
-                if (ide>maxide){
-                    maxide=ide;
-                }
-                if (ide<minide){
-                    minide=ide;
-                }
-            } else if (idl.at(0)=="w"){
-                int idw=idl.at(1).toInt();
-                if (idw>maxidw){
-                    maxidw=idw;
-                }
-                if (idw<minidw){
-                    minidw=idw;
-                }
+    QByteArray data;
+    bool ok = HttpSyncManager::sendGet("/wms/balance/"+dat.toString("yyyy-MM-dd")+"?getall=false",data);
+    if (ok){
+        QJsonDocument respDoc = QJsonDocument::fromJson(data);
+        if (respDoc.isArray()){
+            QVector<QVector<QVariant>> tmpd;
+            QJsonArray arr = respDoc.array();
+            for (const QJsonValue &v : std::as_const(arr)){
+                QVector<QVariant> row;
+                QJsonObject o = v.toObject();
+                QString part=o.value("part").toString();
+                row.push_back(o.value("name").toString());
+                row.push_back(o.value("pack").toString());
+                row.push_back(part);
+                row.push_back(o.value("ist").toString());
+                row.push_back(o.value("rcpplav").toString());
+                row.push_back(o.value("prim").toString());
+                row.push_back(o.value("kvo").toDouble());
+                row.push_back(o.value("prich").toDouble());
+                row.push_back(o.value("rasch").toDouble());
+                row.push_back(o.value("zone").toString());
+                row.push_back(o.value("cell").toString());
+                row.push_back(o.value("cont").toString());
+                row.push_back(part.right(4)+'-'+part.left(4));
+                row.push_back(o.value("prefix").toString()+":"+QString::number(o.value("id_part").toInt()));
+                row.push_back(o.value("id_kis").toString());
+                tmpd.push_back(row);
             }
+            srcModel->setModelData(tmpd);
         }
-    }
-    QSqlQuery query;
-    query.prepare("select 'e:'||p.id, ep.pack_ed, "
-                  "CASE WHEN p.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || COALESCE(p.prim_prod,'')  from parti p "
-                  "inner join el_pack ep on ep.id = p.id_pack "
-                  "inner join elrtr_vars ev on ev.id = p.id_var "
-                  "where p.id between :minide and :maxide "
-                  "union "
-                  "select 'w:'||wp.id, wp2.pack_ed, "
-                  "CASE WHEN wp.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || COALESCE(wp.prim_prod,'') "
-                  "from wire_parti wp "
-                  "inner join wire_pack wp2 on wp2.id = wp.id_pack_type "
-                  "inner join elrtr_vars ev on ev.id = wp.id_var "
-                  "where wp.id between :minidw and :maxidw ");
-    query.bindValue(":minide",minide);
-    query.bindValue(":maxide",maxide);
-    query.bindValue(":minidw",minidw);
-    query.bindValue(":maxidw",maxidw);
-    if (query.exec()){
-        partData.clear();
-        while (query.next()){
-            ModelBalance::pData pd;
-            pd.pack=query.value(1).toString();
-            pd.prim=query.value(2).toString();
-            partData.insert(query.value(0).toString(),pd);
-        }
-    } else {
-        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
+        this->refresh("");
     }
 }
 
 double ModelBalance::getStock(QString ide)
 {
     double kvo=0;
-    QStringList zoneOt=Models::instance()->sync1C->getZoneOt();
-    QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();
-    while (i != part.constEnd()) {
-        partInfo pinfo=i.value();
-        contInfo cnt = cont.value(pinfo.contKey);
-        if (zoneOt.contains(cnt.zone) && pinfo.id_part_kis==ide && cnt.kvo>0 && cnt.rasch<1){
-            kvo+=(pinfo.kvo-pinfo.rasch);
+    QVector<QVector<QVariant>> data = srcModel->getData();
+    for (QVector<QVariant> &row : data){
+        if (row.at(13).toString()==ide){
+            kvo+=(row.at(6).toDouble()-row.at(8).toDouble());
         }
-        ++i;
     }
     return kvo;
 }
 
 void ModelBalance::clear()
 {
-    part.clear();
-    cont.clear();
-    TableModel::clear();
+    srcModel->clear();
+    emit sigUpd();
 }
 
 void ModelBalance::refresh(QString kis)
 {
-    QVector<QVector<QVariant>> tmpd;
-    QList<partInfo> list = part.values(kis);
-    QStringList zoneOt=Models::instance()->sync1C->getZoneOt();
-    for (partInfo i : list){
-        QVector<QVariant> row;
-        contInfo cnt = cont.value(i.contKey);        
-        if (zoneOt.contains(cnt.zone) && cnt.kvo>0 && cnt.rasch<1){
-            ModelBalance::pData pd=partData.value(i.id_part_kis);
-            row.push_back(i.name);
-            row.push_back(pd.pack);
-            row.push_back(i.number);
-            row.push_back(i.ist);
-            row.push_back(i.rcp);
-            row.push_back(pd.prim);
-            row.push_back(i.kvo);
-            row.push_back(i.prich);
-            row.push_back(i.rasch);
-            row.push_back(cnt.zone);
-            row.push_back(cnt.cell);
-            row.push_back(cnt.name);
-            row.push_back(i.number.right(4)+'-'+i.number.left(4));
-            tmpd.push_back(row);
-        }
-    }
-    setModelData(tmpd);
+    this->setFilterRegularExpression("^"+QRegularExpression::escape(kis)+"$");
+    emit sigUpd();
 }
 
 ModelShipData::ModelShipData(shipContInfo c, QObject *parent) : DbTableModel(c.tablename,parent)

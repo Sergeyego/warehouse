@@ -25,8 +25,6 @@ Reader::~Reader()
     delete ui;
 }
 
-
-
 void Reader::setCurrentIdShip(int id, QString fname, QString prefix)
 {
     id_ship=id;
@@ -51,7 +49,7 @@ void Reader::reload()
     setLock(true);
     double scale=ui->spinBoxScale->value()/100.0;
     int dpi=/*QApplication::desktop()->physicalDpiX()*/96*scale;
-    QNetworkRequest request(QUrl::fromUserInput("http://192.168.1.10:7000/s3/img/"+spref+"/"+QString::number(id_ship)+"/"+getCurrentLang()+"/"+QString::number(dpi)));
+    QNetworkRequest request(QUrl::fromUserInput(Models::instance()->appServer()+"/s3/img/"+spref+"/"+QString::number(id_ship)+"/"+getCurrentLang()+"/"+QString::number(dpi)));
     request.setRawHeader("Accept-Charset", "UTF-8");
     request.setRawHeader("User-Agent", "Appszsm");
     QNetworkReply *reply;

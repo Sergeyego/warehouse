@@ -57,7 +57,7 @@ void DialogWebView::loadDoc(const QString &html)
         bl = bl.next();
     }
     ui->textEdit->document()->clear();
-    for (QString res : tmpRes.keys()){
+    for (QString &res : tmpRes.keys()){
         ui->textEdit->document()->addResource(QTextDocument::ImageResource,res,tmpRes.value(res));
     }
     ui->textEdit->setHtml(html);

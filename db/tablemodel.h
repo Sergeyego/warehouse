@@ -22,6 +22,7 @@ public:
     void setModelData(const QVector<QVector<QVariant>> &data, const QStringList &hdata = QStringList());
     void setHeader(const QStringList &hdata);
     QStringList getHeader() const;
+    QVector<QVector<QVariant>> getData() const;
     void clear();
     void setDecimal(int dec);
     void setDecimalForColumn(int section, int dec);

@@ -8,6 +8,10 @@ FormCells::FormCells(QWidget *parent) :
     ui->setupUi(this);
     loadsettings();
     modelCell = new ModelCell(this);
+    QStringList head;
+    head<<"Ячейка"<<"Штрихкод"<<"Зона"<<"Стеллаж"<<"Позиция"<<"Ярус"<<"Статус ячейки";
+    modelCell->setHeader(head);
+
     proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setSourceModel(modelCell);
     proxyModel->setFilterKeyColumn(0);
@@ -23,7 +27,6 @@ FormCells::FormCells(QWidget *parent) :
     connect(ui->pushButtonPrint,SIGNAL(clicked(bool)),this,SLOT(printLbl()));
     connect(ui->pushButtonCfgSize,SIGNAL(clicked(bool)),this,SLOT(cfgLblSize()));
 
-    refresh();
 }
 
 FormCells::~FormCells()
@@ -53,14 +56,29 @@ void FormCells::savesettings()
 
 void FormCells::refresh()
 {
-    QStringList head;
-    QVector<QVector<QVariant>> data;
-    head<<"Ячейка"<<"Штрихкод"<<"Зона"<<"Стеллаж"<<"Позиция"<<"Ярус"<<"Статус ячейки";
-    Models::instance()->sync1C->getCells(data);
+    QByteArray data;
+    bool ok = HttpSyncManager::sendGet("/wms/cells",data);
+    if (ok) {
+        QJsonDocument respDoc = QJsonDocument::fromJson(data);
+        if (respDoc.isArray()){
+            QVector<QVector<QVariant>> tmpd;
+            QJsonArray arr = respDoc.array();
+            for (const QJsonValue &v : std::as_const(arr)){
+                QVector<QVariant> row;
+                QJsonObject o = v.toObject();
+                row.push_back(o.value("name").toString());
+                row.push_back(o.value("barcode").toString());
+                row.push_back(o.value("zone").toString());
+                row.push_back(o.value("rack").toString());
+                row.push_back(o.value("position").toString());
+                row.push_back(o.value("tier").toString());
+                row.push_back(o.value("status").toString());
+                tmpd.push_back(row);
+            }
+            modelCell->setModelData(tmpd);
+        }
+    }
     ui->lineEditStr->clear();
-    ui->comboBoxColumn->clear();
-    ui->comboBoxColumn->addItems(head);
-    modelCell->setModelData(data,head);
     ui->tableView->resizeToContents();
     ui->tableView->setColumnWidth(0,200);
 }
@@ -189,7 +207,7 @@ QString LabelCell::getCod()
     const double w=getWidth();
     const double h=getHeight();
     bool first=true;
-    for (cellData d : data){
+    for (cellData &d : data){
         if (first){
             first=false;
         } else {

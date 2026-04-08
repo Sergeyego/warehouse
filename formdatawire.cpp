@@ -107,7 +107,7 @@ QString FormDataWire::getSert()
         QList<QString> v = srt.values(keys.at(i));
         std::sort(v.begin(),v.end());
         bool first=true;
-        for (QString st:v){
+        for (QString &st : v){
             if (!first){
                 srtStr+="; ";
             }

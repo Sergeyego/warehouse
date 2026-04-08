@@ -6,6 +6,7 @@
 #include "db/tablemodel.h"
 #include "labelbase.h"
 #include "dialoglblsize.h"
+#include "httpsyncmanager.h"
 #include <QSortFilterProxyModel>
 
 namespace Ui {
@@ -37,7 +38,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    void setModelData(const QVector<QVector<QVariant> > &data, const QStringList &hdata);
+    void setModelData(const QVector<QVector<QVariant> > &data, const QStringList &hdata = QStringList());
 
 private:
     QMap <QString, bool> checkMap;

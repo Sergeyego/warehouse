@@ -6,43 +6,19 @@
 #include "db/tablemodel.h"
 #include <QSortFilterProxyModel>
 #include "dialogwebview.h"
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include "progressreportdialog.h"
 
 namespace Ui {
 class FormBalance;
 }
 
-class BalanceModel : public TableModel
+struct celSum
 {
-        Q_OBJECT
-
-public:
-    explicit BalanceModel(QObject *parent=nullptr);
-    void refresh(QDate dat, bool bypart=true, bool otOnly=false);
-    void getPartData(QString kis, QVector<QVector<QVariant>> &data, bool otOnly=false);
-    QStringList getPartHeader();
-
-private:
-    void updData(QDate dat);
-    bool byp;
-    QStringList headerPart;
-    QStringList headerMark;
-    QStringList zoneOt;
-    struct pData {
-        QString pack;
-        QString prim;
-    };
-    QHash<QString,pData> partData;
-    QMultiHash<QString,partInfo> part;
-    QHash<QString,contInfo> cont;
-};
-
-class ProxyModel : public QSortFilterProxyModel
-{
-    Q_OBJECT
-public:
-    explicit ProxyModel(QObject *parent=nullptr);
-    virtual bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
-    void setNomFilret(bool el, bool wire);
+    double kvo;
+    double prich;
+    double rasch;
 };
 
 class FormBalance : public QWidget
@@ -55,19 +31,23 @@ public:
 
 private:
     Ui::FormBalance *ui;
-    BalanceModel *balanceModel;
-    ProxyModel *proxyModel;
-    TableModel *partModel;
-    ProxyModel *proxyPartModel;
+    QNetworkAccessManager *manager;
+    TableModel *modelPart;
+    QSortFilterProxyModel *proxyModelPart;
+    TableModel *modelMark;
+    QSortFilterProxyModel *proxyModelMark;
+    QJsonDocument respDoc;
+    ProgressReportDialog *progressDialog;
     void loadSettings();
     void saveSettings();
 private slots:
-    void refresh();
-    void calcSum();
-    void setFilter();
+    void startUpd();
+    void upd();
+    void setByPart();
     void save();
     void updPart(QModelIndex index);
     void createPackList();
+    void createModelData();
 };
 
 #endif // FORMBALANCE_H

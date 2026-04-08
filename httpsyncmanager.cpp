@@ -8,16 +8,13 @@ HttpSyncManager::HttpSyncManager(QObject *parent)
 
 bool HttpSyncManager::sendRequest(QString path, QString req, const QByteArray &data, QByteArray &respData)
 {
-    QSqlDatabase db=QSqlDatabase::database();
-    const QString host=db.isValid()? db.hostName() : "127.0.0.1";
-    int port=7000;
     int psize = path.size();
     if (psize){
         if (path.at(0)=='/'){
             path=path.right(psize-1);
         }
     }
-    QNetworkRequest request(QUrl("http://"+host+":"+QString::number(port)+"/"+path));
+    QNetworkRequest request(QUrl(Models::instance()->appServer()+"/"+path));
     request.setRawHeader("Accept-Charset", "UTF-8");
     request.setRawHeader("User-Agent", "Appszsm");
     QEventLoop loop;

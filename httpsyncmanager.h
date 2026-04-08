@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QSqlDatabase>
 #include <QEventLoop>
+#include "models.h"
 
 class HttpSyncManager : public QObject
 {

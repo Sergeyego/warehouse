@@ -22,7 +22,7 @@ bool ModelPrint::setData(const QModelIndex &index, const QVariant &value, int ro
 {
     if (index.column()==3 && role==Qt::EditRole){
         int d = value.toInt();
-        if (d<1 || d>15){
+        if ((d<1) || (d>15)){
             return false;
         }
     }
@@ -36,14 +36,14 @@ void ModelPrint::load()
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
         QJsonArray array=doc.array();
         QVector<QVector<QVariant>> data;
-        for (QJsonValue v : array){
+        for (const QJsonValue &v : std::as_const(array)){
             QVector<QVariant> row;
             QJsonObject o = v.toObject();
             row.push_back(o.value("name").toString());
             row.push_back(o.value("url").toString());
             row.push_back(o.value("dpi").toInt());
             int density = o.value("density").toInt();
-            if (density<1 || density>15){
+            if ((density<1) || (density>15)){
                 density=defaultDensity;
             }
             row.push_back(density);

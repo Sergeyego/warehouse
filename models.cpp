@@ -6,7 +6,9 @@ Models::Models(QObject *parent) :
     QObject(parent)
 {
     sync1C = new Sync1C(this);
+
     invoiceManager = new InvoiceManager(this);
+    invoiceManager->setServer(this->appServer());
 
     relPol = new DbSqlRelation("poluch","id","str",this);
     relDrv = new DbSqlRelation("drv_view","id","drv",this);
@@ -77,10 +79,10 @@ Models::Models(QObject *parent) :
     relMaster->setAlias("rab_master");
     relMaster->setSort("rab_master.snam");
     relMaster->setFilter("rab_master.id in (select id from el_master)");
+
     relRabPack = new DbSqlRelation("kamin_empl","id","snam",this);
     relRabPack->setSort("kamin_empl.snam");
     relRabPack->setFilter("kamin_empl.id in (select id from el_packer)");
-
 }
 
 Models *Models::instance()
@@ -105,5 +107,13 @@ QString Models::createPalBarcode(QString prefix)
         QMessageBox::critical(nullptr,tr("Ошибка"),query.lastError().text(),QMessageBox::Ok);
     }
     return palBarcode;
+}
+
+QString Models::appServer()
+{
+    QSqlDatabase db=QSqlDatabase::database();
+    const QString host=db.isValid()? db.hostName() : "127.0.0.1";
+    int port=7000;
+    return "http://"+host+":"+QString::number(port);
 }
 

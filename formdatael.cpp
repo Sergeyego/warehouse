@@ -451,7 +451,7 @@ QString FormDataEl::getSrtStr(int id_part)
         srtStr+=docType.value(keys.at(i))+":";
         QList<QString> v = srt.values(keys.at(i));
         std::sort(v.begin(),v.end());
-        for (QString st:v){
+        for (QString &st : v){
             if (!srtStr.isEmpty()){
                 srtStr+="\n";
             }

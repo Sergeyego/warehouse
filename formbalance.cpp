@@ -11,34 +11,51 @@ FormBalance::FormBalance(QWidget *parent) :
 
     loadSettings();
 
-    ui->tableViewPart->hide();
+    progressDialog = new ProgressReportDialog(this);
+
+    manager = new QNetworkAccessManager(this);
+
+    ui->tableViewMark->hide();
     ui->dateEdit->setDate(QDate::currentDate());
+    QStringList headerPart, headerMark;
 
-    partModel = new TableModel(this);
-    proxyPartModel = new ProxyModel(this);
-    proxyPartModel->setSourceModel(partModel);
-    proxyPartModel->setSortRole(Qt::EditRole);
-    ui->tableViewPart->setModel(proxyPartModel);
+    headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"id_part"<<"id_kis";
+    headerMark<<"t"<<"Номенклатура"<<"Код КИС"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
 
-    balanceModel = new BalanceModel(this);
-    proxyModel = new ProxyModel(this);
-    proxyModel->setSourceModel(balanceModel);
-    proxyModel->setSortRole(Qt::EditRole);
 
-    partModel->setHeader(balanceModel->getPartHeader());
+    modelPart = new TableModel(this);
+    modelPart->setHeader(headerPart);
+    proxyModelPart = new QSortFilterProxyModel(this);
+    proxyModelPart->setSourceModel(modelPart);
+    proxyModelPart->setSortRole(Qt::EditRole);
+    proxyModelPart->setFilterCaseSensitivity(Qt::CaseSensitive);
+    proxyModelPart->setFilterKeyColumn(14);
+    ui->tableViewPart->setModel(proxyModelPart);
+    ui->tableViewPart->setColumnHidden(0,true);
+    ui->tableViewPart->setColumnHidden(13,true);
+    ui->tableViewPart->setColumnHidden(14,true);
+    ui->tableViewPart->resizeToContents();
 
-    ui->tableView->setModel(proxyModel);
-    ui->tableView->resizeToContents();
-    setFilter();
+    modelMark = new TableModel(this);
+    modelMark->setHeader(headerMark);
+    proxyModelMark = new QSortFilterProxyModel(this);
+    proxyModelMark->setSourceModel(modelMark);
+    proxyModelMark->setSortRole(Qt::EditRole);
+    proxyModelMark->setFilterCaseSensitivity(Qt::CaseSensitive);
 
-    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(refresh()));
-    connect(ui->checkBoxEl,SIGNAL(clicked(bool)),this,SLOT(setFilter()));
-    connect(ui->checkBoxWire,SIGNAL(clicked(bool)),this,SLOT(setFilter()));
-    connect(ui->radioButtonPart,SIGNAL(clicked(bool)),this,SLOT(refresh()));
-    connect(ui->radioButtonMark,SIGNAL(clicked(bool)),this,SLOT(refresh()));
-    connect(ui->checkBoxOt,SIGNAL(clicked(bool)),this,SLOT(refresh()));
+    ui->tableViewMark->setModel(proxyModelMark);
+    ui->tableViewMark->setColumnHidden(0,true);
+    ui->tableViewMark->setColumnHidden(2,true);
+    ui->tableViewMark->resizeToContents();
+
+    connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(startUpd()));
+    connect(ui->checkBoxEl,SIGNAL(clicked(bool)),this,SLOT(createModelData()));
+    connect(ui->checkBoxWire,SIGNAL(clicked(bool)),this,SLOT(createModelData()));
+    connect(ui->radioButtonPart,SIGNAL(clicked(bool)),this,SLOT(setByPart()));
+    connect(ui->radioButtonMark,SIGNAL(clicked(bool)),this,SLOT(setByPart()));
+    connect(ui->checkBoxOt,SIGNAL(clicked(bool)),this,SLOT(startUpd()));
     connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(save()));
-    connect(ui->tableView->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updPart(QModelIndex)));
+    connect(ui->tableViewMark->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updPart(QModelIndex)));
     connect(ui->pushButtonPackList,SIGNAL(clicked(bool)),this,SLOT(createPackList()));
 }
 
@@ -60,296 +77,165 @@ void FormBalance::saveSettings()
     settings.setValue("balance_splitter_width",ui->splitter->saveState());
 }
 
-void FormBalance::refresh()
+void FormBalance::startUpd()
 {
-    ui->pushButtonUpd->setEnabled(false);
-    bool byp = ui->radioButtonPart->isChecked();
-    balanceModel->refresh(ui->dateEdit->date(),byp,ui->checkBoxOt->isChecked());
-    if (byp){
-        ui->tableView->setColumnHidden(12,true);
-        proxyModel->sort(0);
-    } else {
-        proxyModel->sort(1);
-    }
-    ui->tableView->setColumnHidden(0,!byp);
-    ui->tableView->resizeToContents();
-    ui->tableViewPart->setHidden(byp);
-
-    calcSum();
-
-    if (ui->tableView->model()->rowCount()){
-        ui->tableView->selectRow(0);
-    }
-    ui->pushButtonUpd->setEnabled(true);
+    QDate dat=ui->dateEdit->date();
+    bool getall=!ui->checkBoxOt->isChecked();
+    QUrl url(Models::instance()->appServer()+"/wms/balance/"+dat.toString("yyyy-MM-dd")+"?getall="+(getall ? "true":"false"));
+    QNetworkRequest request;
+    request.setUrl(url);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply,SIGNAL(finished()),this,SLOT(upd()));
+    progressDialog->show();
 }
 
-void FormBalance::calcSum()
+void FormBalance::upd()
 {
-    bool byp = ui->radioButtonPart->isChecked();
-    double sum=0;
-    int col = byp? 6 : 2;
-    for (int i=0; i<proxyModel->rowCount();i++){
-        sum+=proxyModel->data(proxyModel->index(i,col),Qt::EditRole).toDouble();
+    progressDialog->hide();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (reply){
+        QByteArray data=reply->readAll();
+        bool ok=(reply->error()==QNetworkReply::NoError);
+        if (!ok){
+            QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString()+"\n"+data,QMessageBox::Cancel);
+        } else {
+            respDoc=QJsonDocument::fromJson(data);
+            createModelData();
+        }
+        reply->deleteLater();
     }
-    ui->labelSum->setText("Итого: "+QLocale().toString(sum,'f',2)+" кг");
 }
 
-void FormBalance::setFilter()
+void FormBalance::setByPart()
 {
-    proxyModel->setNomFilret(ui->checkBoxEl->isChecked(),ui->checkBoxWire->isChecked());
-    calcSum();
+    bool by_p=ui->radioButtonPart->isChecked();
+    ui->tableViewMark->setHidden(by_p);
+    if (by_p){
+        proxyModelPart->setFilterFixedString(QString());
+        ui->tableViewPart->resizeToContents();
+    } else if (ui->tableViewMark->model()->rowCount()){
+        ui->tableViewMark->resizeToContents();
+        ui->tableViewMark->selectRow(0);
+    }
 }
 
 void FormBalance::save()
 {
-    ui->tableView->save(tr("Остатки на ")+ui->dateEdit->date().toString("dd.MM.yy"),1,true);
+    QString title = tr("Наличие на ")+ui->dateEdit->date().toString("dd-MM-yy");
+    if (ui->radioButtonPart->isChecked()){
+        title+=tr(" по партиям");
+        ui->tableViewPart->save(title,2,true);
+    } else {
+        title+=tr(" по маркам");
+        ui->tableViewMark->save(title,2,true);
+    }
 }
 
 void FormBalance::updPart(QModelIndex index)
 {
-    if (!ui->radioButtonPart->isChecked()){
-        QString kis=ui->tableView->model()->data(ui->tableView->model()->index(index.row(),0),Qt::EditRole).toString();
-        QVector<QVector<QVariant>> data;
-        balanceModel->getPartData(kis,data,ui->checkBoxOt->isChecked());
-        partModel->setModelData(data);
-        ui->tableViewPart->setColumnHidden(12,true);
+    QString key = ui->tableViewMark->model()->data(ui->tableViewMark->model()->index(index.row(),2),Qt::EditRole).toString();
+    proxyModelPart->setFilterRegularExpression("^"+QRegularExpression::escape(key)+"$");
+    if (ui->tableViewPart->model()->rowCount()){
         ui->tableViewPart->resizeToContents();
-        if (ui->tableViewPart->model()->rowCount()){
-            ui->tableViewPart->selectRow(0);
-        }
-    } else {
-        partModel->clear();
+        ui->tableViewPart->selectRow(0);
     }
 }
 
 void FormBalance::createPackList()
 {
-    QString kis;
+    int id_part;
+    QString prefix;
     double kvo=0;
     QString cont;
-    QTableView *tableView = ui->radioButtonPart->isChecked() ? ui->tableView : ui->tableViewPart;
-    QModelIndex ind=tableView->model()->index(tableView->currentIndex().row(),12);
+    QTableView *tableView = ui->tableViewPart;
+    QModelIndex ind=tableView->model()->index(tableView->currentIndex().row(),13);
     if (ind.isValid()){
-        kis=tableView->model()->data(ind,Qt::EditRole).toString();
-        kvo=tableView->model()->data(tableView->model()->index(ind.row(),6),Qt::EditRole).toDouble();
-        cont=tableView->model()->data(tableView->model()->index(ind.row(),11),Qt::EditRole).toString();
-    }
-    if (!kis.isEmpty()){
-        QStringList lk=kis.split(":");
-        if (lk.size()==2){
-            int id_part=QString(lk.at(1)).toInt();
-            DialogWebView d;
-            if (d.sendGetReq("packlists/old/"+lk.at(0)+"/"+cont+"/"+QString::number(id_part)+"/"+QString::number(kvo))){
-                d.exec();
-            }
+        id_part=tableView->model()->data(ind,Qt::EditRole).toInt();
+        prefix=tableView->model()->data(tableView->model()->index(ind.row(),0),Qt::EditRole).toString();
+        kvo=tableView->model()->data(tableView->model()->index(ind.row(),7),Qt::EditRole).toDouble();
+        cont=tableView->model()->data(tableView->model()->index(ind.row(),12),Qt::EditRole).toString();
+        DialogWebView d;
+        if (d.sendGetReq("packlists/old/"+prefix+"/"+cont+"/"+QString::number(id_part)+"/"+QString::number(kvo))){
+            d.exec();
         }
     }
 }
 
-BalanceModel::BalanceModel(QObject *parent): TableModel(parent)
+void FormBalance::createModelData()
 {
-    byp=true;
-    zoneOt=Models::instance()->sync1C->getZoneOt();
-    headerPart<<"t"<<"Номенклатура"<<"Упаковка"<<"Партия"<<"Источник"<<"Рецептура/плавка"<<"Комментарий"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг"<<"Зона"<<"Ячейка"<<"Поддон"<<"id";
-    headerMark<<"t"<<"Код кис"<<"Номенклатура"<<"Количество, кг"<<"План приход, кг"<<"План расход, кг";
-}
+    if (respDoc.isArray()){
+        QVector<QVector<QVariant>> tmpd;
+        QMap<QString, celSum> map;
+        QJsonArray arr = respDoc.array();
+        double sum=0;
 
-void BalanceModel::refresh(QDate dat, bool bypart, bool otOnly)
-{
-    byp=bypart;
-    updData(dat);
-    QVector<QVector<QVariant>> tmpd;
-    if (byp){
-        QMultiHash<QString, partInfo>::const_iterator i = part.constBegin();
-        while (i != part.constEnd()) {
+        for (const QJsonValue &v : std::as_const(arr)){
             QVector<QVariant> row;
-            partInfo pinfo=i.value();
-            contInfo cinfo = cont.value(pinfo.contKey);
-            if (zoneOt.contains(cinfo.zone) || !otOnly){
-                BalanceModel::pData pd=partData.value(pinfo.id_part_kis);
-                row.push_back(pinfo.id_kis.split(":").size()==2 ? "e" : "w");
-                row.push_back(pinfo.name);
-                row.push_back(pd.pack);
-                row.push_back(pinfo.number);
-                row.push_back(pinfo.ist);
-                row.push_back(pinfo.rcp);
-                row.push_back(pd.prim);
-                row.push_back(pinfo.kvo);
-                row.push_back(pinfo.prich);
-                if (cinfo.rasch>0){
-                    row.push_back(pinfo.kvo);
-                } else {
-                    row.push_back(pinfo.rasch);
-                }
-                row.push_back(cinfo.zone);
-                row.push_back(cinfo.cell);
-                row.push_back(cinfo.name);
-                row.push_back(pinfo.id_part_kis);
-                tmpd.push_back(row);
-            }
-            ++i;
-        }
-        setModelData(tmpd,headerPart);
-    } else {
-        QList<QString> mlist = part.uniqueKeys();
-        for (QString kis : mlist){
-            QString name;
-            QVector<QVariant> row;
-            row.push_back(kis.split(":").size()==2 ? "e" : "w");
-            row.push_back(kis);
-            double kvo=0;
-            double prich=0;
-            double rasch=0;
-            QList <partInfo> plist = part.values(kis);
-            for (partInfo pinfo : plist){
-                contInfo cnt = cont.value(pinfo.contKey);
-                if (zoneOt.contains(cnt.zone) || !otOnly){
-                    if (cnt.rasch>0){
-                        rasch+=pinfo.kvo;
-                    }
+            QJsonObject o = v.toObject();
 
-                    kvo+=pinfo.kvo;
-                    prich+=pinfo.prich;
-                    rasch+=pinfo.rasch;
-                    name=pinfo.name;
-                }
+            QString prefix = o.value("prefix").toString();
+            if ((prefix=='e' && !ui->checkBoxEl->isChecked()) || (prefix=='w' && !ui->checkBoxWire->isChecked())){
+                continue;
             }
-            if (!name.isEmpty()){
-                row.push_back(name);
-                row.push_back(kvo);
-                row.push_back(prich);
-                row.push_back(rasch);
-                tmpd.push_back(row);
-            }
-        }
-        setModelData(tmpd,headerMark);
-    }
-}
 
-QStringList BalanceModel::getPartHeader()
-{
-    return headerPart;
-}
+            row.push_back(prefix);
+            row.push_back(o.value("name").toString());
+            row.push_back(o.value("pack").toString());
+            row.push_back(o.value("part").toString());
+            row.push_back(o.value("ist").toString());
+            row.push_back(o.value("rcpplav").toString());
+            row.push_back(o.value("prim").toString());
+            row.push_back(o.value("kvo").toDouble());
+            row.push_back(o.value("prich").toDouble());
+            row.push_back(o.value("rasch").toDouble());
+            row.push_back(o.value("zone").toString());
+            row.push_back(o.value("cell").toString());
+            row.push_back(o.value("cont").toString());
+            row.push_back(o.value("id_part").toInt());
+            row.push_back(o.value("id_kis").toString());
+            tmpd.push_back(row);
 
-void BalanceModel::updData(QDate dat)
-{
-    Models::instance()->sync1C->getBalance(dat,part);
-    Models::instance()->sync1C->getContBalance(dat,cont);
-    QList<partInfo> list = part.values();
-    int maxide=0;
-    int maxidw=0;
-    int minide=1410065408;
-    int minidw=1410065408;
-    for (partInfo i : list){
-        QStringList idl=i.id_part_kis.split(":");
-        if (idl.size()>1){
-            if (idl.at(0)=="e"){
-                int ide=idl.at(1).toInt();
-                if (ide>maxide){
-                    maxide=ide;
-                }
-                if (ide<minide){
-                    minide=ide;
-                }
-            } else if (idl.at(0)=="w"){
-                int idw=idl.at(1).toInt();
-                if (idw>maxidw){
-                    maxidw=idw;
-                }
-                if (idw<minidw){
-                    minidw=idw;
-                }
-            }
-        }
-    }
-    QSqlQuery query;
-    query.prepare("(select 'e:'||p.id, ep.pack_ed, "
-                  "CASE WHEN p.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || COALESCE(p.prim_prod,'') from parti p "
-                  "inner join el_pack ep on ep.id = p.id_pack "
-                  "inner join elrtr_vars ev on ev.id = p.id_var "
-                  "where p.id between :minide and :maxide "
-                  ") union ("
-                  "select 'w:'||wp.id, wp2.pack_ed, "
-                  "CASE WHEN wp.id_var<>1 THEN '/'||ev.nam ||'/ ' ELSE '' END || COALESCE(wp.prim_prod,'') "
-                  "from wire_parti wp "
-                  "inner join wire_pack wp2 on wp2.id = wp.id_pack_type "
-                  "inner join elrtr_vars ev on ev.id = wp.id_var "
-                  "where wp.id between :minidw and :maxidw )");
-    query.bindValue(":minide",minide);
-    query.bindValue(":maxide",maxide);
-    query.bindValue(":minidw",minidw);
-    query.bindValue(":maxidw",maxidw);
-    if (query.exec()){
-        partData.clear();
-        while (query.next()){
-            BalanceModel::pData pd;
-            pd.pack=query.value(1).toString();
-            pd.prim=query.value(2).toString();
-            partData.insert(query.value(0).toString(),pd);
-        }
-    } else {
-        QMessageBox::critical(NULL,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
-    }
-}
+            sum+=o.value("kvo").toDouble();
 
-void BalanceModel::getPartData(QString kis, QVector<QVector<QVariant> > &data, bool otOnly)
-{
-    QList<partInfo> list = part.values(kis);
-    data.clear();
-    for (partInfo i : list){
-        BalanceModel::pData pd=partData.value(i.id_part_kis);
-        QVector<QVariant> row;
-        contInfo cnt = cont.value(i.contKey);
-        if (zoneOt.contains(cnt.zone) || !otOnly){
-            row.push_back(kis.split(":").size()==2 ? "e" : "w");
-            row.push_back(i.name);
-            row.push_back(pd.pack);
-            row.push_back(i.number);
-            row.push_back(i.ist);
-            row.push_back(i.rcp);
-            row.push_back(pd.prim);
-            row.push_back(i.kvo);
-            row.push_back(i.prich);
-            if (cnt.rasch>0){
-                row.push_back(i.kvo);
+            QString key=o.value("prefix").toString()+'#'+o.value("name").toString()+'#'+o.value("id_kis").toString();
+            celSum sm;
+            sm.kvo=o.value("kvo").toDouble();
+            sm.prich=o.value("prich").toDouble();
+            sm.rasch=o.value("rasch").toDouble();
+
+            if (!map.contains(key)){
+                map.insert(key,sm);
             } else {
-                row.push_back(i.rasch);
+                celSum ols=map.value(key);
+                ols.kvo+=sm.kvo;
+                ols.prich+=sm.prich;
+                ols.rasch+=sm.rasch;
+                map[key]=ols;
             }
-            row.push_back(cnt.zone);
-            row.push_back(cnt.cell);
-            row.push_back(cnt.name);
-            row.push_back(i.id_part_kis);
-            data.push_back(row);
         }
-    }
-}
 
-ProxyModel::ProxyModel(QObject *parent) : QSortFilterProxyModel(parent)
-{
-
-}
-
-bool ProxyModel::filterAcceptsColumn(int source_column, const QModelIndex &/*source_parent*/) const
-{
-    return source_column!=0;
-}
-
-void ProxyModel::setNomFilret(bool el, bool wire)
-{
-    QString pattern;
-    setFilterKeyColumn(0);
-    if (el){
-        pattern+="e";
-    }
-    if (wire){
-        if (!pattern.isEmpty()){
-            pattern+="|";
+        QVector<QVector<QVariant>> dataMark;
+        for (const QString &mk : map.keys()){
+            QVector<QVariant> row;
+            QStringList l = mk.split('#');
+            if (l.size()==3){
+                for (int i=0; i<l.size(); i++){
+                    row.push_back(l.at(i));
+                }
+                celSum s = map.value(mk);
+                row.push_back(s.kvo);
+                row.push_back(s.prich);
+                row.push_back(s.rasch);
+                dataMark.push_back(row);
+            }
         }
-        pattern+="w";
-    }
-    if (pattern.isEmpty()){
-        setFilterFixedString("-");
-    } else {
-        setFilterRegularExpression(pattern);
+
+        ui->labelSum->setText("Итого: "+QLocale().toString(sum,'f',2)+" кг");
+
+        modelMark->setModelData(dataMark);
+        ui->tableViewMark->resizeToContents();
+
+        modelPart->setModelData(tmpd);
+        ui->tableViewPart->resizeToContents();
     }
 }

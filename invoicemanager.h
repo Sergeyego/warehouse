@@ -18,8 +18,10 @@ class InvoiceManager : public QObject
 public:
     explicit InvoiceManager(QObject *parent = nullptr);
     void getInvoice(QString path, QString vid, QString type, QString filename, int year);
+    void setServer(QString url);
 private:
     QNetworkAccessManager *manager;
+    QString server;
 
 private slots:
     void onResult(QNetworkReply *reply);
