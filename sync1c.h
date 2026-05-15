@@ -56,8 +56,6 @@ private:
     const QString namCodOrg="000000001";
 
     const QString contPrefix="EUR";
-    QStringList zoneOtEl;
-    QStringList zoneOtWire;
 
     base1CSettigs base1C;
     QHash <QString, QString> constKeys;

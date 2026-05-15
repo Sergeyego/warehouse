@@ -2,8 +2,6 @@
 
 Sync1C::Sync1C(QObject *parent): QObject(parent)
 {
-    zoneOtEl<<"Буфер"<<"Хранение электродов"<<"Хранение остатков электродов";
-    zoneOtWire<<"Буфер"<<"Хранение проволоки"<<"Хранение остатков проволоки";
     updateBaseSettings(1);
     updateKeys();
 }
@@ -697,6 +695,21 @@ int Sync1C::wireEanSync()
 
 int Sync1C::zoneOtSync()
 {
+    QStringList zoneOtEl, zoneOtWire;
+    QSqlQuery query;
+    query.prepare("select wz.nam, wzo.prefix from warehouse_zone_ot wzo "
+                  "inner join warehouse_zone wz on wz.id = wzo.id_zone");
+    if (query.exec()){
+        while (query.next()){
+            if (query.value(1).toString()=="e"){
+                zoneOtEl.push_back(query.value(0).toString());
+            } else {
+                zoneOtWire.push_back(query.value(0).toString());
+            }
+        }
+    } else {
+        showErrMes(query.lastError().text());
+    }
     bool ok=true;
     int n=0;
     QJsonObject obj=tmpCatalog("tmpzoneot.json");
