@@ -610,10 +610,10 @@ bool ModelPart::refresh(QDate dbeg, QDate dend)
                   "inner join elrtr as e on p.id_el=e.id "
                   "inner join istoch as i on p.id_ist=i.id "
                   "inner join el_pack as ep on ep.id=p.id_pack "
-                  "inner join gost_types as g on e.id_gost_type=g.id "
+                  "inner join el_var ev on ev.id_el = p.id_el and ev.id_var = p.id_var "
+                  "inner join gost_types as g on ev.id_gost_type=g.id "
                   "inner join purpose as pu on e.id_purpose=pu.id "
                   "left join ean_el ee on ee.id_el = p.id_el and ee.id_diam = (select d.id from diam d where d.diam=p.diam) and ee.id_pack = p.id_pack "
-                  "left join el_var ev on ev.id_el = p.id_el and ev.id_var = p.id_var "
                   "inner join elrtr_vars elv on elv.id = p.id_var "
                   "where p.dat_part between :d1 and :d2 "
                   "order by p.dat_part, p.n_s");
